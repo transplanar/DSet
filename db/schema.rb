@@ -17,12 +17,13 @@ ActiveRecord::Schema.define(version: 20160116192345) do
     t.string   "name"
     t.string   "image_url"
     t.integer  "cost"
+    t.string   "types"
     t.string   "category"
     t.string   "expansion"
     t.string   "strategy"
-    t.string   "terminal"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string   "terminality"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
 end
