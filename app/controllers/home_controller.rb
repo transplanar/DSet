@@ -7,6 +7,7 @@ class HomeController < ApplicationController
     # end
     # @cards = Card.search(params[:seach])
 
+    # TODO error message for invalid queries
     if is_numeric?(params[:search])
       @cards = Card.where('cost LIKE ?',"%#{params[:search]}%")
     else

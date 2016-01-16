@@ -15,18 +15,17 @@ RSpec.describe HomeController, type: :controller do
 
     # FIXME move this to a better spot
       # REVIEW move this to different controller?
-    it 'renders index page after search completed' do
-      # cards = Card.all
+    it 'returns correct number of search matches for ALPHABETICAL input' do
       get :index, {search: "V"}
       cards = assigns(:cards)
 
-      # Rails.logger.info
+      expect(cards.count).to eq(3)
+    end
 
-      cards.each do |card|
-        puts card.name
-      end
+    it 'returns correct number of search matches for NUMERIC input' do
+      get :index, {search: 2}
+      cards = assigns(:cards)
 
-      # assigns(:cards).count.should eq(1)
       expect(cards.count).to eq(3)
     end
 
