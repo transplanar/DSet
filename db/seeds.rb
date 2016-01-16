@@ -22,7 +22,7 @@ Card.create!(name: "Cellar",
             terminality: "Non-Terminal")
 
 Card.create!(name: "Chapel",
-            image_url: "http://wiki.dominionstrategy.com/index.php/File:Chapel.jpg",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/2/29/Chapel.jpg/200px-Chapel.jpg",
             cost: 2,
             types: "Action",
             category: "Trasher",
@@ -84,7 +84,7 @@ Card.create!(name: "Bureaucrat",
             terminality: "Terminal")
 
 Card.create!(name: "Feast",
-            image_url: "http://wiki.dominionstrategy.com/index.php/File:Feast.jpg",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/9/9c/Feast.jpg/200px-Feast.jpg",
             cost: 4,
             types: "Action",
             category: "One-shot",
