@@ -1,13 +1,9 @@
 class HomeController < ApplicationController
   def index
-    # if params[:search]
-    #   @cards = Card.find(:all, :conditions => ['name LIKE ?', "%#{params[:search]}%"])
-    # else
-    #   @cards = Card.all
-    # end
-    # @cards = Card.search(params[:seach])
-
-    # TODO error message for invalid queries
+    # TODO move this to more appropriate controller?
+    # TODO error message for invalid queries ("no results found")
+    # NOTE will not need this if statement once multi-category search is implemented
+    #NOTE chain .where queries to get array of desired cards
     if is_numeric?(params[:search])
       @cards = Card.where('cost LIKE ?',"%#{params[:search]}%")
     else
@@ -16,7 +12,7 @@ class HomeController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.js {flash[:alert] = "Javascript stuff"}
+      format.js
     end
   end
 
@@ -28,8 +24,4 @@ class HomeController < ApplicationController
   def is_numeric?(obj)
      obj.to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
   end
-
-  # MOVE THIS FUNCTION TO BETTER SPOT
-
-  # chain .where queries to get array of desired cards
 end

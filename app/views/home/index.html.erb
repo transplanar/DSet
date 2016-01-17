@@ -2,23 +2,13 @@
 <p>Find me in app/views/home/index.html.erb</p>
 
 <!-- REVIEW change path here -->
-<%# form_tag root_path, method: :get do%>
-<%# form_tag root_path, :method => 'get' do%>
-<%= form_tag root_path, :method => 'get', remote: true do%>
+<%= form_tag root_path, :method => 'get', :id => "card_search", remote: true do%>
 <p>
   <%= text_field_tag :search, params[:search] %>
-  <%= submit_tag "Submit", :name => nil %>
+  <%# submit_tag "Search", :name => nil %>
 </p>
 <% end %>
 
-<%# render 'cards/cards' %>
 <div class="results">
-  <!-- <%# @cards.each do |card| %> -->
     <%= render partial: 'cards/cards', locals: {cards: @cards} %>
-  <!-- <%# end %> -->
 </div>
-
-
-
-
-<%# link_to image_tag("#{bookmark.image_url}", size: "100x100"), bookmark.url, title: bookmark.url  %>
