@@ -1,23 +1,24 @@
 <h1>Home#index</h1>
 <p>Find me in app/views/home/index.html.erb</p>
 
-
 <!-- REVIEW change path here -->
 <%# form_tag root_path, method: :get do%>
-<%= form_tag root_path, :method => 'get' do%>
-  <p>
-    <%= text_field_tag :search, params[:search] %>
-    <%= submit_tag "Submit", :name => nil %>
-  </p>
+<%# form_tag root_path, :method => 'get' do%>
+<%= form_tag root_path, :method => 'get', remote: true do%>
+<p>
+  <%= text_field_tag :search, params[:search] %>
+  <%= submit_tag "Submit", :name => nil %>
+</p>
 <% end %>
 
-<% @cards.each do |card| %>
-<%# @cards.where(cost: 3..5).each do |card| %>
-<%# @cards.where("cost = ?", 3).each do |card| %>
-<%# if card.cost == 3 %>
-<%= image_tag(card.image_url, class: 'card_image') %>
-<%# end %>
-<% end %>
+<%# render 'cards/cards' %>
+<div class="results">
+  <!-- <%# @cards.each do |card| %> -->
+    <%= render partial: 'cards/cards', locals: {cards: @cards} %>
+  <!-- <%# end %> -->
+</div>
+
+
 
 
 <%# link_to image_tag("#{bookmark.image_url}", size: "100x100"), bookmark.url, title: bookmark.url  %>

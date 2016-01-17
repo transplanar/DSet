@@ -1,0 +1,3 @@
+// REVIEW need the @card param?
+// flash[:alert]
+$('.results').html("<%= escape_javascript(render partial: 'cards/cards', locals: {cards: @cards}) %>")

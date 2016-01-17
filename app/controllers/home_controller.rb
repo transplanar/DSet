@@ -13,6 +13,11 @@ class HomeController < ApplicationController
     else
       @cards = Card.where('name LIKE ?',"%#{params[:search]}%")
     end
+
+    respond_to do |format|
+      format.html
+      format.js {flash[:alert] = "Javascript stuff"}
+    end
   end
 
   def about

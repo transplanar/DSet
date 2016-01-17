@@ -1,0 +1,13 @@
+<div class="results">
+  <%# @cards.each do |card| %>
+  <% cards.each do |card| %>
+  <%# @cards.where(cost: 3..5).each do |card| %>
+  <%# @cards.where("cost = ?", 3).each do |card| %>
+  <%# if card.cost == 3 %>
+  <%= image_tag(card.image_url, class: 'card_image') %>
+  <%# end %>
+  <% end %>
+</div>
+
+
+<%# image_tag(card.image_url, class: 'card_image') %>
