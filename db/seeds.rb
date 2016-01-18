@@ -34,7 +34,7 @@ Card.create!(name: "Moat",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/f/fe/Moat.jpg/200px-Moat.jpg",
             cost: 2,
             types: "Action, Reaction", #multi-types
-            category: "Reaction",
+            category: "",
             expansion: "Base",
             strategy: "",
             terminality: "Terminal")
