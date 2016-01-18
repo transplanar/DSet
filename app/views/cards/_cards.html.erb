@@ -1,8 +1,27 @@
+<!-- TODO move div out of partial -->
+<!-- <div class="results">
+  <%# cards.each do |card| %>
+      <%# image_tag(card.image_url, class: 'card_image') %>
+  <%# end %>
+</div> -->
+
 <div class="results">
-  <% cards.each do |card| %>
+  <% results.each do |k,v| %>
+    <h1><%= k %></h1>
+    <% v.each do |card| %>
+      <!-- NOTE this displays the text of the matching category -->
+      <%= card[k] %>
       <%= image_tag(card.image_url, class: 'card_image') %>
+    <% end %>
   <% end %>
 </div>
+
+
+<!-- @results.each do |k,v|
+  v.each do |card|
+    puts "Card = #{card[:name]} in #{k}"
+  end
+end -->
 
 <!-- NOTE for future reference -->
 <%# @cards.where("cost = ?", 3).each do |card| %>

@@ -22,12 +22,24 @@ class HomeController < ApplicationController
 
 
           # NOTE this almost works
-          @cards = Card.where("#{col} LIKE ?","%#{params[:search]}%")
+          # FIXME refactor @cards
+          # @cards = Card.where("#{col} LIKE ?","%#{params[:search]}%")
+          cards = Card.where("#{col} LIKE ?","%#{params[:search]}%")
+          # @results[col]  = cards unless cards.empty?
+          @results[col]  = cards unless cards.empty?
         # end
       end
 
       # Output results for testing
-      # puts ">>>>>>>Results #{@results}"
+      puts ">>>>>>>Results #{@results}"
+
+      @results.each do |k,v|
+        v.each do |card|
+          puts "Card = #{card[:name]} in #{k}"
+        end
+      end
+
+
       # puts ">>>>>>First result #{@results.first.name}"
       # puts "THING ----> #{@results[:terminality]}"
 
