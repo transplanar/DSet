@@ -25,6 +25,15 @@ RSpec.describe HomeController, type: :controller do
       expect(cards.count).to eq(3)
     end
 
+    context 'multi-field queries' do
+      # get :index, {search: "Vi"}, format: :js
+      # cards = assigns(:cards)
+      #
+      # expect(cards.count).to eq(3)
+
+      # search multiple 
+
+    end
   end
 
   # FIXME delete this

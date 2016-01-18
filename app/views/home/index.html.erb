@@ -9,6 +9,50 @@
 </p>
 <% end %>
 
+
+<h1>Cards</h1>
+
+
+
+
+
+<%# @results.each do |key, val, s| %>
+
+  <%# unless @results[key].empty? %>
+    <h1><%# key.to_s %></h1>
+
+    <%# val.each do |v| %>
+      <%# unless v.nil? %>
+        <%# image_tag(card.image_url, class: 'card_image') %>
+        <%# v.class.name %>
+        <%# "sub = #{s}" %>
+        <br>
+      <%# end %>
+    <%# end %>
+
+    <!-- <h2>LAST</h2> -->
+    <%# val.last.name %>
+
+  <%# end %>
+
+
+
+  <%# val.each do |card| %>
+    <p> <%# card.name %> </p>
+  <%# end %>
+
+
+  <!-- <%# if val.any? %>
+  <%# puts "#{val} for #{key}" %>
+    <%#val.each do |card| %>
+      <%# image_tag(card.image_url, class: 'card_image') %>
+    <%# end %>
+  <%# end %> -->
+
+  <!-- <hr> -->
+<%# end %>
+
+
 <div class="results">
-    <%= render partial: 'cards/cards', locals: {cards: @cards} %>
+    <%# render partial: 'cards/cards', locals: {cards: @cards} %>
 </div>
