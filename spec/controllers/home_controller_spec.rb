@@ -26,12 +26,13 @@ RSpec.describe HomeController, type: :controller do
     end
 
     context 'multi-field queries' do
+      # REVIEW best way to do test for this?
       # get :index, {search: "Vi"}, format: :js
       # cards = assigns(:cards)
       #
       # expect(cards.count).to eq(3)
 
-      # search multiple 
+      # search multiple
 
     end
   end
