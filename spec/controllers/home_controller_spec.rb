@@ -1,49 +1,67 @@
 require 'rails_helper'
 
 RSpec.describe HomeController, type: :controller do
-  # FIXME delete this
-  describe 'Home#index' do
+  context 'Home#index' do
     before :each do
       load Rails.root + "db/seeds.rb"
     end
 
-    # FIXME move this to a better spot
-      # REVIEW move this to different controller?
-    it 'returns correct number of search matches for ALPHABETICAL input' do
-      # get :index, {search: "V"}
-      get :index, {search: "V"}, format: :js
-      cards = assigns(:cards)
 
-      expect(cards.count).to eq(3)
+    describe 'card search' do
+      # FIXME move this to a better spot
+        # REVIEW move this to different controller?
+      it 'returns correct number of search matches for ALPHABETICAL input' do
+        get :index, {search: "cantrip"}, format: :js
+
+        cards = card_array_from_results
+
+        expect(cards.count).to eq(2)
+      end
+
+      it 'returns correct number of search matches for NUMERIC input' do
+        get :index, {search: 2}, format: :js
+
+        cards = card_array_from_results
+
+        expect(cards.count).to eq(3)
+      end
     end
 
-    it 'returns correct number of search matches for NUMERIC input' do
-      # get :index, {search: 2}
-      get :index, {search: 2}, format: :js
-      cards = assigns(:cards)
+    describe 'display results across multiple categories ' do
+      before :each do
+        @results = Card.search('vil')
+      end
 
-      expect(cards.count).to eq(3)
+      it 'finds results in three categories' do
+        expect(@results.count).to eq(3)
+      end
+
+      it 'finds one \'name\' result' do
+        expect(@results['name'].count).to eq(1)
+      end
+
+      it 'finds two \'category\' results' do
+        expect(@results['category'].count).to eq(2)
+      end
+
+      it 'finds two \'terminality\' results' do
+        expect(@results['terminality'].count).to eq(1)
+      end
     end
+  end
+end
 
-    context 'multi-field queries' do
-      # REVIEW best way to do test for this?
-      # get :index, {search: "Vi"}, format: :js
-      # cards = assigns(:cards)
-      #
-      # expect(cards.count).to eq(3)
+private
 
-      # search multiple
+def card_array_from_results
+  results = assigns(:results)
+  cards = []
 
+  results.each do |k,v|
+    v.each do |card|
+      cards << card
     end
   end
 
-  # FIXME delete this
-  # describe 'Home#about' do
-    # it 'renders about template' do
-    #   get :about
-    #
-    #   expect(response).to render_template("about")
-    # end
-  # end
-
+  return cards
 end
