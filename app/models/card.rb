@@ -12,8 +12,8 @@ class Card < ActiveRecord::Base
     unless search.blank?
       @results = Hash.new
 
-      # exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
-      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'cost']
+      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
+      # exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'cost']
       columns = Card.attribute_names - exclude_columns
 
       @cards = []
@@ -21,7 +21,7 @@ class Card < ActiveRecord::Base
 
       # col = "name"
       columns.each do |col|
-        if use_fuzzy_search
+        if use_fuzzy_search && !is_numeric?(search)
           # REVIEW make this more useful by searching across all fields
           cards = Card.send("find_by_fuzzy_#{col}", search)
         else
@@ -33,25 +33,36 @@ class Card < ActiveRecord::Base
 
           # TODO support parsing of comma-separated, multi-type groupings
           unless col == "name"
-            cards.each do |c|
-              # puts "TERMS split from card array = #{c["#{col}"].split(',')}"
+            if col == "cost"
+              @matched_terms << "#{col}: #{search}"
+            else
+              cards.each do |c|
+                # puts "TERMS split from card array = #{c["#{col}"].split(',')}"
 
-              split_terms = c["#{col}"].split(',')
+                split_terms = c["#{col}"].split(',')
 
-              split_terms.each do |term|
-                puts "#{term} vs #{search} is #{term.include? search}"
-                if term.downcase.include? search.downcase
-                  @matched_terms << "#{col}: #{term}"
-                  # @matched_terms << term
-                  @matched_terms.uniq!
+                split_terms.each do |term|
+                  puts "#{term} vs #{search} is #{term.include? search}"
+                  if term.downcase.include? search.downcase
+                    @matched_terms << "#{col}: #{term}"
+                    # @matched_terms << term
+                    @matched_terms.uniq!
+                  end
                 end
+
+                # REVIEW 2) check by non-consecutive characters to order/find results
+                # regex_test = Regexp.new(term, )
+                # /(?:[a-zA-Z]|['.,\s-](?!['.,\s-]))/.match(term)
+                # puts "REGEX #{regex_test}"
+
+                # puts "TERMS SPLIT = #{@matched_terms[col].split(',')}"
               end
-
-              # puts "TERMS SPLIT = #{@matched_terms[col].split(',')}"
             end
-          end
+            end
 
-          # REVIEW 1) display search results in order by best match like Atom.io
+
+
+          # REVIEW A) display search results in order by best match like Atom.io
           puts "Matched terms array #{@matched_terms}"
         end
         # @results[col]  = {card: cards, matched_term: cards.read_attribute[col] }
@@ -77,4 +88,10 @@ class Card < ActiveRecord::Base
       @results = {}
     end
   end
+
+  # def self.is_numeric?(obj)
+   def self.is_numeric?(obj)
+      obj.to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
+      obj.to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
+   end
 end
