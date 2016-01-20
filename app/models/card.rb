@@ -25,7 +25,12 @@ class Card < ActiveRecord::Base
           cards = Card.where("#{col} LIKE ?","%#{search}%")
         end
 
+        cards.each do |result|
+          # get the matching term
+        end
+
         @results[col]  = cards unless cards.empty?
+        # @results[col]  = {card: cards, matched_term: cards.read_attribute[col] }
       end
 
       # card,send("method_name")
@@ -35,7 +40,12 @@ class Card < ActiveRecord::Base
 
       @results.each do |k,v|
         v.each do |card|
-          puts "Card = #{card[:name]} in #{k}"
+          p "Card = #{card[:name]} in #{k}"
+          card.each do |match|
+            puts "Matched to query #{match}"
+          end
+
+          # puts <br>
         end
       end
       #>>>>>>>>>>>>>>>>>>>>>>>>>
