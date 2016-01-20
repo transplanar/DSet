@@ -1,1 +1,2 @@
 $('.results').html("<%= escape_javascript(render partial: 'cards/cards', locals: {results: @results}) %>")
+$('.text_results').html("<%= escape_javascript(render partial: 'cards/text_matches', locals: {matched_terms: @matched_terms}) %>")

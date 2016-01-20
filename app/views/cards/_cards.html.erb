@@ -1,17 +1,8 @@
 <!-- TODO move div out of partial -->
 
-<div class = "text_results">
-  <%# results.each do |k,v| %>
-    <h1><%# k %></h1>
-    <%# v.each do |card| %>
-      <!-- NOTE this displays the text of the matching category -->
-      <!-- TODO better support for comma-separated fields -->
-      <%# card[k] %>
-      <%# image_tag(card.image_url, class: 'card_image') %>
-    <%# end %>
-  <%# end %>
-</div>
+<%# render 'cards/text_matches' %>
 
+<!-- XXX reduncant div? -->
 <div class="results">
   <% results.each do |k,v| %>
     <h1><%= k %></h1>
