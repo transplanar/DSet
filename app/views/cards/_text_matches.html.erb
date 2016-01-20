@@ -1,6 +1,8 @@
-  <!-- <ul> -->
-    <% matched_terms.each do |match|%>
-      <!-- <li><%# match %></li> -->
-      <%= match %><
+  <ul>
+    <% unless matched_terms.empty? %>
+      <% matched_terms.each do |match|%>
+        <li><%= match %></li>
+        <!-- <%# match %>< -->
+      <% end %>
     <% end %>
-  <!-- </ul> -->
+  </ul>

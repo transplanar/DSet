@@ -36,11 +36,18 @@ class Card < ActiveRecord::Base
             cards.each do |c|
               # puts "TERMS split from card array = #{c["#{col}"].split(',')}"
 
-              # split_terms = c["#{col}"].split(',')
+              split_terms = c["#{col}"].split(',')
 
-              @matched_terms << "#{col}: #{c["#{col}"]}"
+              split_terms.each do |term|
+                puts "#{term} vs #{search} is #{term.include? search}"
+                if term.downcase.include? search.downcase
+                  @matched_terms << "#{col}: #{term}"
+                  # @matched_terms << term
+                  @matched_terms.uniq!
+                end
+              end
+
               # puts "TERMS SPLIT = #{@matched_terms[col].split(',')}"
-              @matched_terms.uniq!
             end
           end
 
