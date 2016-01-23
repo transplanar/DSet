@@ -16,6 +16,7 @@ class Card < ActiveRecord::Base
       @matched_terms = []
 
 
+      # TODO Cannot be done (easily?) without the Slot model.
       search_queries.each do |query|
         columns.each do |col|
           if use_fuzzy_search && !is_numeric?(query)
