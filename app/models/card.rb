@@ -2,6 +2,11 @@ class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
 
 
+  @@matched_cards = Card.all
+
+
+
+
   def self.search search, use_fuzzy_search
     unless search.blank?
       @results = Hash.new
@@ -13,19 +18,68 @@ class Card < ActiveRecord::Base
       # puts "QUERIES = #{search_queries}"
 
       @cards = []
+
+
       @matched_terms = []
 
 
       # TODO Cannot be done (easily?) without the Slot model.
       search_queries.each do |query|
+        # @results = Hash.new
+
         columns.each do |col|
           if use_fuzzy_search && !is_numeric?(query)
             cards = Card.send("find_by_fuzzy_#{col}", query)
           else
-            if @results.blank?
+            # if @results.blank?
+            # if @@matched_cards.nil? || query == search_queries.first
+            if query == search_queries.first
+              # cards = Card.where("#{col} LIKE ?","%#{query}%")
               cards = Card.where("#{col} LIKE ?","%#{query}%")
             else
-              cards = Card.where("#{col} LIKE ?","%#{query}%")
+              # cards = Card.where("#{col} LIKE ?","%#{query}%")
+              # cards = Card.where("#{col} LIKE ?","%#{query}%")
+              puts ">>> PARSING SECOND QUERY on #{query}"
+              # XXX complications from Livesearch on this (no longer blank after 1st character)
+              @results.each do |k, v|
+                puts "Column = #{col}"
+                puts "#{k} PARSING FROM"
+                v.each do |c|
+                  puts c.name
+                end
+
+                cards = v.where("#{col} LIKE ?","%#{query}%")
+              end
+              # cards = @results[col].where("#{col} LIKE ?","%#{query}%") unless @results[col].blank?
+              puts "RESULTING CARDS"
+              cards.each do |c|
+                puts c.name
+              end
+
+              # puts "result of parse in #{col}: #{cards.blank?}"
+
+              # puts "BEFORE #{cards.count}"
+              # cards = @@matched_cards.where("#{col} LIKE ?","%#{query}%")
+              # cards = Card.where(@@matched_cards.map(&:id).uniq).map{|card| card.}
+
+              # where("#{col} LIKE ?","%#{query}%")
+              # puts "NARROWED DOWN = #{cards.count}"
+
+              # NOTE CHALLENGE IS "DIGGING" DOWN TO THE ActiveRecord AND QUERYING IT
+              # next is the challenge of not overriding array/AR if it finds nothing in field
+              # other_results = cards.where("cost LIKE ?", 3)
+              #
+              # unless other_results.blank?
+              #   other_results.each do |card|
+              #     # v.each do |card|
+              #       p "TEST Card = #{card[:name]}"
+              #     # end
+              #   end
+              # end
+              # puts "TEST = #{cards.where("cost LIKE ?", 3)}"
+
+              # puts "TEST = #{@@matched_cards}"
+
 
               # puts @results.where("#{col} LIKE ?","%#{query}%")
               # puts Card.where(@results[col].map(&:card_id).uniq)
@@ -42,20 +96,27 @@ class Card < ActiveRecord::Base
             end
           end
 
-          unless cards.empty?
+          # unless cards.empty?
+          unless cards.blank?
             @results[col]  = cards
+            # @@matched_cards << cards
 
             unless col == "name"
               cards.each do |c|
 
-                split_terms = c["#{col}"].split(',')
+                unless col == "cost"
+                  split_terms = c["#{col}"].split(',')
 
-                split_terms.each do |term|
-                  # puts "#{term} vs #{query} is #{term.include? query}"
-                  if term.downcase.include? query.downcase
-                    @matched_terms << "<b>#{col}</b>: #{term}"
-                    @matched_terms.uniq!
+                  split_terms.each do |term|
+                    # puts "#{term} vs #{query} is #{term.include? query}"
+                    if term.downcase.include? query.downcase
+                      @matched_terms << "<b>#{col}</b>: #{term}"
+                      @matched_terms.uniq!
+                    end
                   end
+                else
+                  @matched_terms << "<b>#{col}</b>: #{c["#{col}"]}"
+                  @matched_terms.uniq!
                 end
               end
             end
@@ -63,7 +124,6 @@ class Card < ActiveRecord::Base
           end
         end
       end
-
       # WORKING
       # columns.each do |col|
       #   if use_fuzzy_search && !is_numeric?(search)
@@ -111,6 +171,7 @@ class Card < ActiveRecord::Base
     else
       @results = {}
       @matched_terms = {}
+      @@matched_cards = []
     end
 
 
