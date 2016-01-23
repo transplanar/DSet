@@ -23,39 +23,22 @@ class Card < ActiveRecord::Base
           @results[col]  = cards
 
           unless col == "name"
-            # if col == "cost"
-              # @matched_terms << "#{col}: #{search}"
-            # else
-              cards.each do |c|
-                # puts "TERMS split from card array = #{c["#{col}"].split(',')}"
+            cards.each do |c|
 
-                split_terms = c["#{col}"].split(',')
+              split_terms = c["#{col}"].split(',')
 
-                split_terms.each do |term|
-                  puts "#{term} vs #{search} is #{term.include? search}"
-                  if term.downcase.include? search.downcase
-                    @matched_terms << "<b>#{col}</b>: #{term}"
-                    # @matched_terms << term
-                    @matched_terms.uniq!
-                  end
+              split_terms.each do |term|
+                puts "#{term} vs #{search} is #{term.include? search}"
+                if term.downcase.include? search.downcase
+                  @matched_terms << "<b>#{col}</b>: #{term}"
+                  # @matched_terms << term
+                  @matched_terms.uniq!
                 end
-
-                # REVIEW 2) check by non-consecutive characters to order/find results
-                # regex_test = Regexp.new(term, )
-                # /(?:[a-zA-Z]|['.,\s-](?!['.,\s-]))/.match(term)
-                # puts "REGEX #{regex_test}"
-
-                # puts "TERMS SPLIT = #{@matched_terms[col].split(',')}"
               end
-            # end
             end
-
-
-
-          # REVIEW A) display search results in order by best match like Atom.io
+          end
           puts "Matched terms array #{@matched_terms}"
         end
-        # @results[col]  = {card: cards, matched_term: cards.read_attribute[col] }
       end
 
       # XXX FOR TESTING
