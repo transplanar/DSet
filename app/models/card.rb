@@ -12,8 +12,8 @@ class Card < ActiveRecord::Base
     unless search.blank?
       @results = Hash.new
 
-      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
-      # exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'cost']
+      # exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
+      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'cost']
       columns = Card.attribute_names - exclude_columns
 
       @cards = []
@@ -33,9 +33,9 @@ class Card < ActiveRecord::Base
 
           # TODO support parsing of comma-separated, multi-type groupings
           unless col == "name"
-            if col == "cost"
-              @matched_terms << "#{col}: #{search}"
-            else
+            # if col == "cost"
+              # @matched_terms << "#{col}: #{search}"
+            # else
               cards.each do |c|
                 # puts "TERMS split from card array = #{c["#{col}"].split(',')}"
 
@@ -44,7 +44,7 @@ class Card < ActiveRecord::Base
                 split_terms.each do |term|
                   puts "#{term} vs #{search} is #{term.include? search}"
                   if term.downcase.include? search.downcase
-                    @matched_terms << "#{col}: #{term}"
+                    @matched_terms << "<b>#{col}</b>: #{term}"
                     # @matched_terms << term
                     @matched_terms.uniq!
                   end
@@ -57,7 +57,7 @@ class Card < ActiveRecord::Base
 
                 # puts "TERMS SPLIT = #{@matched_terms[col].split(',')}"
               end
-            end
+            # end
             end
 
 
@@ -70,7 +70,7 @@ class Card < ActiveRecord::Base
 
       # TODO needs to return both of these somehow
       # return @results
-      return [@results, @matched_terms]
+      # return [@results, @matched_terms]
 
       # card,send("method_name")
 
@@ -86,7 +86,11 @@ class Card < ActiveRecord::Base
 
     else
       @results = {}
+      @matched_terms = {}
     end
+
+    return [@results, @matched_terms]
+
   end
 
   # def self.is_numeric?(obj)
