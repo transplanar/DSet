@@ -4,8 +4,13 @@ class Card < ActiveRecord::Base
 
   @@matched_cards = Card.all
 
-
-
+  scope :_name, -> (name) {where("name like ?", "#{name}")}
+  scope :_types, -> (types) {where("types like ?", "#{types}")}
+  scope :_category, -> (category) {where("category like ?", "#{category}")}
+  scope :_cost, -> (cost) {where("cost like ?", "#{cost}")}
+  scope :_expansion, -> (expansion) {where("expansion like ?", "#{expansion}")}
+  scope :_strategy, -> (strategy) {where("strategy like ?", "#{strategy}")}
+  scope :_terminality, -> (terminality) {where("terminality like ?", "#{terminality}")}
 
   def self.search search, use_fuzzy_search
     unless search.blank?
@@ -18,43 +23,49 @@ class Card < ActiveRecord::Base
       # puts "QUERIES = #{search_queries}"
 
       @cards = []
-
+      t_results = []
 
       @matched_terms = []
 
-
       # TODO Cannot be done (easily?) without the Slot model.
       search_queries.each do |query|
-        # @results = Hash.new
 
         columns.each do |col|
           if use_fuzzy_search && !is_numeric?(query)
             cards = Card.send("find_by_fuzzy_#{col}", query)
           else
-            # if @results.blank?
             # if @@matched_cards.nil? || query == search_queries.first
             if query == search_queries.first
-              # cards = Card.where("#{col} LIKE ?","%#{query}%")
               cards = Card.where("#{col} LIKE ?","%#{query}%")
+              # XXX scope method = requires specific thing
+              # cards = Card.send( "_#{col}", query )
             else
-              # cards = Card.where("#{col} LIKE ?","%#{query}%")
-              # cards = Card.where("#{col} LIKE ?","%#{query}%")
-              puts ">>> PARSING SECOND QUERY on #{query}"
-              # XXX complications from Livesearch on this (no longer blank after 1st character)
-              @results.each do |k, v|
-                puts "Column = #{col}"
-                puts "#{k} PARSING FROM"
-                v.each do |c|
-                  puts c.name
-                end
+              cards = Card.where("#{col} LIKE ?","%#{query}%")
 
-                cards = v.where("#{col} LIKE ?","%#{query}%")
-              end
-              # cards = @results[col].where("#{col} LIKE ?","%#{query}%") unless @results[col].blank?
-              puts "RESULTING CARDS"
-              cards.each do |c|
-                puts c.name
-              end
+
+
+
+
+              # # cards = Card.where("#{col} LIKE ?","%#{query}%")
+              # puts ">>> PARSING SECOND QUERY on #{query}"
+              # # XXX complications from Livesearch on this (no longer blank after 1st character)
+              # @results.each do |k, v|
+              #   puts "Column = #{col}"
+              #   puts "#{k} PARSING FROM"
+              #   v.each do |c|
+              #     puts c.name
+              #   end
+              #
+              #   columns.each do|
+              #   cards = v.where("#{col} LIKE ?","%#{query}%")
+              # end
+              # # cards = @results[col].where("#{col} LIKE ?","%#{query}%") unless @results[col].blank?
+              # puts "RESULTING CARDS"
+              # cards.each do |c|
+              #   puts c.name
+              # end
+              # #
+              # puts "Test"
 
               # puts "result of parse in #{col}: #{cards.blank?}"
 
@@ -101,11 +112,11 @@ class Card < ActiveRecord::Base
             @results[col]  = cards
             # @@matched_cards << cards
 
-            unless col == "name"
+            # unless col == "name"
               cards.each do |c|
 
                 unless col == "cost"
-                  split_terms = c["#{col}"].split(',')
+                  split_terms = c["#{col}"].split(', ')
 
                   split_terms.each do |term|
                     # puts "#{term} vs #{query} is #{term.include? query}"
@@ -119,7 +130,7 @@ class Card < ActiveRecord::Base
                   @matched_terms.uniq!
                 end
               end
-            end
+            # end
             # puts "Matched terms array #{@matched_terms}"
           end
         end
