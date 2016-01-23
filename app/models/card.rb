@@ -1,28 +1,19 @@
 class Card < ActiveRecord::Base
-  # REVIEW How to index your model https://github.com/mezis/fuzzily#usage
-  # fuzzily_searchable :name, :cost, :types, :category, :expansion, :strategy, :terminality
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
 
 
   def self.search search, use_fuzzy_search
-
-    # puts "SEARCH = #{search}"
-    # unless params[:search].blank?
-
     unless search.blank?
       @results = Hash.new
 
-      # exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
-      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'cost']
+      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
       columns = Card.attribute_names - exclude_columns
 
       @cards = []
       @matched_terms = []
 
-      # col = "name"
       columns.each do |col|
         if use_fuzzy_search && !is_numeric?(search)
-          # REVIEW make this more useful by searching across all fields
           cards = Card.send("find_by_fuzzy_#{col}", search)
         else
           cards = Card.where("#{col} LIKE ?","%#{search}%")
@@ -31,7 +22,6 @@ class Card < ActiveRecord::Base
         unless cards.empty?
           @results[col]  = cards
 
-          # TODO support parsing of comma-separated, multi-type groupings
           unless col == "name"
             # if col == "cost"
               # @matched_terms << "#{col}: #{search}"
@@ -68,13 +58,7 @@ class Card < ActiveRecord::Base
         # @results[col]  = {card: cards, matched_term: cards.read_attribute[col] }
       end
 
-      # TODO needs to return both of these somehow
-      # return @results
-      # return [@results, @matched_terms]
-
-      # card,send("method_name")
-
-      # Output results for testing
+      # XXX FOR TESTING
       # puts ">>>>>>>Results #{@results}"
       #
       # @results.each do |k,v|
@@ -90,12 +74,9 @@ class Card < ActiveRecord::Base
     end
 
     return [@results, @matched_terms]
-
   end
 
-  # def self.is_numeric?(obj)
    def self.is_numeric?(obj)
-      obj.to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
       obj.to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
    end
 end
