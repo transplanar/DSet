@@ -1,13 +1,22 @@
 <!-- REVIEW change path here -->
 <%= form_tag root_path, :method => 'get', :id => "card_search", remote: true do%>
-<p>
+<!-- <p> -->
   <%= text_field_tag :search, params[:search] %>
   <%# submit_tag "Search", :name => nil %>
-</p>
+<!-- </p> -->
+  <%= check_box_tag 'use_fuzzy_search', @toggle_fuzzy_search , false %>
+  <%# check_box_tag "Use Fuzzy Search?", 1, id:'use_fuzzy_search' %> Use fuzzy search?
+  <!-- <%# check_box_tag "Use Fuzzy Search?", use_fuzzy_search %> -->
+  <!-- <%# f.check_box :use_fuzzy_search, 'Use Fuzzy Search?' %> <b>Use fuzzy search?</b> -->
+
 <% end %>
 
 
+<%# input checked="unchecked", type="checkbox", id="use_fuzzy_search", value="0" %>
+
 <h1>Cards</h1>
 
+<!-- TODO (Nice to have) bold matching letters -->
+<div class="text_results"></div>
 
 <div class="results"> </div>

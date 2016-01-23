@@ -33,3 +33,4 @@ gem 'turbolinks'
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 gem 'bootstrap-sass'
+gem 'fuzzily'
