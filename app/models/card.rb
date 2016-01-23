@@ -9,37 +9,72 @@ class Card < ActiveRecord::Base
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
       columns = Card.attribute_names - exclude_columns
 
+      search_queries = search.split(', ')
+      # puts "QUERIES = #{search_queries}"
+
       @cards = []
       @matched_terms = []
 
-      columns.each do |col|
-        if use_fuzzy_search && !is_numeric?(search)
-          cards = Card.send("find_by_fuzzy_#{col}", search)
-        else
-          cards = Card.where("#{col} LIKE ?","%#{search}%")
-        end
+      search_queries.each do |query|
+        columns.each do |col|
+          if use_fuzzy_search && !is_numeric?(query)
+            cards = Card.send("find_by_fuzzy_#{col}", query)
+          else
+            cards = Card.where("#{col} LIKE ?","%#{query}%")
+          end
 
-        unless cards.empty?
-          @results[col]  = cards
+          unless cards.empty?
+            @results[col]  = cards
 
-          unless col == "name"
-            cards.each do |c|
+            unless col == "name"
+              cards.each do |c|
 
-              split_terms = c["#{col}"].split(',')
+                split_terms = c["#{col}"].split(',')
 
-              split_terms.each do |term|
-                puts "#{term} vs #{search} is #{term.include? search}"
-                if term.downcase.include? search.downcase
-                  @matched_terms << "<b>#{col}</b>: #{term}"
-                  # @matched_terms << term
-                  @matched_terms.uniq!
+                split_terms.each do |term|
+                  puts "#{term} vs #{query} is #{term.include? query}"
+                  if term.downcase.include? query.downcase
+                    @matched_terms << "<b>#{col}</b>: #{term}"
+                    # @matched_terms << term
+                    @matched_terms.uniq!
+                  end
                 end
               end
             end
+            puts "Matched terms array #{@matched_terms}"
           end
-          puts "Matched terms array #{@matched_terms}"
         end
       end
+
+      # WORKING
+      # columns.each do |col|
+      #   if use_fuzzy_search && !is_numeric?(search)
+      #     cards = Card.send("find_by_fuzzy_#{col}", search)
+      #   else
+      #     cards = Card.where("#{col} LIKE ?","%#{search}%")
+      #   end
+      #
+      #   unless cards.empty?
+      #     @results[col]  = cards
+      #
+      #     unless col == "name"
+      #       cards.each do |c|
+      #
+      #         split_terms = c["#{col}"].split(',')
+      #
+      #         split_terms.each do |term|
+      #           puts "#{term} vs #{search} is #{term.include? search}"
+      #           if term.downcase.include? search.downcase
+      #             @matched_terms << "<b>#{col}</b>: #{term}"
+      #             # @matched_terms << term
+      #             @matched_terms.uniq!
+      #           end
+      #         end
+      #       end
+      #     end
+      #     puts "Matched terms array #{@matched_terms}"
+      #   end
+      # end
 
       # XXX FOR TESTING
       # puts ">>>>>>>Results #{@results}"
