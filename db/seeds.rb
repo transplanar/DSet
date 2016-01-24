@@ -56,7 +56,8 @@ Card.create!(name: "Village",
             category: "Village/Splitter", #multi-types
             expansion: "Base",
             strategy: "Engine",
-            terminality: "Village")
+            # terminality: "Village")
+            terminality: "Non-Terminal")
 Card.create!(name: "Woodcutter",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/d/d6/Woodcutter.jpg/200px-Woodcutter.jpg",
             cost: 3,
@@ -119,7 +120,7 @@ Card.create!(name: "Moneylender",
             types: "Action",
             category: "Trasher, Trash-For-Benefit",
             expansion: "Base",
-            strategy: "",
+            strategy: "Trashing",
             terminality: "Terminal")
 
 
@@ -129,7 +130,7 @@ Card.create!(name: "Remodel",
             types: "Action",
             category: "Trasher, Trash-For-Benefit", #NOTE more subtypess like this
             expansion: "Base",
-            strategy: "",
+            strategy: "Trashing",
             terminality: "Terminal")
 
 

@@ -14,7 +14,7 @@ class HomeController < ApplicationController
     # puts "USING FUZZY SEARCH? #{@use_fuzzy_search}"
 
     # @results = Card.search(params[:search], params[:use_fuzzy_search])
-    @results, @matched_terms = Card.search(params[:search], params[:use_fuzzy_search])
+    @results, @matched_terms, @multisearch = Card.search(params[:search], params[:use_fuzzy_search])
     # search_as_array = params[:search].split(//)
 
     # puts "MATCHED TERMS RECIEVED #{@matched_terms}"
