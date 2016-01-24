@@ -36,6 +36,8 @@ class Card < ActiveRecord::Base
       # FIXME breaks in some edge cases
       # 'village, 5' vs '5, village'
       # 'trashing, 4'
+      # Appears to have trouble with order of commands, particularly with "trash"
+      # Does not display the appropriate results if no results are found using multiple filters
       search_queries.each do |query|
         columns.each do |col|
           if use_fuzzy_search && !is_numeric?(query)
