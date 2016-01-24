@@ -2,15 +2,15 @@ class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
 
 
-  @@matched_cards = Card.all
+  # @@matched_cards = Card.all
 
-  scope :_name, -> (name) {where("name like ?", "#{name}")}
-  scope :_types, -> (types) {where("types like ?", "#{types}")}
-  scope :_category, -> (category) {where("category like ?", "#{category}")}
-  scope :_cost, -> (cost) {where("cost like ?", "#{cost}")}
-  scope :_expansion, -> (expansion) {where("expansion like ?", "#{expansion}")}
-  scope :_strategy, -> (strategy) {where("strategy like ?", "#{strategy}")}
-  scope :_terminality, -> (terminality) {where("terminality like ?", "#{terminality}")}
+  # scope :_name, -> (name) {where("name like ?", "#{name}")}
+  # scope :_types, -> (types) {where("types like ?", "#{types}")}
+  # scope :_category, -> (category) {where("category like ?", "#{category}")}
+  # scope :_cost, -> (cost) {where("cost like ?", "#{cost}")}
+  # scope :_expansion, -> (expansion) {where("expansion like ?", "#{expansion}")}
+  # scope :_strategy, -> (strategy) {where("strategy like ?", "#{strategy}")}
+  # scope :_terminality, -> (terminality) {where("terminality like ?", "#{terminality}")}
 
   def self.search search, use_fuzzy_search
     unless search.blank?
@@ -20,7 +20,16 @@ class Card < ActiveRecord::Base
       columns = Card.attribute_names - exclude_columns
 
       search_queries = search.split(', ')
-      # puts "QUERIES = #{search_queries}"
+      puts "QUERIES = #{search_queries}"
+
+      if search_queries.count > 1
+        @results
+        @multisearch = true
+      else
+        @results = Hash.new
+        @multisearch = false
+        # search = search.slice(0..(search.index(',')))
+      end
 
       @cards = []
       t_results = []
@@ -101,9 +110,19 @@ class Card < ActiveRecord::Base
 
 
               # cards = Card.where("#{col} LIKE ?","%#{query}%")
+<<<<<<< Updated upstream
 
               # cards = @results.select(|card|           )
               # cards = Card.where(@results[col].map(&:col).uniq)
+=======
+              # cards ||= @results.where("#{col} LIKE ?","%#{query}%")
+
+              cards = @results.where("#{col} LIKE ?","%#{query}%")
+              # puts "Test"
+              # cards = @results.where("#{col} LIKE ? AND cost like ?","%#{query}%",3)
+              # puts "NO RESULTS? #{cards.empty?}"
+              # cards << @results.where("#{col} LIKE ?","%#{query}%") unless @results.where("#{col} LIKE ?","%#{query}%").blank?
+>>>>>>> Stashed changes
             end
           end
 
@@ -112,8 +131,15 @@ class Card < ActiveRecord::Base
             @results[col]  = cards
             # @@matched_cards << cards
 
+<<<<<<< Updated upstream
             # unless col == "name"
               cards.each do |c|
+=======
+            # FIXME matched terms not updated to remove words that match all criteria
+            cards.each do |c|
+              unless col == "cost"
+                split_terms = c["#{col}"].split(', ')
+>>>>>>> Stashed changes
 
                 unless col == "cost"
                   split_terms = c["#{col}"].split(', ')

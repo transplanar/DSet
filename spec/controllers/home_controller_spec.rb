@@ -11,7 +11,7 @@ RSpec.describe HomeController, type: :controller do
       # FIXME move this to a better spot
         # REVIEW move this to different controller?
       it 'returns correct number of search matches for ALPHABETICAL input' do
-        get :index, {search: "cantrip"}, format: :js
+        get :index, {search: "cantrip", use_fuzzy_search: false}, format: :js
 
         cards = card_array_from_results
 
@@ -19,7 +19,7 @@ RSpec.describe HomeController, type: :controller do
       end
 
       it 'returns correct number of search matches for NUMERIC input' do
-        get :index, {search: 2}, format: :js
+        get :index, {search: 2, use_fuzzy_search: false}, format: :js
 
         cards = card_array_from_results
 
@@ -29,7 +29,9 @@ RSpec.describe HomeController, type: :controller do
 
     describe 'display results across multiple categories ' do
       before :each do
-        @results = Card.search('vil')
+        # @results = Card.search('vil', false)
+        @results = Card.search('vil', false)
+        # get :index, {search: "cantrip", use_fuzzy_search: false}, format: :js
       end
 
       it 'finds results in three categories' do
@@ -37,15 +39,39 @@ RSpec.describe HomeController, type: :controller do
       end
 
       it 'finds one \'name\' result' do
-        expect(@results['name'].count).to eq(1)
+        expect(@results[0]['name'].count).to eq(1)
       end
 
       it 'finds two \'category\' results' do
-        expect(@results['category'].count).to eq(2)
+        expect(@results[0]['category'].count).to eq(2)
       end
 
-      it 'finds two \'terminality\' results' do
-        expect(@results['terminality'].count).to eq(1)
+      # it 'finds two \'terminality\' results' do
+        # expect(@results[0]['terminality'].count).to eq(1)
+      # end
+    end
+
+    describe 'chained query parsing' do
+      it 'returns one result' do
+        @results = Card.search('village, 5', false)
+        expect(@results[0].count).to eq(1)
+      end
+
+      it 'returns the FESTIVAL card' do
+        @results = Card.search('village, 5', false)
+        expect(@results[0][0]['name']).to eq("Festival")
+      end
+
+      describe 'locate the Mine card' do
+        it 'finds it in type-cost order' do
+          @results = Card.search('trash, 5', false)
+          expect(@results[0][0]['name']).to eq("Mine")
+        end
+
+        it 'finds it in cost-type order' do
+          @results = Card.search('5, trash', false)
+          expect(@results[0][0]['name']).to eq("Mine")
+        end
       end
     end
   end

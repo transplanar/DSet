@@ -4,13 +4,27 @@
 
 <!-- XXX reduncant div? -->
 <div class="results">
-  <% results.each do |k,v| %>
-    <h1><%= k %></h1>
-    <% v.each do |card| %>
-      <!-- NOTE this displays the text of the matching category -->
-      <!-- TODO better support for comma-separated fields -->
-      <%# card[k] %>
-      <%= image_tag(card.image_url, class: 'card_image') %>
+  <% unless multisearch %>
+    <% results.each do |k,v| %>
+      <h1><%= k %></h1>
+      <% v.each do |card| %>
+        <!-- NOTE this displays the text of the matching category -->
+        <!-- TODO better support for comma-separated fields -->
+        <%# card[k] %>
+        <%= image_tag(card.image_url, class: 'card_image') %>
+
+        <!-- NOTE template below -->
+        <%# link_to image_tag("#{bookmark.image_url}", size: "100x100"), bookmark.url, title: bookmark.url  %>
+
+      <% end %>
+    <% end %>
+
+  <% else %>
+
+    <% results.each do |card| %>
+        <%# image_tag(card.image_url, class: 'card_image') %>
+        <%# card.name %>
+        <%= image_tag(card.image_url, class: 'card_image') %>
     <% end %>
   <% end %>
 </div>

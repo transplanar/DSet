@@ -188,7 +188,7 @@ Card.create!(name: "Festival",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/e/ec/Festival.jpg/200px-Festival.jpg",
             cost: 5,
             types: "Action",
-            category: "Village, +Buy, Virtual Coin",
+            category: "Village/Splitter, +Buy, Virtual Coin",
             expansion: "Base",
             strategy: "",
             terminality: "Non-Terminal")
