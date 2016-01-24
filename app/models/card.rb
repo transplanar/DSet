@@ -51,7 +51,7 @@ class Card < ActiveRecord::Base
               # cards = Card.where("#{col} LIKE ?","%#{query}%")
               # cards ||= @results.where("#{col} LIKE ?","%#{query}%")
               cards = @results.where("#{col} LIKE ?","%#{query}%")
-              puts "NO RESULTS? #{cards.empty?}"
+              # puts "NO RESULTS? #{cards.empty?}"
               # cards << @results.where("#{col} LIKE ?","%#{query}%") unless @results.where("#{col} LIKE ?","%#{query}%").blank?
             end
           end
