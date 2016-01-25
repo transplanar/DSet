@@ -1,21 +1,23 @@
 class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
+  belongs_to :slot
 
 
-  @@matched_cards = Card.all
+  # @@matched_cards = Card.all
+  #
+  # scope :_name, -> (name) {where("name like ?", "#{name}")}
+  # scope :_types, -> (types) {where("types like ?", "#{types}")}
+  # scope :_category, -> (category) {where("category like ?", "#{category}")}
+  # scope :_cost, -> (cost) {where("cost like ?", "#{cost}")}
+  # scope :_expansion, -> (expansion) {where("expansion like ?", "#{expansion}")}
+  # scope :_strategy, -> (strategy) {where("strategy like ?", "#{strategy}")}
+  # scope :_terminality, -> (terminality) {where("terminality like ?", "#{terminality}")}
 
-  scope :_name, -> (name) {where("name like ?", "#{name}")}
-  scope :_types, -> (types) {where("types like ?", "#{types}")}
-  scope :_category, -> (category) {where("category like ?", "#{category}")}
-  scope :_cost, -> (cost) {where("cost like ?", "#{cost}")}
-  scope :_expansion, -> (expansion) {where("expansion like ?", "#{expansion}")}
-  scope :_strategy, -> (strategy) {where("strategy like ?", "#{strategy}")}
-  scope :_terminality, -> (terminality) {where("terminality like ?", "#{terminality}")}
-
-  def self.search search, use_fuzzy_search
+  def self.search search, use_fuzzy_search, slot
     unless search.blank?
 
-      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
+      # exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
+      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
       columns = Card.attribute_names - exclude_columns
 
       search_queries = search.split(', ')
@@ -52,7 +54,13 @@ class Card < ActiveRecord::Base
               # XXX special case for if seaching CATEGORY column
               # cards = Card.where("#{col} LIKE ?","%#{query}%")
               # cards ||= @results.where("#{col} LIKE ?","%#{query}%")
-              cards = @results.where("#{col} LIKE ?","%#{query}%")
+
+
+              cards = slot.cards.where("#{col} LIKE ?","%#{query}%")
+              # cards = @results.where("#{col} LIKE ?","%#{query}%")
+
+
+
               # puts "NO RESULTS? #{cards.empty?}"
               # cards << @results.where("#{col} LIKE ?","%#{query}%") unless @results.where("#{col} LIKE ?","%#{query}%").blank?
             end
@@ -119,11 +127,15 @@ class Card < ActiveRecord::Base
       # XXX FOR TESTING
       # puts ">>>>>>>Results #{@results}"
       #
-      # @results.each do |k,v|
-      #   v.each do |card|
-      #     p "Card = #{card[:name]} in #{k}"
-      #   end
-      # end
+      @results.each do |k,v|
+        unless v.blank?
+          v.each do |card|
+            # p "Card = #{card[:name]} in #{k}"
+            # slot.cards << card
+            card.slot = slot
+          end
+        end
+      end
 
       # puts "FLATTEN 1x #{@results.flatten(1)}"
       # puts "FLATTEN 2x #{@results.flatten}"
@@ -133,10 +145,18 @@ class Card < ActiveRecord::Base
     else
       @results = {}
       @matched_terms = {}
-      @@matched_cards = []
+      # @@matched_cards = []
     end
 
+    # puts "SLOT #{slot}"
+    # puts "SLOT CARDS #{slot.cards.inspect}"
 
+    # slot[queries] = search
+
+    # NOTE don't do this until a selection is made
+    slot.update_attribute(:queries, search)
+    # myslot = Slot.where(id: 1).first
+    # myslot.update_attribute(:queries, search)
 
     return [@results, @matched_terms, @multisearch]
   end

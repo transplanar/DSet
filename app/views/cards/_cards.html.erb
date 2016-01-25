@@ -16,11 +16,18 @@
     <% end %>
 
   <% else %>
+    <% @slot.cards.each do |card| %>
+      <%= image_tag(card.image_url, class: 'card_image') %>
+    <% end %>
 
-    <% results.each do |card| %>
+    <%# results.each do |card| %>
         <%# image_tag(card.image_url, class: 'card_image') %>
         <%# card.name %>
-        <%= image_tag(card.image_url, class: 'card_image') %>
-    <% end %>
+        <%# image_tag(card.image_url, class: 'card_image') %>
+    <%# end %>
   <% end %>
 </div>
+
+
+<!-- <h1> Search queries saved to this slot: </h1> -->
+<%# @slot.queries %>

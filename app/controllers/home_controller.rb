@@ -4,6 +4,9 @@ class HomeController < ApplicationController
   # TODO error message for invalid queries ("no results found")
   # NOTE will not need this if statement once multi-category search is implemented
   def index
+    # XXX For testing
+    # TODO change this to selected slot
+    @slot = Slot.first
     # @results = Card.search(params[:search])
 
     # use_fuzzy_search = params[:use_fuzzy_search]
@@ -14,7 +17,7 @@ class HomeController < ApplicationController
     # puts "USING FUZZY SEARCH? #{@use_fuzzy_search}"
 
     # @results = Card.search(params[:search], params[:use_fuzzy_search])
-    @results, @matched_terms, @multisearch = Card.search(params[:search], params[:use_fuzzy_search])
+    @results, @matched_terms, @multisearch = Card.search(params[:search], params[:use_fuzzy_search], @slot)
     # search_as_array = params[:search].split(//)
 
     # puts "MATCHED TERMS RECIEVED #{@matched_terms}"

@@ -1,6 +1,8 @@
   <ul>
     <% unless matched_terms.empty? %>
       <% matched_terms.each do |match|%>
+        <!-- <li><%# match.html_safe %></li> -->
+        <!-- <%# link_to match.html_safe, edit_slots_path[@slot] %> -->
         <li><%= match.html_safe %></li>
         <!-- <%# match %>< -->
       <% end %>
