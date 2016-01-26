@@ -2,7 +2,7 @@ class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
 
 
-  @@matched_cards = Card.all
+  # @@matched_cards = Card.all
 
   scope :_name, -> (name) {where("name like ?", "%#{name}%")}
   scope :_types, -> (types) {where("types like ?", "%#{types}%")}
@@ -37,6 +37,8 @@ class Card < ActiveRecord::Base
 
       @matched_terms = []
 
+      column_match = 0
+
       sql_string = ''
 
       search_queries.each do |query|
@@ -44,47 +46,30 @@ class Card < ActiveRecord::Base
           if use_fuzzy_search && !is_numeric?(query)
             cards = Card.send("find_by_fuzzy_#{col}", query)
           else
-            # if query == search_queries.first
-              # cards = Card.where("#{col} LIKE ?","%#{query}%")
-              # XXX scope method
+              # cards = Card.send( "_#{col}", query )
 
-              cards = Card.send( "_#{col}", query )
-
+              # TODO if results are in multiple category, append "OR" instead of "AND"
+              # IF a single query produces matches in multiple categories, use OR
               if Card.send( "_#{col}", query ).count > 0
                 if query == search_queries.first
                   sql_string = Card.send( "_#{col}", query ).to_sql
+                  column_match = column_match + 1
+                  puts "Column match updated to #{column_match}"
                 else
-                  sql_string = sql_string + " AND " + Card.send( "_#{col}", query ).to_sql
+                  # Needs to still split by category? Tries to find something that matches in NAME and CATEGORY rather than one or the other
+                  # sql_string = sql_string + " AND " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+                  if column_match > 0
+                    sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+                  else
+                    sql_string = sql_string + " AND " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+                  end
+
+                  # XXX template
+                  # SELECT COUNT(*) FROM "cards" WHERE (category LIKE '%village%') AND (cost LIKE '%5%') AND (slot_id LIKE '%5%')
+                  # needed
+                  # SELECT COUNT(*) FROM "cards" WHERE (category LIKE '%village%') AND (cost LIKE '%5%') AND (slot_id LIKE '%5%')
                 end
-              # if search_queries.count > 0
-                # puts "result found"
-                # match_hash[:col] = query
-                # match_string = Card.send( "_#{col}", query ).to_sql
-              # else
               end
-
-              unless sql_string.blank?
-                @results = Card.find_by_sql(sql_string)
-              end
-
-              # cards = Card.send( "_#{col}", query )
-              # puts "Old method #{cards}"
-
-              # cards = Card.where(sql_string)
-              # @results = Card.where(sql_string)
-              # puts "New method #{test}"
-            # else
-              # XXX special case for if seaching CATEGORY column
-              # cards = Card.where("#{col} LIKE ?","%#{query}%")
-              # cards ||= @results.where("#{col} LIKE ?","%#{query}%")
-              # cards = @results.where("#{col} LIKE ?","%#{query}%")
-
-
-
-
-              # puts "NO RESULTS? #{cards.empty?}"
-              # cards << @results.where("#{col} LIKE ?","%#{query}%") unless @results.where("#{col} LIKE ?","%#{query}%").blank?
-            # end
           end
 
         #   unless cards.empty?
@@ -113,6 +98,14 @@ class Card < ActiveRecord::Base
         #     end
         #   end
         end
+
+        # column_match = 0
+      end
+
+      unless sql_string.blank?
+        puts "RAW SQL string = #{sql_string}"
+        @results = Card.find_by_sql(sql_string)
+        puts "Results found #{@results.count}"
       end
 
       # WORKING
