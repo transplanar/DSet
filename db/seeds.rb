@@ -255,5 +255,5 @@ Card.create!(name: "Adventurer",
             terminality: "Terminal Draw")
 
 # Create slots
-# Slot.create!(queries: 'default')
-Slot.create!(cards: Card.all, queries: 'default')
+Slot.create!(queries: 'default')
+# Slot.create!(cards: Card.all, queries: 'default')

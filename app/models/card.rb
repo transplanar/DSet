@@ -68,12 +68,12 @@ class Card < ActiveRecord::Base
 
           unless cards.empty?
           # unless cards.blank?
-            unless search_queries.count > 1
+            # unless search_queries.count > 1
               @results[col]  = cards
-            else
-              @results = cards
+            # else
+              # @results = cards
               # @matched_terms = []
-            end
+            # end
 
             cards.each do |c|
               unless col == "cost"
