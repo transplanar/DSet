@@ -155,6 +155,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  arel
   bootstrap-sass
   coffee-rails (~> 4.1.0)
   fuzzily

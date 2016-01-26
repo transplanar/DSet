@@ -41,6 +41,29 @@ class Card < ActiveRecord::Base
 
       sql_string = ''
 
+      t_cards = Arel::Table.new(:cards)
+      puts "TESTING AREL"
+      # puts Card.where(t_cards[:name]).matches("%v%")
+      # test = Card.where(t_cards[:name].matches("%v%")).where(t_cards[:cost].matches(3))
+
+      # inner = Card.where(cost: 5)
+      # outer = Card.where(cost: 5)
+      # inner = Card.where(category: "%v%")
+      # inner = Card.where(name: "%v%")
+      inner = Card._category('v')
+      # outer = Card.all
+      # outer = Card.where(cost: 3)
+      outer = Card._cost(5)
+      # outer = Card.all
+      # outer = outer.from(Arel.sql("(#{inner.to_sql}) as results")).select("*")
+      outer = outer.from(Arel.sql("(#{inner.to_sql})")).select("*")
+
+      outer.each do |k, v|
+        puts k.name
+      end
+      # puts outer
+      # User.where(users[:name].matches("%#{user_name}%"))
+
       search_queries.each do |query|
         columns.each do |col|
           if use_fuzzy_search && !is_numeric?(query)
