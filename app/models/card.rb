@@ -26,10 +26,35 @@ class Card < ActiveRecord::Base
       @cards = []
       t_results = []
 
-      sql_string = ''
+      # TODO convert this to a hash with results for each search thread
+      # sql_string = ''
+      sql_params = Hash.new
 
       # match_columns = []
       match_columns = Hash.new
+
+      # Search using first query
+        # return Results
+          # search results with second query
+
+      search_queries.each do |query|
+        if search_queries.first = query
+          columns.each do |col|
+            unless Card.send( "_#{col}", query ).blank?
+              if match_columns[col].blank?
+                match_columns[col] = query
+              else
+                match_columns[col] = match_columns[col] +", " + query
+              end
+            end
+          end
+          #XXX carry search query into next level search
+        else
+        end
+
+
+
+
 
       search_queries.each do |query|
         columns.each do |col|
@@ -58,11 +83,12 @@ class Card < ActiveRecord::Base
       end
 
       unless @multisearch
-        query = search_queries
+        query = search_queries.first
         # Supports matches across multiple columns
         match_columns.each do |col, query|
           if sql_string.empty?
             sql_string = Card.send( "_#{col}", query).to_sql
+            # sql_string_arr  = Card.send( "_#{col}", query).to_sql
           else
             sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
           end
@@ -75,6 +101,28 @@ class Card < ActiveRecord::Base
           puts "Results found #{@results.count}"
         end
       else
+        # # TODO needs to be able to have multiple "threads" of searches
+        # # Example:
+        # # Thread 1: Cost 5 -> Category: "village"
+        # # Thread 1: Cost 5 -> name: "village"
+        # # col = match_columns.first
+        # col_array = match_columns[].split(', ')
+        # # puts "COL ARRAY #{col_array.first.first}"
+        #
+        # # match_columns.each do |col, query|
+        #   if sql_string.empty?
+        #     sql_string = Card.send( "_#{col_array.first}", query).to_sql
+        #   else
+        #     sql_string = sql_string + " AND " + Card.send( "_#{col_array.first}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+        #   end
+        # # end
+        #
+        # unless sql_string.blank?
+        #   @results = Card.find_by_sql(sql_string)
+        #
+        #   puts "RAW SQL string = #{sql_string}"
+        #   puts "Results found #{@results.count}"
+        # end
 
         # search_queries.each do |q2|
         #   match_columns.first do |col, q1|
@@ -246,7 +294,13 @@ class Card < ActiveRecord::Base
       @@matched_cards = []
     end
 
-
+    puts "SEARCH RESULTS:"
+    unless @results.blank?
+      @results.each do |card|
+        puts card.name
+      end
+    end
+    puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
     return [@results, @matched_terms, @multisearch]
   end
