@@ -27,71 +27,156 @@ class Card < ActiveRecord::Base
       t_results = []
 
       # TODO convert this to a hash with results for each search thread
-      # sql_string = ''
+
+      sql_string = ''
       sql_params = Hash.new
 
       # match_columns = []
       match_columns = Hash.new
+      # match_columns = [Hash.new]
 
+
+
+      #NOTE Tests the first query of the query string
+      # In multisearch, will be used to produce the first term in the search chain
+      query = search_queries.first
+      columns.each do |col|
+        unless Card.send( "_#{col}", query ).blank?
+          # if match_columns[0][col].blank?
+          match_columns[col] = query
+          # else
+          # match_columns[0][col] = match_columns[col] +", " + query
+          # end
+        end
+      end
+
+      #NOTE If multisearch is false, generate SQL here
+      unless @multisearch
+        match_columns.each_with_index do |(col, query), index|
+          if index == 0
+            sql_string = Card.send( "_#{col}", query).to_sql
+          else
+            sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+          end
+        end
+      # else
+        #TODO multisearch stuff here
+      end
+
+      puts "SQL from new method #{sql_string}"
+
+        # match.each do |col, query|
+          # if sql_string.empty?
+            # If a single query, add to sql_string
+            # REVIEW case: multiple matches in single column?
+
+            # If there is only one query, generate SQL as a string
+            # unless @multisearch
+            #   sql_string = Card.send( "_#{col}", query).to_sql
+            # # If there are multiple queries
+            # else
+            #   sql_params[col] = Card.send( "_#{col}", query).to_sql
+            # end
+            #
+            #
+            # unless @multisearch
+            #     # sql_string = Card.send( "_#{col}", query).to_sql
+            #     sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+            #   else
+            #     sql_params[col] = Card.send( "_#{col}", query).to_sql
+            #   end
+            # else, add to sql_params, chain following things to it
+
+            # sql_string_arr  = Card.send( "_#{col}", query).to_sql
+          # # else
+          #   unless @multisearch
+          #     # sql_string = Card.send( "_#{col}", query).to_sql
+          #     sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+          #   else
+          #     sql_params[col] = Card.send( "_#{col}", query).to_sql
+          #   end
+          #
+          # end
+        # end
+      # end
+
+
+      # query = search_queries.second
+      # match_columns.each do |col, query|
+      #
+      # end
+
+
+# 1/29/16
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
       # Search using first query
         # return Results
           # search results with second query
 
-      search_queries.each do |query|
-        if search_queries.first = query
-          columns.each do |col|
-            unless Card.send( "_#{col}", query ).blank?
-              if match_columns[col].blank?
-                match_columns[col] = query
-              else
-                match_columns[col] = match_columns[col] +", " + query
-              end
-            end
-          end
-          #XXX carry search query into next level search
-        else
-        end
+      # search_chain = Hash.new
+
+      # search_queries.each do |query|
+        # For the first query, identify matching columns and store corresponding query
+        # if search_queries.first == query
 
 
-
-
-
-      search_queries.each do |query|
-        columns.each do |col|
-          # If a match is found in a given column, add that to array of matched columns
-          unless Card.send( "_#{col}", query ).blank?
-            # XXX prevent this from being overridden in multi-search
-            if match_columns[col].blank?
-              match_columns[col] = query
-            else
-              match_columns[col] = match_columns[col] +", " + query
-            end
-          end
-        end
-      end
+        # end
+      # end
 
       # table = Arel::Table.new(:cards)
 
+
+      # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+      # XXX TEST to verify storage of column match values
+      # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
       puts "MATCH COLUMNS"
+      # match_columns.each do |match|
       match_columns.each do |k, v|
-        puts "#{k}: #{v}"
+        # match.each do |k, v|
+          puts "#{k}: #{v}"
         # puts "Matched term: #{Card.send( "_#{k}", v).name}"
         # puts "Matched terms:"
         # Card.send( "_#{k}", v).each do |card|
         #   puts card[k]
         # end
+        # end
       end
+      # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-      unless @multisearch
-        query = search_queries.first
+      # Compose SQL statement based on matched terms
+      # unless @multisearch
+        # query = search_queries.first
         # Supports matches across multiple columns
+
+        # Hash nested in array
+        # Each array layer is a
+        # match_columns.each do |match|
         match_columns.each do |col, query|
-          if sql_string.empty?
-            sql_string = Card.send( "_#{col}", query).to_sql
-            # sql_string_arr  = Card.send( "_#{col}", query).to_sql
-          else
-            sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
-          end
+          # match.each do |col, query|
+            # if sql_string.empty?
+              # If a single query, add to sql_string
+              # REVIEW case: multiple matches in single column?
+
+              # If there is only one query, generate SQL as a string
+              unless @multisearch
+                sql_string = Card.send( "_#{col}", query).to_sql
+              # If there are multiple queries
+              else
+                sql_params[col] = Card.send( "_#{col}", query).to_sql
+              end
+              # else, add to sql_params, chain following things to it
+
+              # sql_string_arr  = Card.send( "_#{col}", query).to_sql
+            # # else
+            #   unless @multisearch
+            #     # sql_string = Card.send( "_#{col}", query).to_sql
+            #     sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+            #   else
+            #     sql_params[col] = Card.send( "_#{col}", query).to_sql
+            #   end
+            #
+            # end
+          # end
         end
 
         unless sql_string.blank?
@@ -100,7 +185,19 @@ class Card < ActiveRecord::Base
           puts "RAW SQL string = #{sql_string}"
           puts "Results found #{@results.count}"
         end
-      else
+
+        # TODO make this recursive
+        #Continue if there is a second search query
+
+        # puts "SQL STRING OF LAST CHECK #{sql_string}"
+        # puts search_queries.second
+        query = search_queries.second
+      # else
+
+
+
+
+
         # # TODO needs to be able to have multiple "threads" of searches
         # # Example:
         # # Thread 1: Cost 5 -> Category: "village"
@@ -144,7 +241,7 @@ class Card < ActiveRecord::Base
         #   puts "RAW SQL string = #{sql_string}"
         #   puts "Results found #{@results.count}"
         # end
-      end
+      # end
 
       # Restore split results by column as searches may be down many branches?
       # Render results in single SQL statement
