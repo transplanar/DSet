@@ -18,7 +18,10 @@ class Card < ActiveRecord::Base
       columns = Card.attribute_names - exclude_columns
 
       # FIXME if you have a query ending in a comma w/o a space, gives bad results
-      search_queries = search.split(', ')
+      # FIXME case for numeric input
+      unless search.is_numeric?
+        search_queries = search.split(', ')
+      end
 
       @multisearch = search_queries.count > 1
       puts "MULTISEARCH #{@multisearch}"
@@ -27,19 +30,18 @@ class Card < ActiveRecord::Base
       t_results = []
 
       # TODO convert this to a hash with results for each search thread
-
       sql_string = ''
-      sql_params = Hash.new
+      # sql_params = Hash.new
+      sql_chain = Hash.new
 
       # match_columns = []
       match_columns = Hash.new
       # match_columns = [Hash.new]
 
-
-
       #NOTE Tests the first query of the query string
       # In multisearch, will be used to produce the first term in the search chain
       query = search_queries.first
+      
       columns.each do |col|
         unless Card.send( "_#{col}", query ).blank?
           # if match_columns[0][col].blank?
@@ -59,8 +61,20 @@ class Card < ActiveRecord::Base
             sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
           end
         end
+
+        # sql_string = sql_string + " AND (cost like 4)"
       # else
-        #TODO multisearch stuff here
+        # # Check against all columns (pass 1)
+        #
+        # match_columns.each_with_index do |(col, query), index|
+        #   if index == 0
+        #     # sql_string = Card.send( "_#{col}", query).to_sql
+        #     sql_chain[col] = Card.send( "_#{col}", query).to_sql
+        #   else
+        #     # OR is not used, instead split into separate search chains
+        #     # sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+        #   end
+        # end
       end
 
       puts "SQL from new method #{sql_string}"
