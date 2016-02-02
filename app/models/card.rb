@@ -65,11 +65,11 @@ class Card < ActiveRecord::Base
         _results = multi_result
       end
 
-      _results.each do |k, sql|
+      _results.each do |heading, sql|
         cards = Card.find_by_sql(sql)
 
         unless cards.blank?
-          results[k] = cards
+          results[heading] = cards
         end
       end
 
