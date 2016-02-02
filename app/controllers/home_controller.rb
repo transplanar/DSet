@@ -2,7 +2,8 @@
 class HomeController < ApplicationController
   # TODO move this to more appropriate controller?
   def index
-    @results, @matched_terms, @multisearch = Card.search(params[:search])
+    # @results, @matched_terms, @multisearch = Card.search(params[:search])
+    @results, @matched_terms = Card.search(params[:search])
 
     respond_to do |format|
       format.html

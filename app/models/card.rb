@@ -10,7 +10,6 @@ class Card < ActiveRecord::Base
   scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
 
   def self.search search
-    # TODO break down into component functions
     unless search.blank?
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
       columns = Card.attribute_names - exclude_columns
@@ -21,20 +20,17 @@ class Card < ActiveRecord::Base
         search_queries = [search.to_s]
       end
 
-      @multisearch = search_queries.count > 1
+      multisearch = search_queries.count > 1
 
       sql_hash = Hash.new
       match_columns = Hash.new
       multi_result = Hash.new
-      @results = Hash.new
+      results = Hash.new
 
-      # For text results
-      # matched_terms = Hash.new
-      @matched_terms = []
+      matched_terms = []
 
       query = search_queries.first
 
-      # Get initial term for each search branch
       columns.each do |col|
         unless Card.send( "_#{col}", query ).blank?
           match_columns[col] = query
@@ -46,7 +42,7 @@ class Card < ActiveRecord::Base
       end
 
       # TODO refactor to make recursive, support 2+ queries
-      if @multisearch
+      if multisearch
         query_2 = search_queries.second
         match_columns_2 = Hash.new
 
@@ -63,7 +59,7 @@ class Card < ActiveRecord::Base
         end
       end
 
-      unless @multisearch
+      unless multisearch
         _results = sql_hash
       else
         _results = multi_result
@@ -73,23 +69,24 @@ class Card < ActiveRecord::Base
         cards = Card.find_by_sql(v)
 
         unless cards.blank?
-          @results[k] = cards
+          results[k] = cards
         end
+      end
 
-        columns.each do |col|
-          cards.each do |c|
+      columns.each do |col|
+        results.each do |k, card|
+          card.each do |c|
             unless col == "cost"
               split_terms = c["#{col}"].split(',')
             else
               split_terms = [c["#{col}"].to_s]
             end
 
-
             split_terms.each do |term|
               search_queries.each do |query|
                 if term.downcase.include? query.downcase
-                  @matched_terms << "<b>#{col}</b>: #{term}"
-                  @matched_terms.uniq!
+                  matched_terms << "<b>#{col}</b>: #{term}"
+                  matched_terms.uniq!
                 end
               end
             end
@@ -97,12 +94,13 @@ class Card < ActiveRecord::Base
         end
       end
     else
-      @results = {}
-      @matched_terms = {}
-      @@matched_cards = []
+      results = {}
+      matched_terms = {}
+      matched_cards = []
     end
 
-    return [@results, @matched_terms, @multisearch]
+    # return [results, matched_terms, multisearch]
+    return [results, matched_terms]
   end
 
    def self.is_numeric?(obj)

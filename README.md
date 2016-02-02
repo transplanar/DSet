@@ -6,6 +6,9 @@ author: Glen Cooney
 Capstone for Bloc Full Stack Web Development Apprenticeship
 
 
-Features:
+###Features:
 * Livesearch
 * Multi-level search queries
+
+###LEGAL
+This an unofficial card search and randomizer app for the tabletop game Dominion (c) 2008 by Donald X. Vaccarino
