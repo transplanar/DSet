@@ -1,9 +1,9 @@
   <!-- FIXME restore functionality here -->
-  <!-- <ul> -->
-    <%# unless matched_terms.empty? %>
-      <%# matched_terms.each do |match|%>
-        <!-- <li><%# match.html_safe %></li> -->
-        <!-- <%# match %>< -->
-      <%# end %>
-    <%# end %>
-  <!-- </ul> -->
+  <ul>
+    <% unless matched_terms.empty? %>
+      <% matched_terms.each do |match|%>
+        <li><%= match.html_safe %></li>
+        <%# match %>
+      <% end %>
+    <% end %>
+  </ul>

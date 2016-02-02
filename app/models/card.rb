@@ -10,6 +10,7 @@ class Card < ActiveRecord::Base
   scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
 
   def self.search search
+    # TODO break down into component functions
     unless search.blank?
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
       columns = Card.attribute_names - exclude_columns
@@ -26,6 +27,10 @@ class Card < ActiveRecord::Base
       match_columns = Hash.new
       multi_result = Hash.new
       @results = Hash.new
+
+      # For text results
+      # matched_terms = Hash.new
+      @matched_terms = []
 
       query = search_queries.first
 
@@ -69,6 +74,26 @@ class Card < ActiveRecord::Base
 
         unless cards.blank?
           @results[k] = cards
+        end
+
+        columns.each do |col|
+          cards.each do |c|
+            unless col == "cost"
+              split_terms = c["#{col}"].split(',')
+            else
+              split_terms = [c["#{col}"].to_s]
+            end
+
+
+            split_terms.each do |term|
+              search_queries.each do |query|
+                if term.downcase.include? query.downcase
+                  @matched_terms << "<b>#{col}</b>: #{term}"
+                  @matched_terms.uniq!
+                end
+              end
+            end
+          end
         end
       end
     else
