@@ -13,7 +13,7 @@ class Card < ActiveRecord::Base
   scope :_strategy, -> (strategy) {where("strategy like ?", "#{strategy}")}
   scope :_terminality, -> (terminality) {where("terminality like ?", "#{terminality}")}
 
-  def self.search search, use_fuzzy_search
+  def self.search search, use_fuzzy_search, slot
     unless search.blank?
 
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
