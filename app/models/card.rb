@@ -1,5 +1,6 @@
 class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
+  belongs_to :slot
 
   scope :_name, -> (name) {where("name like ?", "%#{name}%")}
   scope :_types, -> (types) {where("types like ?", "%#{types}%")}
