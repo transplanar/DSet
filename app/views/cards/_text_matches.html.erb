@@ -1,7 +1,15 @@
   <ul>
     <% unless matched_terms.empty? %>
-      <% matched_terms.each do |match|%>
-        <li><%= match.html_safe %></li>
+      <% matched_terms.each do |column, term|%>
+        <!-- <li><%# match.html_safe %></li> -->
+        <!-- <%# link_to match.html_safe, edit_slots_path[@slot] %> -->
+        <!-- <li><%# match.html_safe %></li> -->
+        <!-- <li><%# link_to match.html_safe, controller: :SlotController, action: :save_filter_rule %></li> -->
+
+
+
+        <!-- <li><%# link_to match.html_safe, save_filters_path(id: slot.id, match: match), method: :patch %></li> -->
+        <li><%= link_to "#{column}: #{term}" , save_filters_path(id: slot.id, match: {col: column, term: term}), method: :patch %></li>
         <!-- <%# match %>< -->
       <% end %>
     <% end %>

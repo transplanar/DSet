@@ -10,8 +10,7 @@
 # you'll amass, the slower it'll run and the greater likelihood for issues).
 #
 # It's strongly recommended that you check this file into your version control system.
-
-ActiveRecord::Schema.define(version: 20160119234453) do
+ActiveRecord::Schema.define(version: 20160124195929) do
 
   create_table "cards", force: :cascade do |t|
     t.string   "name"
@@ -24,7 +23,19 @@ ActiveRecord::Schema.define(version: 20160119234453) do
     t.string   "terminality"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.integer  "slot_id"
   end
+
+  add_index "cards", ["slot_id"], name: "index_cards_on_slot_id"
+
+  create_table "slots", force: :cascade do |t|
+    t.integer  "card_id"
+    t.string   "queries"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "slots", ["card_id"], name: "index_slots_on_card_id"
 
   create_table "trigrams", force: :cascade do |t|
     t.string  "trigram",     limit: 3

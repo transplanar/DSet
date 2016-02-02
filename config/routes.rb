@@ -4,4 +4,6 @@ Rails.application.routes.draw do
   get 'home/about'
 
   root to: 'home#index'
+
+  patch 'slot/:id/save_filter_rule' => 'slot#save_filter_rule', as: :save_filters
 end

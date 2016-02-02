@@ -1,6 +1,7 @@
 class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
-
+  # belongs_to :slot
+  has_and_belongs_to_many :slots
 
   @@matched_cards = Card.all
 
@@ -26,12 +27,16 @@ class Card < ActiveRecord::Base
       else
         @results = Hash.new
         @multisearch = false
+        # @multisearch = true
       end
+
+      # @multisearch = true
 
       @cards = []
       t_results = []
 
-      @matched_terms = []
+      # @matched_terms = []
+      @matched_terms = Hash.new
 
       # FIXME breaks in some edge cases
       # 'village, 5' vs '5, village'
@@ -73,13 +78,15 @@ class Card < ActiveRecord::Base
 
                 split_terms.each do |term|
                   if term.downcase.include? query.downcase
-                    @matched_terms << "<b>#{col}</b>: #{term}"
-                    @matched_terms.uniq!
+                    # @matched_terms << "<b>#{col}</b>: #{term}"
+                    @matched_terms ={col: col, term: term }
+                    # @matched_terms.uniq!
                   end
                 end
               else
-                @matched_terms << "<b>#{col}</b>: #{c["#{col}"]}"
-                @matched_terms.uniq!
+                # @matched_terms << "<b>#{col}</b>: #{c["#{col}"]}"
+                # @matched_terms.uniq!
+                @matched_terms ={col: col, term: term }
               end
             end
           end
@@ -124,6 +131,21 @@ class Card < ActiveRecord::Base
       #     p "Card = #{card[:name]} in #{k}"
       #   end
       # end
+
+      unless slot.blank?
+        slot.cards.clear
+      end
+
+      @results.each do |k,v|
+        unless v.blank?
+          v.each do |card|
+            # p "Card = #{card[:name]} in #{k}"
+            # slot.cards << card
+            slot.cards << card
+            # card.slot = slot
+          end
+        end
+      end
 
       # puts "FLATTEN 1x #{@results.flatten(1)}"
       # puts "FLATTEN 2x #{@results.flatten}"
