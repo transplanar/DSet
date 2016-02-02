@@ -4,3 +4,8 @@ This app simulates a Dominion randomizer deck to produce a set of 10 cards to pl
 
 author: Glen Cooney
 Capstone for Bloc Full Stack Web Development Apprenticeship
+
+
+Features:
+* Livesearch
+* Multi-level search queries

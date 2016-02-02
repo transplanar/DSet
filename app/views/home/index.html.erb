@@ -1,7 +1,6 @@
 <!-- REVIEW change path here -->
 <%= form_tag root_path, :method => 'get', :id => "card_search", remote: true do%>
   <%= text_field_tag :search, params[:search] %>
-  <%= check_box_tag 'use_fuzzy_search', @toggle_fuzzy_search , false %> Use fuzzy search?
 <% end %>
 
 <h1>Cards</h1>
