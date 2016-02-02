@@ -2,141 +2,149 @@ class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
 
 
-  @@matched_cards = Card.all
+  # @@matched_cards = Card.all
 
-  scope :_name, -> (name) {where("name like ?", "#{name}")}
-  scope :_types, -> (types) {where("types like ?", "#{types}")}
-  scope :_category, -> (category) {where("category like ?", "#{category}")}
-  scope :_cost, -> (cost) {where("cost like ?", "#{cost}")}
-  scope :_expansion, -> (expansion) {where("expansion like ?", "#{expansion}")}
-  scope :_strategy, -> (strategy) {where("strategy like ?", "#{strategy}")}
-  scope :_terminality, -> (terminality) {where("terminality like ?", "#{terminality}")}
+  scope :_name, -> (name) {where("name like ?", "%#{name}%")}
+  scope :_types, -> (types) {where("types like ?", "%#{types}%")}
+  scope :_category, -> (category) {where("category like ?", "%#{category}%")}
+  scope :_cost, -> (cost) {where("cost like ?", "%#{cost}%")}
+  scope :_expansion, -> (expansion) {where("expansion like ?", "%#{expansion}%")}
+  scope :_strategy, -> (strategy) {where("strategy like ?", "%#{strategy}%")}
+  scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
 
   def self.search search, use_fuzzy_search
     unless search.blank?
-
-      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at']
+      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
       columns = Card.attribute_names - exclude_columns
 
-      search_queries = search.split(', ')
-
-      if search_queries.count > 1
-        @results
-        @multisearch = true
-      else
-        @results = Hash.new
-        @multisearch = false
+      # FIXME if you have a query ending in a comma w/o a space, gives bad results
+      # FIXME case for numeric input
+      unless is_numeric?(search)
+        search_queries = search.split(', ')
       end
 
+      @multisearch = search_queries.count > 1
+      puts "MULTISEARCH #{@multisearch}"
+
       @cards = []
-      t_results = []
+      # t_results = []
 
-      @matched_terms = []
+      # TODO convert this to a hash with results for each search thread
+      # sql_string = ''
+      sql_hash = Hash.new
+      # sql_params = Hash.new
+      sql_chain = Hash.new
 
-      # FIXME breaks in some edge cases
-      # 'village, 5' vs '5, village'
-      # 'trashing, 4'
-      # Appears to have trouble with order of commands, particularly with "trash"
-      # Does not display the appropriate results if no results are found using multiple filters
-      search_queries.each do |query|
+      # match_columns = []
+      match_columns = Hash.new
+      # match_columns = [Hash.new]
+
+      multi_result = Hash.new
+
+      @results = Hash.new
+
+      #NOTE Tests the first query of the query string
+      # In multisearch, will be used to produce the first term in the search chain
+      query = search_queries.first
+
+      # Get initial term for each search branch
+      columns.each do |col|
+        unless Card.send( "_#{col}", query ).blank?
+          match_columns[col] = query
+        end
+      end
+
+      # XXX Testing >>>>>>>>>>>>>>>>>>>
+      puts "Initial columns #{match_columns}"
+      # XXX Testing >>>>>>>>>>>>>>>>>>>
+
+      # Begin compose of first tier of search results
+      # match_columns.each_with_index do |(col, query), index|
+      match_columns.each do |col, query|
+        # if index == 0
+          # sql_string = Card.send( "_#{col}", query).to_sql
+          sql_hash[col] = Card.send( "_#{col}", query).to_sql
+        # else unless @multisearch
+        # else
+          # sql_string = sql_string + " OR " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+        # end
+
+        # if @multisearch
+        #   sql_chain[col] << sql_string
+        # end
+      end
+
+      # Perform additional steps if you have a multisearch
+      # TODO refactor to make recursive, support 2+ queries
+      if @multisearch
+        query_2 = search_queries.second
+        match_columns_2 = Hash.new
+
         columns.each do |col|
-          if use_fuzzy_search && !is_numeric?(query)
-            cards = Card.send("find_by_fuzzy_#{col}", query)
-          else
-            # if @@matched_cards.nil? || query == search_queries.first
-            if query == search_queries.first
-              cards = Card.where("#{col} LIKE ?","%#{query}%")
-              # XXX scope method = requires specific thing
-              # cards = Card.send( "_#{col}", query )
-            else
-              # XXX special case for if seaching CATEGORY column
-              # cards = Card.where("#{col} LIKE ?","%#{query}%")
-              # cards ||= @results.where("#{col} LIKE ?","%#{query}%")
-              cards = @results.where("#{col} LIKE ?","%#{query}%")
-              # puts "NO RESULTS? #{cards.empty?}"
-              # cards << @results.where("#{col} LIKE ?","%#{query}%") unless @results.where("#{col} LIKE ?","%#{query}%").blank?
-            end
+          unless Card.send( "_#{col}", query_2 ).blank?
+            match_columns_2[col] = query_2
           end
+        end
 
-          unless cards.empty?
-          # unless cards.blank?
-            unless search_queries.count > 1
-              @results[col]  = cards
-            else
-              @results = cards
-              # @matched_terms = []
-            end
-
-            cards.each do |c|
-              unless col == "cost"
-                split_terms = c["#{col}"].split(', ')
-
-                split_terms.each do |term|
-                  if term.downcase.include? query.downcase
-                    @matched_terms << "<b>#{col}</b>: #{term}"
-                    @matched_terms.uniq!
-                  end
-                end
-              else
-                @matched_terms << "<b>#{col}</b>: #{c["#{col}"]}"
-                @matched_terms.uniq!
-              end
-            end
+        sql_hash.each do |k,v|
+          match_columns_2.each do |col, query|
+            multi_result["#{k} > #{col}"] = v + " AND " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
           end
         end
       end
 
-      # WORKING
-      # columns.each do |col|
-      #   if use_fuzzy_search && !is_numeric?(search)
-      #     cards = Card.send("find_by_fuzzy_#{col}", search)
-      #   else
-      #     cards = Card.where("#{col} LIKE ?","%#{search}%")
-      #   end
+      unless @multisearch
+        _results = sql_hash
+      else
+        _results = multi_result
+      end
+
+      puts "Hash used #{_results}"
+
+      _results.each do |k, v|
+        # puts "Key #{k} val #{v}"
+        # puts "*Result = #{Card.search(v, false)}"
+        # puts "*Result = #{Card.find_by_sql(v)}"
+        # Card.find_by_sql(sql_string)
+
+        cards = Card.find_by_sql(v)
+
+        unless cards.blank?
+          @results[k] = cards
+        end
+      end
+
       #
-      #   unless cards.empty?
-      #     @results[col]  = cards
+      # unless sql_string.blank?
+      #   @results = Card.find_by_sql(sql_string)
       #
-      #     unless col == "name"
-      #       cards.each do |c|
-      #
-      #         split_terms = c["#{col}"].split(',')
-      #
-      #         split_terms.each do |term|
-      #           puts "#{term} vs #{search} is #{term.include? search}"
-      #           if term.downcase.include? search.downcase
-      #             @matched_terms << "<b>#{col}</b>: #{term}"
-      #             # @matched_terms << term
-      #             @matched_terms.uniq!
-      #           end
-      #         end
-      #       end
-      #     end
-      #     puts "Matched terms array #{@matched_terms}"
-      #   end
+      #   puts "RAW SQL string = #{sql_string}"
+      #   puts "Results found #{@results.count}"
       # end
 
-      # XXX FOR TESTING
-      # puts ">>>>>>>Results #{@results}"
-      #
-      # @results.each do |k,v|
-      #   v.each do |card|
-      #     p "Card = #{card[:name]} in #{k}"
-      #   end
+      # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+      # XXX TEST to verify storage of column match values
+      # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+      puts "MATCH COLUMNS"
+      # match_columns.each do |match|
+      # match_columns.each do |k, v|
+      #   puts "#{k}: #{v}"
       # end
 
-      # puts "FLATTEN 1x #{@results.flatten(1)}"
-      # puts "FLATTEN 2x #{@results.flatten}"
-      # puts "TEST #{ @results.select{ |c| c["name"] == query}  } "
-      #>>>>>>>>>>>>>>>>>>>>>>>>>
 
     else
       @results = {}
       @matched_terms = {}
       @@matched_cards = []
     end
-
-
+    #
+    # puts "SEARCH RESULTS:"
+    # unless @results.blank?
+    #   @results.each do |card|
+    #     puts card.name
+    #   end
+    # end
+    # puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
     return [@results, @matched_terms, @multisearch]
   end
