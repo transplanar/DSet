@@ -10,7 +10,6 @@
 # you'll amass, the slower it'll run and the greater likelihood for issues).
 #
 # It's strongly recommended that you check this file into your version control system.
-
 ActiveRecord::Schema.define(version: 20160203000057) do
 
   create_table "cards", force: :cascade do |t|
@@ -24,6 +23,7 @@ ActiveRecord::Schema.define(version: 20160203000057) do
     t.string   "terminality"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.integer  "slot_id"
   end
 
   create_table "cards_slots", id: false, force: :cascade do |t|

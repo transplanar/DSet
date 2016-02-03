@@ -31,7 +31,6 @@ class Card < ActiveRecord::Base
         end
       end
 
-
       sql_hash = Hash.new
 
       match_columns.each do |col, query|
@@ -95,6 +94,15 @@ class Card < ActiveRecord::Base
                     matched_terms.uniq!
                   end
                 end
+                    # @matched_terms << "<b>#{col}</b>: #{term}"
+                    @matched_terms ={col: col, term: term }
+                    # @matched_terms.uniq!
+                  end
+                end
+              else
+                # @matched_terms << "<b>#{col}</b>: #{c["#{col}"]}"
+                # @matched_terms.uniq!
+                @matched_terms ={col: col, term: term }
               end
             end
           end
