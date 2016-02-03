@@ -253,5 +253,6 @@ Card.create!(name: "Adventurer",
             strategy: "Engine",
             terminality: "Terminal Draw")
 
+# REVIEW not associating with table correctly?
 # Create slots
 Slot.create!(queries: 'default')

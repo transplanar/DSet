@@ -108,18 +108,13 @@ class Card < ActiveRecord::Base
       cards_to_slot.uniq!
 
       slot.cards = cards_to_slot
-      # slot.card_collection_sql = results
+      # slot.queries = search
+      # slot[:queries] = search
+      slot.update_attribute(:queries, search)
     else
       results = {}
       matched_terms = {}
       matched_cards = []
-    end
-
-    slot.cards.uniq!
-    # slot.cards = slot.cards.uniq
-
-    slot.cards.each do |k|
-      puts "CARD = #{k.name}"
     end
 
     # return [results, matched_terms, multisearch]
