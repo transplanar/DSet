@@ -10,7 +10,7 @@ class Card < ActiveRecord::Base
   scope :_strategy, -> (strategy) {where("strategy like ?", "%#{strategy}%")}
   scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
 
-  # def self.search search
+  # REVIEW split this into separate functions?
   def self.search search, slot
     unless search.blank?
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
@@ -81,17 +81,19 @@ class Card < ActiveRecord::Base
       columns.each do |col|
         results.each do |k, card|
           card.each do |c|
-            unless col == "cost"
-              split_terms = c["#{col}"].split(',')
-            else
-              split_terms = [c["#{col}"].to_s]
-            end
+            unless col == 'name'
+              if col == "cost"
+                split_terms = [c["#{col}"].to_s]
+              else
+                split_terms = c["#{col}"].split(',')
+              end
 
-            split_terms.each do |term|
-              search_queries.each do |query|
-                if term.downcase.include? query.downcase
-                  matched_terms << "<b>#{col}</b>: #{term}"
-                  matched_terms.uniq!
+              split_terms.each do |term|
+                search_queries.each do |query|
+                  if term.downcase.include? query.downcase
+                    matched_terms << "<b>#{col}</b>: #{term}"
+                    matched_terms.uniq!
+                  end
                 end
               end
             end
@@ -100,26 +102,25 @@ class Card < ActiveRecord::Base
       end
 
       # REVIEW is this correct?
-      # cards_to_slot = []
-      #
-      # results.each do |k, card|
-      #   card.each do |c|
-      #     cards_to_slot << c
-      #   end
-      # end
-      #
-      # cards_to_slot.uniq!
-      #
-      # @slot.cards = cards_to_slot
-      # # slot.queries = search
-      # # slot[:queries] = search
-      # @slot.update_attribute(:queries, search)
+      cards_to_slot = []
+
+      results.each do |k, card|
+        card.each do |c|
+          cards_to_slot << c
+        end
+      end
+
+      cards_to_slot.uniq!
+
+      # slot.card_results = results
+
+      slot.cards = cards_to_slot
+      slot.update_attribute(:queries, search)
     else
       results = {}
       matched_terms = {}
     end
 
-    # return [results, matched_terms, multisearch]
     return [results, matched_terms]
   end
 

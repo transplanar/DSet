@@ -1,12 +1,11 @@
-#NOTE chain .where queries to get array of desired cards
 class HomeController < ApplicationController
-  # TODO move this to more appropriate controller?
+  # @@chosen_cards = []
+
   def index
     @slots = Slot.all
-    # @slot = Slot.first
 
-    # @results, @matched_terms = Card.search(params[:search])
-    # @results, @matched_terms = Card.search(params[:search], @slot)
+    # NOTE used for randomizing cards
+    # generate_cards(@slots)
 
     respond_to do |format|
       format.html
@@ -15,5 +14,28 @@ class HomeController < ApplicationController
   end
 
   def about
+    @slots = Slot.all
+
+    generate_cards(@slots)
+  end
+
+  def generate_cards slots
+    chosen_cards = []
+
+    slots.each do |slot|
+      if slot.cards.blank?
+        slot.cards = Card.all
+      end
+
+      random_card = slot.cards.sample
+
+      while chosen_cards.include? random_card
+        random_card = slot.cards.sample
+      end
+
+      chosen_cards << random_card
+
+      slot.update_attribute(:image_url, random_card.image_url)
+    end
   end
 end
