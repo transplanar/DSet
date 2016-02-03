@@ -36,7 +36,7 @@ ActiveRecord::Schema.define(version: 20160203000057) do
 
   add_index "cards_slots", ["card_id", "slot_id"], name: "index_cards_slots_on_card_id_and_slot_id"
   add_index "cards_slots", ["slot_id", "card_id"], name: "index_cards_slots_on_slot_id_and_card_id"
-
+  
   create_table "slots", force: :cascade do |t|
     t.integer  "card_id"
     t.string   "queries"
