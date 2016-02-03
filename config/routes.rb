@@ -16,4 +16,6 @@ Rails.application.routes.draw do
   resources :slots
 
   root to: 'home#index'
+
+  patch 'slot/:id/save_filter_rule' => 'slot#save_filter_rule', as: :save_filters
 end

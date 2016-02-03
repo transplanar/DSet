@@ -24,6 +24,7 @@ ActiveRecord::Schema.define(version: 20160203000057) do
     t.string   "terminality"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.integer  "slot_id"
   end
 
   create_table "cards_slots", id: false, force: :cascade do |t|

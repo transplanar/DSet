@@ -101,7 +101,6 @@ class Card < ActiveRecord::Base
         end
       end
 
-      # REVIEW is this correct?
       cards_to_slot = []
 
       results.each do |k, card|
