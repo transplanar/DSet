@@ -1,4 +1,3 @@
-
 # TODO allow for blank fields
 # TODO add legal notice thing
 # TODO link to strategy page for each card
@@ -253,3 +252,9 @@ Card.create!(name: "Adventurer",
             expansion: "Base",
             strategy: "Engine",
             terminality: "Terminal Draw")
+
+# REVIEW not associating with table correctly?
+# Create slots
+10.times do
+  Slot.create!(queries: 'default', image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
+end

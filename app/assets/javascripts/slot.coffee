@@ -3,7 +3,6 @@
 # # You can use CoffeeScript in this file: http://coffeescript.org/
 #
 #
-# # REVIEW explain how this works (why serialize?)
 # jQuery ->
 #   # Ajax search on submit
 #   $('#card_search').submit( ->

@@ -1,5 +1,6 @@
 class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
+  has_and_belongs_to_many :slots
 
   scope :_name, -> (name) {where("name like ?", "%#{name}%")}
   scope :_types, -> (types) {where("types like ?", "%#{types}%")}
@@ -9,7 +10,8 @@ class Card < ActiveRecord::Base
   scope :_strategy, -> (strategy) {where("strategy like ?", "%#{strategy}%")}
   scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
 
-  def self.search search
+  # def self.search search
+  def self.search search, slot
     unless search.blank?
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
       columns = Card.attribute_names - exclude_columns
@@ -20,16 +22,8 @@ class Card < ActiveRecord::Base
         search_queries = [search.to_s]
       end
 
-      multisearch = search_queries.count > 1
-
-      sql_hash = Hash.new
-      match_columns = Hash.new
-      multi_result = Hash.new
-      results = Hash.new
-
-      matched_terms = []
-
       query = search_queries.first
+      match_columns = Hash.new
 
       columns.each do |col|
         unless Card.send( "_#{col}", query ).blank?
@@ -37,9 +31,16 @@ class Card < ActiveRecord::Base
         end
       end
 
+
+      sql_hash = Hash.new
+
       match_columns.each do |col, query|
         sql_hash[col] = Card.send( "_#{col}", query).to_sql
       end
+
+      multi_result = Hash.new
+
+      multisearch = search_queries.count > 1
 
       # TODO refactor to make recursive, support 2+ queries
       if multisearch
@@ -59,6 +60,8 @@ class Card < ActiveRecord::Base
         end
       end
 
+      results = Hash.new
+
       unless multisearch
         _results = sql_hash
       else
@@ -72,6 +75,8 @@ class Card < ActiveRecord::Base
           results[heading] = cards
         end
       end
+
+      matched_terms = []
 
       columns.each do |col|
         results.each do |k, card|
@@ -93,10 +98,25 @@ class Card < ActiveRecord::Base
           end
         end
       end
+
+      # REVIEW is this correct?
+      # cards_to_slot = []
+      #
+      # results.each do |k, card|
+      #   card.each do |c|
+      #     cards_to_slot << c
+      #   end
+      # end
+      #
+      # cards_to_slot.uniq!
+      #
+      # @slot.cards = cards_to_slot
+      # # slot.queries = search
+      # # slot[:queries] = search
+      # @slot.update_attribute(:queries, search)
     else
       results = {}
       matched_terms = {}
-      matched_cards = []
     end
 
     # return [results, matched_terms, multisearch]

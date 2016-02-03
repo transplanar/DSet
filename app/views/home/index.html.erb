@@ -1,11 +1,7 @@
-<!-- REVIEW change path here -->
-<%= form_tag root_path, :method => 'get', :id => "card_search", remote: true do%>
-  <%= text_field_tag :search, params[:search] %>
-<% end %>
+<div class = "slot_container">
+  <% @slots.each do |slot| %>
+  <%= link_to image_tag(slot.image_url, class: 'card_image'), slot_path(slot) %>
+  <!-- <%# link_to image_tag("#{bookmark.image_url}", size: "100x100"), bookmark.url, title: bookmark.url  %> -->
 
-<h1>Cards</h1>
-
-<!-- TODO (Nice to have) bold matching letters -->
-<div class="text_results"></div>
-
-<div class="results"> </div>
+  <% end %>
+</div>

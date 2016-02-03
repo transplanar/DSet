@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160119234453) do
+ActiveRecord::Schema.define(version: 20160203000057) do
 
   create_table "cards", force: :cascade do |t|
     t.string   "name"
@@ -24,6 +24,22 @@ ActiveRecord::Schema.define(version: 20160119234453) do
     t.string   "terminality"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+  end
+
+  create_table "cards_slots", id: false, force: :cascade do |t|
+    t.integer "slot_id", null: false
+    t.integer "card_id", null: false
+  end
+
+  add_index "cards_slots", ["card_id", "slot_id"], name: "index_cards_slots_on_card_id_and_slot_id"
+  add_index "cards_slots", ["slot_id", "card_id"], name: "index_cards_slots_on_slot_id_and_card_id"
+
+  create_table "slots", force: :cascade do |t|
+    t.string   "queries"
+    t.integer  "selected_card"
+    t.string   "image_url"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
   end
 
   create_table "trigrams", force: :cascade do |t|
