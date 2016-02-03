@@ -1,6 +1,6 @@
 class Card < ActiveRecord::Base
   fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
-  belongs_to :slot
+  has_and_belongs_to_many :slots
 
   scope :_name, -> (name) {where("name like ?", "%#{name}%")}
   scope :_types, -> (types) {where("types like ?", "%#{types}%")}
@@ -10,7 +10,8 @@ class Card < ActiveRecord::Base
   scope :_strategy, -> (strategy) {where("strategy like ?", "%#{strategy}%")}
   scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
 
-  def self.search search
+  # def self.search search
+  def self.search search, slot
     unless search.blank?
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
       columns = Card.attribute_names - exclude_columns
@@ -94,10 +95,31 @@ class Card < ActiveRecord::Base
           end
         end
       end
+
+      # REVIEW is this correct?
+      cards_to_slot = []
+
+      results.each do |k, card|
+        card.each do |c|
+          cards_to_slot << c
+        end
+      end
+
+      cards_to_slot.uniq!
+
+      slot.cards = cards_to_slot
+      # slot.card_collection_sql = results
     else
       results = {}
       matched_terms = {}
       matched_cards = []
+    end
+
+    slot.cards.uniq!
+    # slot.cards = slot.cards.uniq
+
+    slot.cards.each do |k|
+      puts "CARD = #{k.name}"
     end
 
     # return [results, matched_terms, multisearch]

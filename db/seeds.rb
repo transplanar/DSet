@@ -1,4 +1,3 @@
-
 # TODO allow for blank fields
 # TODO add legal notice thing
 # TODO link to strategy page for each card
@@ -256,4 +255,3 @@ Card.create!(name: "Adventurer",
 
 # Create slots
 Slot.create!(queries: 'default')
-# Slot.create!(cards: Card.all, queries: 'default')

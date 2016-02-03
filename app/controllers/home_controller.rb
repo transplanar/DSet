@@ -4,7 +4,8 @@ class HomeController < ApplicationController
   def index
     @slot = Slot.first
 
-    @results, @matched_terms = Card.search(params[:search])
+    # @results, @matched_terms = Card.search(params[:search])
+    @results, @matched_terms = Card.search(params[:search], @slot)
 
     respond_to do |format|
       format.html

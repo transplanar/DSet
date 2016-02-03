@@ -22,5 +22,4 @@ RSpec.describe Card, type: :model do
       expect(card).to respond_to(:cost)
     end
   end
-
 end

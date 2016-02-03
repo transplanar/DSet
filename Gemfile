@@ -33,5 +33,6 @@ gem 'turbolinks'
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 gem 'bootstrap-sass'
+# Remove fuzzy search and arel?
 gem 'fuzzily'
 gem 'arel'
