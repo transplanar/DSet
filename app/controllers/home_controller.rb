@@ -2,10 +2,11 @@
 class HomeController < ApplicationController
   # TODO move this to more appropriate controller?
   def index
-    @slot = Slot.first
+    @slots = Slot.all
+    # @slot = Slot.first
 
     # @results, @matched_terms = Card.search(params[:search])
-    @results, @matched_terms = Card.search(params[:search], @slot)
+    # @results, @matched_terms = Card.search(params[:search], @slot)
 
     respond_to do |format|
       format.html

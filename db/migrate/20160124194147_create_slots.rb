@@ -3,6 +3,7 @@ class CreateSlots < ActiveRecord::Migration
     create_table :slots do |t|
       t.string :queries
       t.integer :selected_card
+      t.string :image_url
 
       t.timestamps null: false
     end

@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'slots/show'
+
   # get 'slot/new'
 
   # get 'slot/create'

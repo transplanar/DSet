@@ -1,0 +1,14 @@
+<h1>Filter Rules for Slot <%= @slot.id %></h1>
+
+<!-- REVIEW change path here -->
+<!-- REVIEW livesearch is broken -->
+<%= form_tag slot_path(@slot), :method => 'get', :id => "card_search", remote: true do%>
+  <%= text_field_tag :search, params[:search] %>
+<% end %>
+
+<h1>Cards</h1>
+
+<!-- TODO (Nice to have) bold matching letters -->
+<div class="text_results"></div>
+
+<div class="results"> </div>
