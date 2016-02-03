@@ -1,6 +1,4 @@
 class HomeController < ApplicationController
-  # @@chosen_cards = []
-
   def index
     @slots = Slot.all
 
