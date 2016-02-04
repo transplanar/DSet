@@ -256,6 +256,5 @@ Card.create!(name: "Adventurer",
 # REVIEW not associating with table correctly?
 # Create slots
 10.times do
-  # Slot.create!(queries: '', image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
   Slot.create!(image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
 end
