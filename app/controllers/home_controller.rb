@@ -1,4 +1,6 @@
 class HomeController < ApplicationController
+  @@chosen_cards = []
+
   def index
     @slots = Slot.all
 
@@ -18,7 +20,6 @@ class HomeController < ApplicationController
   end
 
   def generate_cards slots
-    chosen_cards = []
 
     slots.each do |slot|
       if slot.cards.blank?
@@ -31,9 +32,19 @@ class HomeController < ApplicationController
         random_card = slot.cards.sample
       end
 
+      # while validate_non_duplicate(random_card)
+      #   random_card = slot.cards.sample
+      # end
+
       chosen_cards << random_card
 
       slot.update_attribute(:image_url, random_card.image_url)
     end
   end
+
+  # def validate_non_duplicate card
+  #
+  #
+  #   @@chosen_cards.include? card
+  # end
 end
