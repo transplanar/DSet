@@ -11,6 +11,7 @@ class Card < ActiveRecord::Base
   scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
 
   # REVIEW split this into separate functions?
+  # TODO add optional param to search to allow 'autocomplete' categories
   def self.search search, slot
     unless search.blank?
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
@@ -30,7 +31,6 @@ class Card < ActiveRecord::Base
           match_columns[col] = query
         end
       end
-
 
       sql_hash = Hash.new
 
@@ -101,7 +101,6 @@ class Card < ActiveRecord::Base
         end
       end
 
-      # REVIEW is this correct?
       cards_to_slot = []
 
       results.each do |k, card|
@@ -111,8 +110,6 @@ class Card < ActiveRecord::Base
       end
 
       cards_to_slot.uniq!
-
-      # slot.card_results = results
 
       slot.cards = cards_to_slot
       slot.update_attribute(:queries, search)

@@ -1,14 +1,6 @@
 Rails.application.routes.draw do
   get 'slots/show'
 
-  # get 'slot/new'
-
-  # get 'slot/create'
-
-  # get 'slot/update'
-
-  # get 'slot/edit'
-
   # REVIEW are these needed?
   get 'home/index'
   get 'home/about'
@@ -16,4 +8,7 @@ Rails.application.routes.draw do
   resources :slots
 
   root to: 'home#index'
+
+  # patch 'slot/:id/save_filter_rule' => 'slot#save_filter_rule', as: :save_filters
+  post 'slots/:slot_id/assign_card/:id' => 'slots#assign_card', as: :assign_card
 end
