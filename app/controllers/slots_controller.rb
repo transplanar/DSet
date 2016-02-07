@@ -6,6 +6,7 @@ class SlotsController < ApplicationController
   end
 
   def assign_card
+    # TODO prevent users from using this to assign the same card to multiple slots
     @slot = Slot.find(params[:slot_id])
 
     card = Card.find(params[:id])
@@ -13,10 +14,7 @@ class SlotsController < ApplicationController
     @slot.cards = [card]
 
     @slot.update_attribute(:queries, "")
-    # XXX FIGURE OUT WHY THIS ISN'T WORKING
     @slot.update_attribute(:image_url, card.image_url)
-
-    puts "Cards allowed in slot #{@slot.id} = #{@slot.cards.inspect}"
 
     redirect_to slot_path(@slot)
   end
