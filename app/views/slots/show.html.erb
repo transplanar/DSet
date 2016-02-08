@@ -1,41 +1,14 @@
 <h1>Filter Rules for Slot <%= @slot.id %></h1>
 
-<!-- REVIEW change path here -->
-<!-- REVIEW livesearch is broken -->
 <%= form_tag slot_path(@slot), :method => 'get', :id => "card_search", remote: true do%>
   <%= text_field_tag :search, params[:search], value: @slot.queries %>
 <% end %>
 
-<div class ="saved_filters">
-  <% unless @slot.sql_prepend.blank? %>
-    <h3>Saved Filters</h3>
-    <% @saved_filters.each do |filter| %>
-      <!-- <%# filter.html_safe %><br> -->
-      <!-- TODO make delete separate button next to filter -->
-      <!-- <%# link_to filter.html_safe, delete_filter_path(@slot, pair: "#{filter}"), method: :delete %> -->
-      <%= link_to filter.html_safe, delete_filter_path(@slot, pair: "#{filter}"), method: :patch %>
-    <% end %>
 
-    <%# @slot.filters_humanized.html_safe %>
-    <!-- <%# link_to @slot.filters_humanized.html_safe, assign_filter_path(slot, col: "#{column}", term: "#{term}"), method: :post  %> -->
-
-  <% end %>
-</div>
+<div class ="saved_filters"> </div>
 
 <div class="text_results"></div>
 
 <div class="results"> </div>
 
-<!-- <div class="accepted"> </div> -->
-
-<!-- REVIEW why does this initially split into categories? -->
-
-<div class="accepted">
-    <% unless @slot.cards.blank? %>
-      <h3>Cards Saved to this Slot</h3>
-    <% end %>
-
-    <% @slot.cards.each do |card| %>
-      <%= image_tag(card.image_url, class: 'card_image') %>
-    <% end %>
-</div>
+<div class="accepted"> </div>

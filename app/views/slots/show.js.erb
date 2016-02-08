@@ -1,2 +1,4 @@
 $('.results').html("<%= escape_javascript(render partial: 'cards/cards', locals: {results: @results, slot: @slot}) %>")
 $('.text_results').html("<%= escape_javascript(render partial: 'cards/text_matches', locals: {matched_terms: @matched_terms, slot: @slot}) %>")
+$('.accepted').html("<%= escape_javascript(render partial: 'cards/accepted', locals: {slot: @slot}) %>")
+$('.saved_filters').html("<%= escape_javascript(render partial: 'cards/saved_filters', locals: {slot: @slot, saved_filters: @saved_filters}) %>")
