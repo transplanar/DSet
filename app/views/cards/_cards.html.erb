@@ -1,4 +1,8 @@
 <div class="results">
+    <% unless results.blank? %>
+      <h3>Filtered Card Selection</h3>
+    <% end %>
+
     <% results.each do |k,v| %>
       <h1><%= k %></h1>
       <% v.each do |card| %>

@@ -36,10 +36,11 @@ ActiveRecord::Schema.define(version: 20160201001613) do
 
   create_table "slots", force: :cascade do |t|
     t.string   "queries"
-    t.integer  "selected_card"
     t.string   "image_url"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.string   "sql_prepend"
+    t.string   "filters_humanized"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
   end
 
   create_table "trigrams", force: :cascade do |t|
