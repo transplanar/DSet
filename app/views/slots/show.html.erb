@@ -6,18 +6,35 @@
   <%= text_field_tag :search, params[:search], value: @slot.queries %>
 <% end %>
 
-<h3>Matched Filters</h3>
+<div class ="saved_filters">
+  <% unless @slot.sql_prepend.blank? %>
+    <h3>Saved Filters</h3>
+    <% @saved_filters.each do |filter| %>
+      <!-- <%# filter.html_safe %><br> -->
+      <!-- TODO make delete separate button next to filter -->
+      <!-- <%# link_to filter.html_safe, delete_filter_path(@slot, pair: "#{filter}"), method: :delete %> -->
+      <%= link_to filter.html_safe, delete_filter_path(@slot, pair: "#{filter}"), method: :patch %>
+    <% end %>
+
+    <%# @slot.filters_humanized.html_safe %>
+    <!-- <%# link_to @slot.filters_humanized.html_safe, assign_filter_path(slot, col: "#{column}", term: "#{term}"), method: :post  %> -->
+
+  <% end %>
+</div>
+
 <div class="text_results"></div>
 
-<h3>Filtered Card Selection</h3>
 <div class="results"> </div>
 
 <!-- <div class="accepted"> </div> -->
 
 <!-- REVIEW why does this initially split into categories? -->
 
-<h3>Acceptable Cards for this Slot *TESTING*</h3>
 <div class="accepted">
+    <% unless @slot.cards.blank? %>
+      <h3>Cards Saved to this Slot</h3>
+    <% end %>
+
     <% @slot.cards.each do |card| %>
       <%= image_tag(card.image_url, class: 'card_image') %>
     <% end %>

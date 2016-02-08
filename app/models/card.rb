@@ -76,8 +76,10 @@ class Card < ActiveRecord::Base
         end
       end
 
-      matched_terms = []
+      # matched_terms = []
+      matched_terms = Hash.new
 
+      # TODO this does not display all the correct terms for multi-keyword categories
       columns.each do |col|
         results.each do |k, card|
           card.each do |c|
@@ -91,8 +93,13 @@ class Card < ActiveRecord::Base
               split_terms.each do |term|
                 search_queries.each do |query|
                   if term.downcase.include? query.downcase
-                    matched_terms << "<b>#{col}</b>: #{term}"
-                    matched_terms.uniq!
+                    # matched_terms[:column] = col
+                    matched_terms[col] = term
+                    # matched_terms.uniq!
+
+                    # matched_terms << "<b>#{col}</b>: #{term}"
+                    # matched_terms.uniq!
+
                   end
                 end
               end
