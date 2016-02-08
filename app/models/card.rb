@@ -14,15 +14,18 @@ class Card < ActiveRecord::Base
   # TODO add optional param to search to allow 'autocomplete' categories
   def self.search search, slot
     unless search.blank?
+      # Ignore specific columns in SQL table
       exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
       columns = Card.attribute_names - exclude_columns
 
+      # Format input based on input type
       unless is_numeric?(search)
         search_queries = search.split(', ')
       else
         search_queries = [search.to_s]
       end
 
+      # Search for matches against first search term
       query = search_queries.first
       match_columns = Hash.new
 
@@ -35,15 +38,19 @@ class Card < ActiveRecord::Base
       sql_hash = Hash.new
 
       match_columns.each do |col, query|
-        sql_hash[col] = Card.send( "_#{col}", query).to_sql
+        unless slot.sql_prepend.blank?
+          sql_hash[col] = slot.sql_prepend + " AND "+ Card.send( "_#{col}", query).to_sql.gsub(/.*?(?=\()/im, "")
+        else
+          sql_hash[col] = Card.send( "_#{col}", query).to_sql
+        end
       end
-
-      multi_result = Hash.new
 
       multisearch = search_queries.count > 1
 
       # TODO refactor to make recursive, support 2+ queries
       if multisearch
+        multi_result = Hash.new
+
         query_2 = search_queries.second
         match_columns_2 = Hash.new
 
@@ -76,10 +83,9 @@ class Card < ActiveRecord::Base
         end
       end
 
-      # matched_terms = []
       matched_terms = Hash.new
 
-      # TODO this does not display all the correct terms for multi-keyword categories
+      # FIXME this does not display all the correct terms for multi-keyword categories
       columns.each do |col|
         results.each do |k, card|
           card.each do |c|
@@ -87,19 +93,13 @@ class Card < ActiveRecord::Base
               if col == "cost"
                 split_terms = [c["#{col}"].to_s]
               else
-                split_terms = c["#{col}"].split(',')
+                split_terms = c["#{col}"].split(', ')
               end
 
               split_terms.each do |term|
                 search_queries.each do |query|
                   if term.downcase.include? query.downcase
-                    # matched_terms[:column] = col
                     matched_terms[col] = term
-                    # matched_terms.uniq!
-
-                    # matched_terms << "<b>#{col}</b>: #{term}"
-                    # matched_terms.uniq!
-
                   end
                 end
               end
@@ -121,6 +121,19 @@ class Card < ActiveRecord::Base
       slot.cards = cards_to_slot
       slot.update_attribute(:queries, search)
     else
+      unless slot.sql_prepend.blank?
+        cards_to_slot = []
+
+        cards = Card.find_by_sql(slot.sql_prepend)
+
+        cards_to_slot.uniq!
+
+        slot.cards = cards
+        slot.update_attribute(:queries, search)
+      else
+        slot.cards = Card.all
+      end
+
       results = {}
       matched_terms = {}
     end

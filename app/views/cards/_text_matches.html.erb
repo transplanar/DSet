@@ -3,21 +3,10 @@
       <h3>Matched Filters</h3>
 
       <ul>
-      <%# matched_terms.each do |match|%>
       <% matched_terms.each do |column, term|%>
-        <!-- <li><%# match.html_safe %></li> -->
-        <!-- <li><b><%# column %>:</b> <%# term %> </li> -->
         <li>
-          <!-- <%# link_to "<b>#{column}</b>: #{term}".html_safe, assign_filter_path(slot), method: :post  %> -->
-          <%# link_to "<b>#{column}</b>: #{term}".html_safe, {:controller => "slot", :action => 'assign_filter', :slot_id => 'slot'}, :column => 'column', :term => 'term' %>
-          <!-- <%# link_to "<b>#{column}</b>: #{term}".html_safe, assign_filter_path(slot, column, term), column: column, term: term, method: :post  %> -->
-          <%= link_to "<b>#{column}</b>: #{term}".html_safe, assign_filter_path(slot, col: "#{column}", term: "#{term}"), method: :post  %>
+          <%= link_to "<b>#{column}</b>: #{term}".html_safe, assign_filter_path(slot, col: "#{column}", term: "#{term}"), method: :post, remote: true  %>
         </li>
-
-          <!-- <b><%# column %>:</b> <%# term %> </li> -->
-
-        <!-- XXX Template code -->
-        <%# link_to image_tag(card.image_url, class: 'card_image'), assign_card_path(slot, card), method: :post %>
       <% end %>
     <% end %>
   </ul>

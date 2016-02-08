@@ -22,7 +22,7 @@ class HomeController < ApplicationController
   def generate_cards slots
 
     slots.each do |slot|
-      if slot.cards.blank?
+      if slot.cards.blank? && slot.sql_prepend.blank?
         slot.cards = Card.all
       end
 
@@ -32,19 +32,9 @@ class HomeController < ApplicationController
         random_card = slot.cards.sample
       end
 
-      # while validate_non_duplicate(random_card)
-      #   random_card = slot.cards.sample
-      # end
-
       chosen_cards << random_card
 
       slot.update_attribute(:image_url, random_card.image_url)
     end
   end
-
-  # def validate_non_duplicate card
-  #
-  #
-  #   @@chosen_cards.include? card
-  # end
 end

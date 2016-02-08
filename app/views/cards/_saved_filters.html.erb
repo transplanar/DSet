@@ -1,0 +1,7 @@
+<% unless slot.sql_prepend.blank? %>
+<h3>Searching within Filters:</h3>
+  <% saved_filters.each do |filter| %>
+  <!-- TODO make delete separate button next to filter -->
+    <%= link_to filter.html_safe, delete_filter_path(slot, pair: "#{filter}"), method: :patch %>
+  <% end %>
+<% end %>
