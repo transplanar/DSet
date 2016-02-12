@@ -1,7 +1,6 @@
 <div class = "randomized_buttons">
   <%= link_to "Generate Card Set", generate_cards_path, method: :post, remote: true %>
+  <%= link_to "Clear Card Filter", clear_filters_path, method: :post, remote: true %>
 </div>
 
-<div class = "slot_container">
-  <%# render partial: 'home/slots', locals: {slots: @slots}%>
-</div>
+<div class = "slot_container"> </div>

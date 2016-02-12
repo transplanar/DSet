@@ -1,6 +1,10 @@
 class Card < ActiveRecord::Base
-  fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
+  # fuzzily_searchable :name, :types, :category, :expansion, :strategy, :terminality
   has_and_belongs_to_many :slots
+
+  # before_save :default_image_url
+
+  # default_image_url = "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917"
 
   scope :_name, -> (name) {where("name like ?", "%#{name}%")}
   scope :_types, -> (types) {where("types like ?", "%#{types}%")}
@@ -14,11 +18,8 @@ class Card < ActiveRecord::Base
   # TODO add optional param to search to allow 'autocomplete' categories
   def self.search search, slot
     unless search.blank?
-      # Ignore specific columns in SQL table
-      exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
-      columns = Card.attribute_names - exclude_columns
+      columns = get_relevant_columns()
 
-      # Format input based on input type
       unless is_numeric?(search)
         search_queries = search.split(', ')
       else
@@ -139,6 +140,13 @@ class Card < ActiveRecord::Base
     end
 
     return [results, matched_terms]
+  end
+
+  private
+  
+  def self.get_relevant_columns
+    exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
+    Card.attribute_names - exclude_columns
   end
 
    def self.is_numeric?(obj)

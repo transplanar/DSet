@@ -38,4 +38,18 @@ class HomeController < ApplicationController
 
     render 'home/index'
   end
+
+  def clear_filters
+    @slots = Slot.all
+
+    @slots.each do |slot|
+      slot[:filters_humanized] = ""
+      slot[:sql_prepend] = ""
+      slot[:queries] = ""
+      slot.update_attribute(:image_url, "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
+    end
+
+    render 'home/index'
+
+  end
 end

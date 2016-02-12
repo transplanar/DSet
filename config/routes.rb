@@ -17,4 +17,5 @@ Rails.application.routes.draw do
   patch 'slots/:slot_id/delete_filter/' => 'slots#delete_filter', as: :delete_filter
   # post 'home/generate_cards/' => 'home#generate_cards', as: :generate_cards
   post 'home/generate_cards/' => 'home#generate_cards', as: :generate_cards
+  post 'home/clear_filters/' => 'home#clear_filters', as: :clear_filters
 end
