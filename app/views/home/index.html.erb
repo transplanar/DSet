@@ -3,9 +3,5 @@
 </div>
 
 <div class = "slot_container">
-  <% @slots.each do |slot| %>
-  <%= link_to image_tag(slot.image_url, class: 'card_image'), slot_path(slot) %>
-  <!-- <%# link_to image_tag("#{bookmark.image_url}", size: "100x100"), bookmark.url, title: bookmark.url  %> -->
-
-  <% end %>
+  <%# render partial: 'home/slots', locals: {slots: @slots}%>
 </div>

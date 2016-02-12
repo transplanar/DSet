@@ -4,9 +4,6 @@ class HomeController < ApplicationController
   def index
     @slots = Slot.all
 
-    # NOTE used for randomizing cards
-    # generate_cards(@slots)
-
     respond_to do |format|
       format.html
       format.js
@@ -19,24 +16,16 @@ class HomeController < ApplicationController
     generate_cards(@slots)
   end
 
-  # def generate_cards slots
   def generate_cards
-    puts "Executing card set generator"
-
-    slots = Slot.all
+    @slots = Slot.all
     chosen_cards = []
 
-    slots.each do |slot|
-      puts "Generating card for slot #{slot.id}"
-
-
+    @slots.each do |slot|
       if slot.cards.blank?
         slot.cards = Card.all
       end
 
       random_card = slot.cards.sample
-
-      puts "Current chosen cards: #{chosen_cards}"
 
       while chosen_cards.include? random_card
         random_card = slot.cards.sample
@@ -47,11 +36,6 @@ class HomeController < ApplicationController
       slot.update_attribute(:image_url, random_card.image_url)
     end
 
-    redirect_to root_path
-
-    respond_to do |format|
-      format.html
-      format.js
-    end
+    render 'home/index'
   end
 end
