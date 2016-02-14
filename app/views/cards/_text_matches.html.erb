@@ -1,12 +1,11 @@
-  <!-- FIXME restore functionality here -->
-    <% unless matched_terms.blank? %>
-      <h3>Matched Filters</h3>
+<% unless matched_terms.blank? %>
+  <h3>Matched Filters</h3>
 
-      <ul>
-      <% matched_terms.each do |column, term|%>
-        <li>
-          <%= link_to "<strong>#{column}</strong>: #{term}".html_safe, assign_filter_path(slot, col: "#{column}", term: "#{term}"), method: :post, remote: true  %>
-        </li>
-      <% end %>
-    <% end %>
-  </ul>
+  <ul>
+  <% matched_terms.each do |column, term|%>
+    <li>
+      <%= link_to "<strong>#{column}</strong>: #{term}".html_safe, assign_filter_path(slot, col: "#{column}", term: "#{term}"), method: :post, remote: true  %>
+    </li>
+  <% end %>
+<% end %>
+</ul>

@@ -1,17 +1,5 @@
 require 'slots_helper'
 
-# TODO allow for blank fields
-# TODO add legal notice thing
-# TODO link to strategy page for each card
-# TODO add link to secret history of each card:
-# http://forum.dominionstrategy.com/index.php?topic=115.0
-# TODO add tooltip on hover for terms
-# TODO add card synergies
-# TODO add counter cards
-# TODO additional keywords, subtypess
-# TODO add card ranking http://wiki.dominionstrategy.com/index.php/List_of_Cards_by_Qvist_Rankings
-# TODO mouseover image for card text
-# REVIEW best option for card image urls?
 # 2 Cost cards >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 Card.create!(name: "Cellar",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/1/1c/Cellar.jpg/200px-Cellar.jpg",
@@ -34,7 +22,7 @@ Card.create!(name: "Chapel",
 Card.create!(name: "Moat",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/f/fe/Moat.jpg/200px-Moat.jpg",
             cost: 2,
-            types: "Action, Reaction", #multi-types
+            types: "Action, Reaction",
             category: "",
             expansion: "Base",
             strategy: "",
@@ -45,7 +33,7 @@ Card.create!(name: "Chancellor",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/b/b7/Chancellor.jpg/200px-Chancellor.jpg",
             cost: 3,
             types: "Action",
-            category: "Deck Discarder", #multi-types
+            category: "Deck Discarder",
             expansion: "Base",
             strategy: "",
             terminality: "Terminal Silver")
@@ -54,7 +42,7 @@ Card.create!(name: "Village",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/5/5a/Village.jpg/200px-Village.jpg",
             cost: 3,
             types: "Action",
-            category: "Village/Splitter", #multi-types
+            category: "Village/Splitter",
             expansion: "Base",
             strategy: "Engine",
             # terminality: "Village")
@@ -63,7 +51,7 @@ Card.create!(name: "Woodcutter",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/d/d6/Woodcutter.jpg/200px-Woodcutter.jpg",
             cost: 3,
             types: "Action",
-            category: "+Buy", #multi-types
+            category: "+Buy",
             expansion: "Base",
             strategy: "",
             terminality: "Terminal Silver")
@@ -79,7 +67,7 @@ Card.create!(name: "Workshop",
 Card.create!(name: "Bureaucrat",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/4/4d/Bureaucrat.jpg/200px-Bureaucrat.jpg",
             cost: 4,
-            types: "Action, Attack", #multi-types
+            types: "Action, Attack",
             category: "Gainer",
             expansion: "Base",
             strategy: "",
@@ -101,7 +89,7 @@ Card.create!(name: "Gardens",
             types: "Victory",
             category: "alt-VP",
             expansion: "Base",
-            strategy: "Rush, alt-VP", #multi-types
+            strategy: "Rush, alt-VP",
             terminality: "")
 
 
@@ -129,7 +117,7 @@ Card.create!(name: "Remodel",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/2/2e/Remodel.jpg/200px-Remodel.jpg",
             cost: 4,
             types: "Action",
-            category: "Trasher, Trash-For-Benefit", #NOTE more subtypess like this
+            category: "Trasher, Trash-For-Benefit",
             expansion: "Base",
             strategy: "Trashing",
             terminality: "Terminal")
@@ -255,9 +243,6 @@ Card.create!(name: "Adventurer",
             strategy: "Engine",
             terminality: "Terminal Draw")
 
-# Create slots
 10.times do
   Slot.create!(image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
-  # Slot.create!
-  # Slot.create!(image_url: Card.default_image_url)
 end

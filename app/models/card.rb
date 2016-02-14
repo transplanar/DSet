@@ -9,8 +9,6 @@ class Card < ActiveRecord::Base
   scope :_strategy, -> (strategy) {where("strategy like ?", "%#{strategy}%")}
   scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
 
-  # REVIEW split this into separate functions?
-  # TODO add optional param to search to allow 'autocomplete' categories
   def self.search search_str, slot
     unless search_str.blank?
       columns = get_relevant_columns()
@@ -35,7 +33,9 @@ class Card < ActiveRecord::Base
         slot.cards = cards
         slot.update_attribute(:queries, search_str)
       else
-        slot.cards = Card.all
+        if slot.cards.blank?
+          slot.cards = Card.all
+        end
       end
 
       results = {}
@@ -97,7 +97,6 @@ class Card < ActiveRecord::Base
   end
 
   # FIXME this does not display all the correct terms for multi-keyword categories
-
   def self.get_matching_terms search_queries, columns, results
     matches = Hash.new
 

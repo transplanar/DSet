@@ -19,6 +19,8 @@ class SlotsController < ApplicationController
     @slot.update_attribute(:queries, "")
     @slot.update_attribute(:image_url, card.image_url)
 
+    @slot.save
+
     redirect_to slot_path(@slot)
   end
 
