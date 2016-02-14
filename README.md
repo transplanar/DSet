@@ -8,6 +8,7 @@ Capstone for Bloc Full Stack Web Development Apprenticeship
 
 ###Features:
 * Livesearch
+* Multi-category search
 * Chainable search queries
 * Fuzzy search (find by minimum number of characters)
 * Autocomplete filters (scopes)

@@ -11,9 +11,6 @@ class HomeController < ApplicationController
   end
 
   def about
-    @slots = Slot.all
-
-    generate_cards(@slots)
   end
 
   def generate_cards

@@ -5,7 +5,7 @@
       <ul>
       <% matched_terms.each do |column, term|%>
         <li>
-          <%= link_to "<b>#{column}</b>: #{term}".html_safe, assign_filter_path(slot, col: "#{column}", term: "#{term}"), method: :post, remote: true  %>
+          <%= link_to "<strong>#{column}</strong>: #{term}".html_safe, assign_filter_path(slot, col: "#{column}", term: "#{term}"), method: :post, remote: true  %>
         </li>
       <% end %>
     <% end %>
