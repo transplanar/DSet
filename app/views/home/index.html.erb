@@ -1,7 +1,6 @@
-<div class = "slot_container">
-  <% @slots.each do |slot| %>
-  <%= link_to image_tag(slot.image_url, class: 'card_image'), slot_path(slot) %>
-  <!-- <%# link_to image_tag("#{bookmark.image_url}", size: "100x100"), bookmark.url, title: bookmark.url  %> -->
-
-  <% end %>
+<div class = "randomized_buttons">
+  <%= link_to "Generate Card Set", generate_cards_path, class: "btn btn-success", method: :post, remote: true %>
+  <%= link_to "Clear Card Filters", clear_filters_path, class: "btn btn-warning", method: :post, remote: true %>
 </div>
+
+<div class = "slot_container"> </div>

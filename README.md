@@ -8,7 +8,9 @@ Capstone for Bloc Full Stack Web Development Apprenticeship
 
 ###Features:
 * Livesearch
-* Multi-level search queries
+* Chainable search queries
+* Fuzzy search (find by minimum number of characters)
+* Autocomplete filters (scopes)
 
 ###LEGAL
 This an unofficial card search and randomizer app for the tabletop game Dominion (c) 2008 by Donald X. Vaccarino
