@@ -3,5 +3,5 @@
 <% end %>
 
 <% slot.cards.each do |card| %>
-  <%= image_tag(card.image_url, class: 'card_image') %>
+  <%= link_to image_tag(card.image_url, class: 'card_image'), assign_card_path(slot, card), method: :post, remote: true %>
 <% end %>
