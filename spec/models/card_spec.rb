@@ -12,7 +12,6 @@ RSpec.describe Card, type: :model do
                             )}
 
 
-# REVIEW good compromise between atrribute test and excessive tests?
   describe 'attributes' do
     it 'should respond to string params (name)' do
       expect(card).to respond_to(:name)

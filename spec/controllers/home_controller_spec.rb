@@ -1,67 +1,42 @@
 require 'rails_helper'
 
 RSpec.describe HomeController, type: :controller do
-  context 'Home#index' do
-    before :each do
-      load Rails.root + "db/seeds.rb"
-    end
+  before :each do
+    load Rails.root + "db/seeds.rb"
+  end
 
-
-    describe 'card search' do
-      # FIXME move this to a better spot
-        # REVIEW move this to different controller?
-      it 'returns correct number of search matches for ALPHABETICAL input' do
-        get :index, {search: "cantrip"}, format: :js
-
-        cards = card_array_from_results
-
-        expect(cards.count).to eq(2)
-      end
-
-      it 'returns correct number of search matches for NUMERIC input' do
-        get :index, {search: 2}, format: :js
-
-        cards = card_array_from_results
-
-        expect(cards.count).to eq(3)
+  context 'routing' do
+    describe 'Home#index' do
+      it 'returns http success' do
+        get :index
+        expect(response).to have_http_status(:success)
       end
     end
 
-    describe 'display results across multiple categories ' do
-      before :each do
-        @results = Card.search('vil')
+    describe 'Home#generate_cards' do
+      it 'returns http success' do
+        get :generate_cards
+        expect(response).to have_http_status(:success)
       end
+    end
 
-      it 'finds results in three categories' do
-        expect(@results.count).to eq(3)
-      end
-
-      it 'finds one \'name\' result' do
-        expect(@results['name'].count).to eq(1)
-      end
-
-      it 'finds two \'category\' results' do
-        expect(@results['category'].count).to eq(2)
-      end
-
-      it 'finds two \'terminality\' results' do
-        expect(@results['terminality'].count).to eq(1)
+    describe 'Home#clear_filters' do
+      it 'returns http success' do
+        get :clear_filters
+        expect(response).to have_http_status(:success)
       end
     end
   end
-end
 
-private
+  context 'button functions' do
+    describe 'home#generate_cards' do
+      it 'should change the image for all slots' do
+        original_image_url = Slot.first[:image_url]
+        post :generate_cards
+        updated_image_url = Slot.first[:image_url]
 
-def card_array_from_results
-  results = assigns(:results)
-  cards = []
-
-  results.each do |k,v|
-    v.each do |card|
-      cards << card
+        expect(original_image_url).not_to eq(updated_image_url)
+      end
     end
   end
-
-  return cards
 end

@@ -1,6 +1,4 @@
 class HomeController < ApplicationController
-  @@chosen_cards = []
-
   def index
     @slots = Slot.all
 
@@ -48,6 +46,5 @@ class HomeController < ApplicationController
     end
 
     render 'home/index'
-
   end
 end
