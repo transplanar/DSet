@@ -1,67 +1,78 @@
 require 'rails_helper'
 
 RSpec.describe HomeController, type: :controller do
-  context 'Home#index' do
-    before :each do
-      load Rails.root + "db/seeds.rb"
-    end
+  before :each do
+    load Rails.root + "db/seeds.rb"
+  end
 
-
-    describe 'card search' do
-      # FIXME move this to a better spot
-        # REVIEW move this to different controller?
-      it 'returns correct number of search matches for ALPHABETICAL input' do
-        get :index, {search: "cantrip"}, format: :js
-
-        cards = card_array_from_results
-
-        expect(cards.count).to eq(2)
-      end
-
-      it 'returns correct number of search matches for NUMERIC input' do
-        get :index, {search: 2}, format: :js
-
-        cards = card_array_from_results
-
-        expect(cards.count).to eq(3)
+  context 'routing' do
+    describe 'Home#index' do
+      it 'returns http success' do
+        get :index
+        expect(response).to have_http_status(:success)
       end
     end
 
-    describe 'display results across multiple categories ' do
+    describe 'Home#generate_cards' do
+      it 'returns http success' do
+        get :generate_cards
+        expect(response).to have_http_status(:success)
+      end
+    end
+
+    describe 'Home#clear_filters' do
+      it 'returns http success' do
+        get :clear_filters
+        expect(response).to have_http_status(:success)
+      end
+    end
+  end
+
+  context 'button functions' do
+    describe 'generate card set button' do
+      it 'should update the image for all slots' do
+        original_image_url = Slot.first[:image_url]
+        post :generate_cards
+        updated_image_url = Slot.first[:image_url]
+
+        expect(original_image_url).not_to eq(updated_image_url)
+      end
+    end
+
+    describe 'clear filters button' do
       before :each do
-        @results = Card.search('vil')
+        @slots = Slot.all
       end
 
-      it 'finds results in three categories' do
-        expect(@results.count).to eq(3)
+      it 'should clear directly assigned cards' do
+        @test_card = Card.first
+
+        @slots.each do |slot|
+          slot.cards = [@test_card]
+          expect(slot.cards.count).to eq(1)
+        end
+
+        post :clear_filters
+
+        @slots.each do |slot|
+          expect(slot.cards.count).to eq(25)
+        end
       end
 
-      it 'finds one \'name\' result' do
-        expect(@results['name'].count).to eq(1)
-      end
+      it 'should clear saved search queries' do
+        @slots.each do |slot|
+          Card.search('v, 3', slot)
+          expect(slot[:queries]).to eq('v, 3')
+        end
 
-      it 'finds two \'category\' results' do
-        expect(@results['category'].count).to eq(2)
-      end
+        post :clear_filters
 
-      it 'finds two \'terminality\' results' do
-        expect(@results['terminality'].count).to eq(1)
+        @slots = Slot.all
+
+        @slots.each do |slot|
+          expect(slot[:queries]).to be_empty
+        end
       end
     end
   end
-end
-
-private
-
-def card_array_from_results
-  results = assigns(:results)
-  cards = []
-
-  results.each do |k,v|
-    v.each do |card|
-      cards << card
-    end
-  end
-
-  return cards
 end

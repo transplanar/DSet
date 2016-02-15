@@ -19,11 +19,12 @@ class SlotsController < ApplicationController
     @slot.update_attribute(:queries, "")
     @slot.update_attribute(:image_url, card.image_url)
 
+    @slot.save
+
     redirect_to slot_path(@slot)
   end
 
   def assign_filter
-    # TODO override if part of exclusive grouping (ex: cannot save two costs)
     @slot = Slot.find(params[:slot_id])
 
     if @slot[:sql_prepend].blank?
