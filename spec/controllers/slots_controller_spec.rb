@@ -44,16 +44,6 @@ RSpec.describe SlotsController, type: :controller do
     end
   end
 
-  describe 'assigning filters' do
-    it 'should assign the desired filter' do
-      expect(my_slot.cards.count).to eq(25)
-
-      post :assign_filter, {slot_id: my_slot.id, col: 'name', term: 'village'}
-
-      expect(my_slot.cards.count).to eq(1)
-    end
-  end
-
   private
 
   def card_array_from_results
