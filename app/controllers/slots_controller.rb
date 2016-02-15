@@ -25,7 +25,6 @@ class SlotsController < ApplicationController
   end
 
   def assign_filter
-    # TODO override if part of exclusive grouping (ex: cannot save two costs)
     @slot = Slot.find(params[:slot_id])
 
     if @slot[:sql_prepend].blank?

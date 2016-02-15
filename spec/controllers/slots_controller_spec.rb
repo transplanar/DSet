@@ -1,11 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe SlotsController, type: :controller do
+  let(:my_slot){Slot.create!}
+
   before :each do
     load Rails.root + "db/seeds.rb"
+    my_slot.cards = Card.all
   end
 
-  let(:my_slot){Slot.create!}
 
   describe "GET show" do
     it "returns http success" do
@@ -29,6 +31,26 @@ RSpec.describe SlotsController, type: :controller do
       cards = card_array_from_results
 
       expect(cards.count).to eq(3)
+    end
+  end
+
+  describe 'direct card assignment' do
+    it 'should assign a singular card' do
+      expect(my_slot.cards.count).to eq(25)
+
+      post :assign_card, {slot_id: my_slot.id, id: Card.first.id}
+
+      expect(my_slot.cards.count).to eq(1)
+    end
+  end
+
+  describe 'assigning filters' do
+    it 'should assign the desired filter' do
+      expect(my_slot.cards.count).to eq(25)
+
+      post :assign_filter, {slot_id: my_slot.id, col: 'name', term: 'village'}
+
+      expect(my_slot.cards.count).to eq(1)
     end
   end
 
