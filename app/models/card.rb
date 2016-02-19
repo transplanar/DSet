@@ -1,14 +1,15 @@
 class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
 
-  scope :_name, -> (name) {where("name like ?", "%#{name}%")}
-  scope :_types, -> (types) {where("types like ?", "%#{types}%")}
-  scope :_category, -> (category) {where("category like ?", "%#{category}%")}
-  # scope :_cost, -> (cost) {where("cost like ?", "%#{cost}%")}
-  scope :_cost, -> (cost) {where("cast(cost as text) like ?", "%#{cost}%")}
-  scope :_expansion, -> (expansion) {where("expansion like ?", "%#{expansion}%")}
-  scope :_strategy, -> (strategy) {where("strategy like ?", "%#{strategy}%")}
-  scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
+  cards = Arel::Table.new(:cards)
+
+  scope :_name, -> (name) {Card.where(cards[:name].matches("%#{name}%"))}
+  scope :_types, -> (types) {Card.where(cards[:types].matches("%#{types}%"))}
+  scope :_category, -> (category) {Card.where(cards[:category].matches("%#{category}%"))}
+  scope :_cost, -> (cost) {Card.where(cards[:cost].eq(cost))}
+  scope :_expansion, -> (expansion) {Card.where(cards[:expansion].matches("%#{expansion}%"))}
+  scope :_strategy, -> (strategy) {Card.where(cards[:strategy].matches("%#{strategy}%"))}
+  scope :_terminality, -> (terminality) {Card.where(cards[:terminality].matches("%#{terminality}%"))}
 
   def self.search search_str, slot
     unless search_str.blank?

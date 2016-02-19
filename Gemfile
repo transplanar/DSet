@@ -29,3 +29,5 @@ gem 'coffee-rails', '~> 4.1.0'
 gem 'jquery-rails'
 
 gem 'bootstrap-sass'
+
+gem 'arel'
