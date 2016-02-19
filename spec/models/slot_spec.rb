@@ -81,9 +81,6 @@ RSpec.describe Slot, type: :model do
     end
   end
 
-  # private
-
-  # def self.values_from_results
   def values_from_results
     values = []
 
