@@ -2,6 +2,7 @@ class HomeController < ApplicationController
   def index
     @slots = Slot.all
     @slots.order('id DESC').all
+    @slots.save!
 
     respond_to do |format|
       format.html
