@@ -6,10 +6,12 @@ class Card < ActiveRecord::Base
   scope :_name, -> (name) {Card.where(cards[:name].matches("%#{name}%"))}
   scope :_types, -> (types) {Card.where(cards[:types].matches("%#{types}%"))}
   scope :_category, -> (category) {Card.where(cards[:category].matches("%#{category}%"))}
-  scope :_cost, -> (cost) {Card.where(cards[:cost].eq(cost))}
+  scope :_cost, -> (cost) {Card.where(cards[:cost].eq(cost)) }
   scope :_expansion, -> (expansion) {Card.where(cards[:expansion].matches("%#{expansion}%"))}
   scope :_strategy, -> (strategy) {Card.where(cards[:strategy].matches("%#{strategy}%"))}
   scope :_terminality, -> (terminality) {Card.where(cards[:terminality].matches("%#{terminality}%"))}
+
+  single_term_columns = ["cost"]
 
   def self.search search_str, slot
     unless search_str.blank?
@@ -67,23 +69,30 @@ class Card < ActiveRecord::Base
     queries.each do |query|
       if query == queries.first
         columns.each do |col|
-          test_search = Card.send( "_#{col}", query )
+          if (col == "cost" && is_numeric?(query)) || col != "cost"
 
-          unless test_search.blank?
-            unless slot.sql_prepend.blank?
-              results_hash[col] = slot.sql_prepend + " AND "+ test_search.to_sql.gsub(/.*?(?=\()/im, "")
-            else
-              results_hash[col] = test_search.to_sql
+            test_search = Card.send( "_#{col}", query )
+
+            unless test_search.blank?
+              unless slot.sql_prepend.blank?
+                sql_without_select_prepend = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
+
+                results_hash[col] = slot.sql_prepend + " AND "+ sql_without_select_prepend
+              else
+                results_hash[col] = test_search.to_sql
+              end
             end
           end
         end
       elsif query == queries.second
         columns.each do |col|
           results_hash.each do |col_1, sql |
-            test_search = sql + " AND " + Card.send( "_#{col}", query).to_sql.gsub(/.*?(?=\()/im, "")
+            test_search = Card.send( "_#{col}", query)
 
             unless test_search.blank?
-              multi_result["#{col_1} > #{col}"] = sql + " AND " + Card.send( "_#{col}", query ).to_sql.gsub(/.*?(?=\()/im, "")
+              sql_without_select_prepend = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
+
+              multi_result["#{col_1} > #{col}"] = sql + " AND " + sql_without_select_prepend
             end
           end
         end
@@ -131,6 +140,7 @@ class Card < ActiveRecord::Base
     results = Hash.new
 
     sql_hash.each do |heading, sql|
+      puts "SEARCHING BY SQL #{heading}:#{sql}"
       cards = Card.find_by_sql(sql)
 
       unless cards.blank?
