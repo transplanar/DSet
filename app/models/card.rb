@@ -4,7 +4,8 @@ class Card < ActiveRecord::Base
   scope :_name, -> (name) {where("name like ?", "%#{name}%")}
   scope :_types, -> (types) {where("types like ?", "%#{types}%")}
   scope :_category, -> (category) {where("category like ?", "%#{category}%")}
-  scope :_cost, -> (cost) {where("cost like ?", "%#{cost}%")}
+  # scope :_cost, -> (cost) {where("cost like ?", "%#{cost}%")}
+  scope :_cost, -> (cost) {where("cast(cost as text) like ?", "%#{cost}%")}
   scope :_expansion, -> (expansion) {where("expansion like ?", "%#{expansion}%")}
   scope :_strategy, -> (strategy) {where("strategy like ?", "%#{strategy}%")}
   scope :_terminality, -> (terminality) {where("terminality like ?", "%#{terminality}%")}
