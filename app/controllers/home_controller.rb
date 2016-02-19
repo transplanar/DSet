@@ -12,7 +12,8 @@ class HomeController < ApplicationController
   end
 
   def generate_cards
-    @slots = Slot.all
+    # @slots = Slot.all
+    @slots = Slot.order('id ASC').all
     chosen_cards = []
 
     @slots.each do |slot|
@@ -36,7 +37,8 @@ class HomeController < ApplicationController
 
   def clear_filters
 
-    @slots = Slot.all
+    # @slots = Slot.all
+    @slots = Slot.order('id ASC').all
 
     @slots.each do |slot|
       slot[:filters_humanized] = ""
