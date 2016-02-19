@@ -1,6 +1,6 @@
 class SlotsController < ApplicationController
   def show
-    @slot = Slot.find(params[:id])(:order => 'created_at DESC')
+    @slot = Slot.find(params[:id])
 
     @results, @matched_terms = Card.search(params[:search], @slot)
 
