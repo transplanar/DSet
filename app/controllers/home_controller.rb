@@ -1,8 +1,6 @@
 class HomeController < ApplicationController
   def index
-    @slots = Slot.all
-    @slots.order('id DESC').all
-    @slots.save!
+    @slots = Slot.order('id ASC').all
 
     respond_to do |format|
       format.html
