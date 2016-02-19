@@ -1,6 +1,7 @@
 class HomeController < ApplicationController
   def index
-    @slots = Slot.all(:order => 'created_at DESC')
+    @slots = Slot.all
+    @slots.order('created_at DESC').all
 
     respond_to do |format|
       format.html
