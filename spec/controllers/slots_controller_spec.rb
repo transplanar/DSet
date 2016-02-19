@@ -40,7 +40,30 @@ RSpec.describe SlotsController, type: :controller do
 
       post :assign_card, {slot_id: my_slot.id, id: Card.first.id}
 
+      expect(my_slot.cards.first).to eq(Card.first)
+    end
+  end
+
+
+  describe 'assigning filters' do
+    it 'should assign the desired filter' do
+      expect(my_slot.cards.count).to eq(25)
+
+      post :assign_filter, {slot_id: my_slot.id, col: 'name', term: 'village'}
+
       expect(my_slot.cards.count).to eq(1)
+    end
+  end
+
+  describe 'deleting filters' do
+    it 'should delete selected filter' do
+      post :assign_filter, {slot_id: my_slot.id, col: 'category', term: 'village'}
+      expect(my_slot.cards.count).to eq(2)
+
+      pair = "category: Village"
+
+      patch :delete_filter, {slot_id: my_slot.id, pair: pair}
+      expect(my_slot.cards.count).to eq(25)
     end
   end
 

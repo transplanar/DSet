@@ -39,6 +39,8 @@ class SlotsController < ApplicationController
       end
     end
 
+    @slot.cards = Card.find_by_sql(@slot.sql_prepend)
+
     redirect_to slot_path(@slot)
   end
 
@@ -76,6 +78,8 @@ class SlotsController < ApplicationController
         end
       end
     end
+
+    @slot.cards = Card.all
 
     redirect_to slot_path(@slot)
   end
