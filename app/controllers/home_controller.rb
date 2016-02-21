@@ -1,6 +1,15 @@
+include SlotsHelper
+
 class HomeController < ApplicationController
   def index
     @slots = Slot.order('id ASC').all
+
+    @slots.each do |slot|
+      if slot.cards.count == 1
+        # assign_card_path(slot, slot.cards.first)
+        assign_card(slot, slot.cards.first)
+      end
+    end
 
     respond_to do |format|
       format.html
@@ -12,11 +21,21 @@ class HomeController < ApplicationController
   end
 
   def generate_cards
-    # @slots = Slot.all
     @slots = Slot.order('id ASC').all
     chosen_cards = []
+    random_slots = []
 
     @slots.each do |slot|
+      if slot.cards.count == 1
+        chosen_cards << slot.cards.first
+      else
+        random_slots << slot
+      end
+    end
+
+    puts "RANDOM SLOTS #{random_slots}"
+
+    random_slots.each do |slot|
       if slot.cards.blank?
         slot.cards = Card.all
       end
@@ -36,8 +55,6 @@ class HomeController < ApplicationController
   end
 
   def clear_filters
-
-    # @slots = Slot.all
     @slots = Slot.order('id ASC').all
 
     @slots.each do |slot|

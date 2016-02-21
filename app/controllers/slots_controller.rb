@@ -14,12 +14,7 @@ class SlotsController < ApplicationController
 
     card = Card.find(params[:id])
 
-    @slot.cards = [card]
-
-    @slot.update_attribute(:queries, "")
-    @slot.update_attribute(:image_url, card.image_url)
-
-    @slot.save
+    SlotsHelper.assign_card(@slot, card)
 
     redirect_to slot_path(@slot)
   end
