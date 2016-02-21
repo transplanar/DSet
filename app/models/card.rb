@@ -30,6 +30,14 @@ class Card < ActiveRecord::Base
       matched_terms = get_matching_terms(search_queries, columns, results)
 
       save_cards_to_slot(search_str, results, slot)
+
+      # TODO If a slot only has 1 card in it, assign that card
+      # Move to home#index?
+
+      # if slot.cards.count == 1
+        # slot.assign_card(slot.cards.first)
+        # post :assign_card, {slot_id: slot.id, id: slot.cards.first.id}
+      # end
     else
       unless slot.sql_prepend.blank?
         cards = Card.find_by_sql(slot.sql_prepend)
