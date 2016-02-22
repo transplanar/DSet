@@ -1,12 +1,9 @@
-include SlotsHelper
-
 class HomeController < ApplicationController
   def index
     @slots = Slot.order('id ASC').all
 
     @slots.each do |slot|
       if slot.cards.count == 1
-        # assign_card_path(slot, slot.cards.first)
         assign_card(slot, slot.cards.first)
       end
     end
@@ -32,8 +29,6 @@ class HomeController < ApplicationController
         random_slots << slot
       end
     end
-
-    puts "RANDOM SLOTS #{random_slots}"
 
     random_slots.each do |slot|
       if slot.cards.blank?
