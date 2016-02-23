@@ -1,5 +1,5 @@
 module SlotsHelper
-  def assign_card slot, card
+  def direct_card_assign slot, card
     @slot = slot
 
     @slot.cards = [card]

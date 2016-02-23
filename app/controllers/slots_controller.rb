@@ -1,3 +1,5 @@
+include SlotsHelper
+
 class SlotsController < ApplicationController
   def show
     @slot = Slot.find(params[:id])
@@ -14,7 +16,7 @@ class SlotsController < ApplicationController
 
     card = Card.find(params[:id])
 
-    SlotsHelper.assign_card(@slot, card)
+    direct_card_assign(@slot, card)
 
     redirect_to slot_path(@slot)
   end

@@ -4,7 +4,7 @@ class HomeController < ApplicationController
 
     @slots.each do |slot|
       if slot.cards.count == 1
-        assign_card(slot, slot.cards.first)
+        direct_card_assign(slot, slot.cards.first)
       end
     end
 
