@@ -39,10 +39,6 @@ Users may click any card in the slots page to directly select that card, assigni
 ####Card Generation
 When desired filters and cards have been selected, simply go back to the card index and click the "Generate Cards" button to generate a random set of 10 Dominion cards.
 
-###How to Use
-1. Click a card to view that "slot"
-
-
 ###Future Development
 This is an ongoing project. Future features include:
 * "Infinite" query chaining
