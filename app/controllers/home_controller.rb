@@ -19,29 +19,29 @@ class HomeController < ApplicationController
 
   def generate_cards
     @slots = Slot.order('id ASC').all
-    chosen_cards = []
-    random_slots = []
+    preselected_cards = []
+    randomize_slots = []
 
     @slots.each do |slot|
       if slot.cards.count == 1
-        chosen_cards << slot.cards.first
+        preselected_cards << slot.cards.first
       else
-        random_slots << slot
+        randomize_slots << slot
       end
     end
 
-    random_slots.each do |slot|
+    randomize_slots.each do |slot|
       if slot.cards.blank?
         slot.cards = Card.all
       end
 
       random_card = slot.cards.sample
 
-      while chosen_cards.include? random_card
+      while preselected_cards.include? random_card
         random_card = slot.cards.sample
       end
 
-      chosen_cards << random_card
+      preselected_cards << random_card
 
       slot.update_attribute(:image_url, random_card.image_url)
     end
