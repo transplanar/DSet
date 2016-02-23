@@ -109,7 +109,6 @@ class Card < ActiveRecord::Base
     return _results
   end
 
-  # FIXME this does not display all the correct terms for multi-keyword categories
   def self.get_matching_terms search_queries, columns, results
     matches = Hash.new
 
@@ -142,7 +141,6 @@ class Card < ActiveRecord::Base
     results = Hash.new
 
     sql_hash.each do |heading, sql|
-      puts "SEARCHING BY SQL #{heading}:#{sql}"
       cards = Card.find_by_sql(sql)
 
       unless cards.blank?
