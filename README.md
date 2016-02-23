@@ -1,9 +1,10 @@
 ## DSet: A Dominion Card Set Generator
 
-This app simulates a (Dominion)[https://boardgamegeek.com/boardgame/36218/dominion] randomizer deck to produce a set of 10 cards to play a game of Dominion. It provides additional features defining what cards to include/exclude, search functionality, and the ability to set global rules for what expansions should be allowed and/or to enforce a spread of card costs.
+This app simulates a [Dominion](https://boardgamegeek.com/boardgame/36218/dominion) randomizer deck to produce a set of 10 cards to play a game of Dominion. It provides additional features defining what cards to include/exclude, search functionality, and the ability to set global rules for what expansions should be allowed and/or to enforce a spread of card costs.
 
 author: Glen Cooney
-Capstone for Bloc Full Stack Web Development Apprenticeship
+
+Capstone for [Bloc's Full Stack Web Development Apprenticeship](https://www.bloc.io/web-development-bootcamp)
 
 ###Features:
 * Livesearch
@@ -23,8 +24,8 @@ Users can click on any of the ten card slots and feed them filtering criteria th
 which a single card will be randomly chosen for that slot.
 
 These criteria may include the name of a card, some attribute of the card (such as its cost, type, etc), or by other grouping categories defined by the community of
-the (Dominion Strategy Wiki)[http://wiki.dominionstrategy.com]. The app performs a live search as you type, displaying potential autocomplete results for specific
-filters as well as a list of cards organized by the category under which the term was matched (modeled after (Ubuntu's Unity search system)[http://linuxconfig.net/wp-content/uploads/2012/06/oneric_unity_dash.jpg])
+the [Dominion Strategy Wiki](http://wiki.dominionstrategy.com). The app performs a live search as you type, displaying potential autocomplete results for specific
+filters as well as a list of cards organized by the category under which the term was matched (modeled after [Ubuntu's Unity search system](http://linuxconfig.net/wp-content/uploads/2012/06/oneric_unity_dash.jpg))
 
 ####Query chaining
 As of this writing (2.23.16), users may chain up to two search terms together separated by a comma. For example, "v, 3" will return three cards: Village (matched by name, type, and cost), Chancellor, and Woodcutter (the latter two matched by cost and terminality (terminal silver)).
@@ -52,7 +53,6 @@ This is an ongoing project. Future features include:
 * Links to card strategies
 * Links to the "story" behind the creation of each card (by Donald X himself)
 * Cards from all 9 Dominion expansions (including additional components)
-
 
 ###LEGAL
 This an unofficial card search and randomizer app for the tabletop game Dominion (c) 2008 by Donald X. Vaccarino
