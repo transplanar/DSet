@@ -1,9 +1,9 @@
-<h1>Filter Rules for Slot <%= @slot.id %></h1>
+<div class='info-header'>Filter Rules for Slot <%= @slot.id %></div>
+<div class='info-text'>Begin typing into the input box below to search for desired cards or card categories.</div>
 
-<%= form_tag slot_path(@slot), :method => 'get', :id => "card_search", remote: true do%>
+<%= form_tag slot_path(@slot), :method => 'get', :id => "card_search", :class => 'search_box', remote: true do%>
   <%= text_field_tag :search, params[:search], value: @slot.queries %>
 <% end %>
-
 
 <div class ="saved_filters"> </div>
 

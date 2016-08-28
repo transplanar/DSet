@@ -3,6 +3,7 @@ class Card < ActiveRecord::Base
 
   cards = Arel::Table.new(:cards)
 
+  # NOTE refactor to use REGEXP instead of Arel
   scope :_name, -> (name) {Card.where(cards[:name].matches("%#{name}%"))}
   scope :_types, -> (types) {Card.where(cards[:types].matches("%#{types}%"))}
   scope :_category, -> (category) {Card.where(cards[:category].matches("%#{category}%"))}
@@ -22,6 +23,22 @@ class Card < ActiveRecord::Base
       else
         search_queries = [search_str.to_s]
       end
+
+      # Test against non-consecutive input
+      # Loop through each character in search_str to construct regex
+
+      # query_arr = search_str.split()
+      # regex_str = ""
+
+      # query_arr.each do |query|
+      #   regex_str << "/^.*?[" + query
+      # end
+
+      # reg_ex = Regexp.new("/^.*?[" + query[i]
+
+
+      #  ]\w*[y].?\w*/g")
+
 
       sql_hash = generate_sql_hash(search_queries, columns, slot)
 
