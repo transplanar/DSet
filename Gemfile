@@ -1,23 +1,20 @@
 source 'https://rubygems.org'
 
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.5'
 
-# #1
 group :production do
-  gem 'pg'
   gem 'rails_12factor'
 end
 
-# #2
-group :development do
-  gem 'sqlite3'
-end
+# group :development do
+  # gem 'sqlite3'
+# end
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.0'
 end
 
+gem 'pg'
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
@@ -31,3 +28,5 @@ gem 'jquery-rails'
 gem 'bootstrap-sass'
 
 gem 'arel'
+
+gem 'sqlite3_ar_regexp', '~> 2.1'

@@ -3,7 +3,6 @@ class Card < ActiveRecord::Base
 
   cards = Arel::Table.new(:cards)
 
-  # NOTE refactor to use REGEXP instead of Arel
   scope :_name, -> (name) {Card.where(cards[:name].matches("%#{name}%"))}
   scope :_types, -> (types) {Card.where(cards[:types].matches("%#{types}%"))}
   scope :_category, -> (category) {Card.where(cards[:category].matches("%#{category}%"))}
@@ -19,7 +18,7 @@ class Card < ActiveRecord::Base
       columns = get_relevant_columns()
 
       unless is_numeric?(search_str)
-        search_queries = search_str.split(', ')
+        search_queries = search_str.split
       else
         search_queries = [search_str.to_s]
       end
@@ -36,17 +35,21 @@ class Card < ActiveRecord::Base
 
       # reg_ex = Regexp.new("/^.*?[" + query[i]
 
+      # regex = Regexp.new("/"+query[i] + )
 
       #  ]\w*[y].?\w*/g")
 
 
-      sql_hash = generate_sql_hash(search_queries, columns, slot)
+      results = regex_test(search_queries, columns, slot)
 
-      results = generate_results_from_sql (sql_hash)
 
-      matched_terms = get_matching_terms(search_queries, columns, results)
-
-      save_cards_to_slot(search_str, results, slot)
+      # sql_hash = generate_sql_hash(search_queries, columns, slot)
+      #
+      # results = generate_results_from_sql (sql_hash)
+      #
+      # matched_terms = get_matching_terms(search_queries, columns, results)
+      #
+      # save_cards_to_slot(search_str, results, slot)
     else
       unless slot.sql_prepend.blank?
         cards = Card.find_by_sql(slot.sql_prepend)
@@ -66,6 +69,29 @@ class Card < ActiveRecord::Base
     return [results, matched_terms]
   end
 
+  def self.regex_test queries, columns, slot
+    results_hash = Hash.new
+    query_str = ""
+
+    letters = queries.first.chars
+
+    letters.each do |query|
+      if query === letters.first
+        query_str << "[#{query}]"
+      else
+        query_str <<  ".*?[#{query}]"
+      end
+    end
+
+    # TODO concatenate multiple regex statements separated by spaces
+    columns.each do |col|
+      results = Card.where("#{col} REGEXP ?", query_str)
+      results_hash[col] = results unless results.empty?
+    end
+
+    return results_hash
+  end
+
   private
 
   def self.get_relevant_columns
@@ -78,11 +104,12 @@ class Card < ActiveRecord::Base
   end
 
   def self.generate_sql_hash queries, columns, slot
-    query = queries.first
+    # query = queries.first
 
     results_hash = Hash.new
     multi_result = Hash.new
     header_string = ""
+
 
     queries.each do |query|
       if query == queries.first

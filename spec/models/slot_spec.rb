@@ -57,7 +57,7 @@ RSpec.describe Slot, type: :model do
 
   describe 'Multi-query search' do
     before :each do
-      @results, @matching_terms = Card.search('v, 3', Slot.first)
+      @results, @matching_terms = Card.search('v 3', Slot.first)
     end
 
     it 'finds three unique matching cards' do
@@ -78,6 +78,17 @@ RSpec.describe Slot, type: :model do
       expect(Slot.first.cards).to include(result_values.first)
       expect(Slot.first.cards).to include(result_values.second)
       expect(Slot.first.cards).to include(result_values.third)
+    end
+  end
+
+  describe 'non-consecutive matching' do
+    before :each do
+      @results, @matching_terms = Card.search('vlg', Slot.first)
+    end
+
+    it 'should display \'village\' as first result' do
+      result_values = values_from_results
+      expect(result_values.first.name.downcase).to eq('village')
     end
   end
 
