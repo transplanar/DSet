@@ -69,23 +69,38 @@ class Card < ActiveRecord::Base
     return [results, matched_terms]
   end
 
-  def self.regex_test queries, columns, slot
+  def self.regex_test user_input, columns, slot
     results_hash = Hash.new
-    query_str = ""
+    letter_str = ""
 
-    letters = queries.first.chars
+    queries = user_input.split('');
 
-    letters.each do |query|
-      if query === letters.first
-        query_str << "[#{query}]"
-      else
-        query_str <<  ".*?[#{query}]"
+    queries.each do |query|
+      letters = query.chars
+
+      letters.each do |letter|
+        if letter === letters.first
+          letter_str << "[#{letter}]"
+        else
+          letter_str <<  ".*?[#{letter}]"
+        end
       end
-    end
 
+    # letters = queries.first.chars
+
+    # letters.each do |letter|
+    #   if letter === letters.first
+    #     letter_str << "[#{letter}]"
+    #   else
+    #     letter_str <<  ".*?[#{letter}]"
+    #   end
+    # end
+
+    # TODO add prepend support
     # TODO concatenate multiple regex statements separated by spaces
+    # TODO display text of matching word with bolded matching letters
     columns.each do |col|
-      results = Card.where("#{col} REGEXP ?", query_str)
+      results = Card.where("#{col} REGEXP ?", letter_str)
       results_hash[col] = results unless results.empty?
     end
 
