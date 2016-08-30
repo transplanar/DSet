@@ -40,12 +40,13 @@ class Card < ActiveRecord::Base
       #  ]\w*[y].?\w*/g")
 
 
-      results = regex_test(search_queries, columns, slot)
+      # results = regex_test(search_queries, columns, slot)
+      sql_hash = regex_test(search_queries, columns, slot)
 
 
       # sql_hash = generate_sql_hash(search_queries, columns, slot)
       #
-      # results = generate_results_from_sql (sql_hash)
+      results = generate_results_from_sql (sql_hash)
       #
       # matched_terms = get_matching_terms(search_queries, columns, results)
       #
@@ -70,13 +71,19 @@ class Card < ActiveRecord::Base
   end
 
   def self.regex_test user_input, columns, slot
+    # TODO only create if required
+    multi_result = Hash.new
+
+    #Generate regex from user input for each query
+    # queries = user_input.split;
+    # puts "User #{user_input}"
+    # puts "queries #{queries}"
     results_hash = Hash.new
-    letter_str = ""
 
-    queries = user_input.split('');
-
-    queries.each do |query|
-      letters = query.chars
+    user_input.each do |query|
+      letter_str = ""
+      column_string = ''
+      letters = query.first.chars
 
       letters.each do |letter|
         if letter === letters.first
@@ -86,8 +93,45 @@ class Card < ActiveRecord::Base
         end
       end
 
-    # letters = queries.first.chars
+      if query === user_input.first
+        columns.each do |col|
+          test_search = Card.where("#{col} REGEXP ?", letter_str)
 
+          unless test_search.blank?
+            results_hash[col] = test_search.to_sql
+          end
+        end
+      else
+        columns.each do |col|
+          results_hash.each do |result_key, sql|
+            unless result_key === col
+              test_search = Card.where("#{col} REGEXP ?", letter_str)
+
+              unless test_search.blank?
+                sql_to_chain = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
+
+                # results_hash[col] = test_search.to_sql
+                # puts "Added sql hash #{results_hash[col]}"
+                # TODO refactor for unlimited chaining
+
+                multi_result["#{result_key} > #{col}"] = sql + " AND " + sql_to_chain
+              end
+            end
+          end
+        end
+      end
+    end
+
+    unless user_input.count > 1
+      results = results_hash
+    else
+      results = multi_result
+    end
+
+    return results
+
+    # letters = user_input.first.chars
+    #
     # letters.each do |letter|
     #   if letter === letters.first
     #     letter_str << "[#{letter}]"
@@ -99,12 +143,28 @@ class Card < ActiveRecord::Base
     # TODO add prepend support
     # TODO concatenate multiple regex statements separated by spaces
     # TODO display text of matching word with bolded matching letters
-    columns.each do |col|
-      results = Card.where("#{col} REGEXP ?", letter_str)
-      results_hash[col] = results unless results.empty?
-    end
 
-    return results_hash
+    # Test all query regexes against column
+    # columns.each do |col|
+    #   # TODO replace with sql string
+    #   test_search = Card.where("#{col} REGEXP ?", letter_str)
+    #
+    #   unless test_search.blank?
+    #     unless slot.sql_prepend.blank?
+    #       sql_without_select_prepend = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
+    #
+    #       results_hash[col] = slot.sql_prepend + " AND "+ sql_without_select_prepend
+    #     else
+    #       results_hash[col] = test_search.to_sql
+    #     end
+    #
+    #     column_string = col;
+    #   end
+    #
+    #   results_hash[col] = results unless results.empty?
+    # end
+    #
+    # return results_hash
   end
 
   private
