@@ -73,6 +73,7 @@ class Card < ActiveRecord::Base
   def self.regex_test user_input, columns, slot
     # TODO only create if required
     multi_result = Hash.new
+    matched_columns = [];
 
     #Generate regex from user input for each query
     # queries = user_input.split;
@@ -99,24 +100,37 @@ class Card < ActiveRecord::Base
 
           unless test_search.blank?
             results_hash[col] = test_search.to_sql
+            # matched_columns << col unless matched_columns.include? col
           end
         end
       else
         columns.each do |col|
-          results_hash.each do |result_key, sql|
-            unless result_key === col
+          if multi_result.count > 0
+            hash = multi_result.clone
+          else
+            hash = results_hash
+          end
+
+          hash.each do |result_key, sql|
+            # unless result_key === col
+            unless result_key.include? col
               test_search = Card.where("#{col} REGEXP ?", letter_str)
 
               unless test_search.blank?
                 sql_to_chain = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
 
-                # results_hash[col] = test_search.to_sql
-                # puts "Added sql hash #{results_hash[col]}"
-                # TODO refactor for unlimited chaining
-
                 multi_result["#{result_key} > #{col}"] = sql + " AND " + sql_to_chain
+                # matched_columns << col unless matched_columns.include? col
               end
             end
+          end
+
+          hash.delete_if do |h|
+            # unless matched_terms.all? {|term| h.key.include? term }
+            #   true
+            # else
+            #   false
+            # end
           end
         end
       end
@@ -127,6 +141,10 @@ class Card < ActiveRecord::Base
     else
       results = multi_result
     end
+
+    puts "*************************Results passed #{results}"
+    puts "*************************Results COUNT #{results.count}"
+    # puts "************************matched #{matched_columns}"
 
     return results
 
