@@ -61,8 +61,8 @@ RSpec.describe HomeController, type: :controller do
 
       it 'should clear saved search queries' do
         @slots.each do |slot|
-          Card.search('v, 3', slot)
-          expect(slot[:queries]).to eq('v, 3')
+          Card.search('v 3', slot)
+          expect(slot[:queries]).to eq('v 3')
         end
 
         post :clear_filters
