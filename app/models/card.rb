@@ -62,135 +62,135 @@ class Card < ActiveRecord::Base
   end
 
   # # Experimental version
-  def self.regex_test user_input, columns, slot
-    results_hash = Hash.new
-
-    if user_input.length == 1
-      letter_regex = get_regex_from_partial_string(user_input.first)
-
-      columns.each do |col|
-        test_search = Card.send("_#{col}", letter_regex)
-
-        unless test_search.blank?
-          results_hash[col] = test_search.to_sql
-        end
-      end
-    else
-      term_arr = []
-      index = 0
-      # eval_string =  ""
-      eval_arr =  []
-      eval_hash = Hash.new
-      matched_columns = []
-
-      user_input.each do |query|
-        term_arr << get_regex_from_partial_string(query)
-      end
-
-      puts "term array = #{term_arr}"
-
-      columns.each do |col|
-        cards = Card.send("_#{col}", term_arr[index])
-        # puts "cards from send #{cards}"
-
-        unless cards.empty?
-          # eval_string << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-          eval_arr << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-          # eval_hash[col] = ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-          matched_columns << col
-        end
-      end
-
-      # unmatched_columns = columns - matched_columns
-
-
-      # puts "eval string #{eval_string}"
-      # puts "eval string #{eval_hash}"
-      # chain_scopes(eval_string[0])
-      # chain_scopes(columns, eval_string[0], index, term_arr.length)
-
-      # unmatched_columns = columns - matched_columns[0]
-      unmatched_columns = Array.new(columns)
-      unmatched_columns.delete(matched_columns[0])
-
-      # chain_scopes(columns, term_arr, eval_arr[0], index, term_arr.length)
-      index = index + 1
-      results = chain_scopes(unmatched_columns, term_arr, eval_arr[0], index, term_arr.length)
-    end
-
-    # results =
-
-    return results_hash
-  end
+  # def self.regex_test user_input, columns, slot
+  #   results_hash = Hash.new
+  #
+  #   if user_input.length == 1
+  #     letter_regex = get_regex_from_partial_string(user_input.first)
+  #
+  #     columns.each do |col|
+  #       test_search = Card.send("_#{col}", letter_regex)
+  #
+  #       unless test_search.blank?
+  #         results_hash[col] = test_search.to_sql
+  #       end
+  #     end
+  #   else
+  #     term_arr = []
+  #     index = 0
+  #     # eval_string =  ""
+  #     eval_arr =  []
+  #     eval_hash = Hash.new
+  #     matched_columns = []
+  #
+  #     user_input.each do |query|
+  #       term_arr << get_regex_from_partial_string(query)
+  #     end
+  #
+  #     puts "term array = #{term_arr}"
+  #
+  #     columns.each do |col|
+  #       cards = Card.send("_#{col}", term_arr[index])
+  #       # puts "cards from send #{cards}"
+  #
+  #       unless cards.empty?
+  #         # eval_string << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+  #         eval_arr << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+  #         # eval_hash[col] = ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+  #         matched_columns << col
+  #       end
+  #     end
+  #
+  #     # unmatched_columns = columns - matched_columns
+  #
+  #
+  #     # puts "eval string #{eval_string}"
+  #     # puts "eval string #{eval_hash}"
+  #     # chain_scopes(eval_string[0])
+  #     # chain_scopes(columns, eval_string[0], index, term_arr.length)
+  #
+  #     # unmatched_columns = columns - matched_columns[0]
+  #     unmatched_columns = Array.new(columns)
+  #     unmatched_columns.delete(matched_columns[0])
+  #
+  #     # chain_scopes(columns, term_arr, eval_arr[0], index, term_arr.length)
+  #     index = index + 1
+  #     results = chain_scopes(unmatched_columns, term_arr, eval_arr[0], index, term_arr.length)
+  #   end
+  #
+  #   # results =
+  #
+  #   return results_hash
+  # end
 
   # ###########################################################################################
   # ###########################################################################################
     # Confirmed version
-  # def self.regex_test user_input, columns, slot
-  #   multi_result = Hash.new
-  #   results_hash = Hash.new
-  #   matched_columns = []
-  #
-  #   user_input.each do |query|
-  #     letter_str = ""
-  #     column_string = ''
-  #     num_matched_terms = 0
-  #     letters = query.first.chars
-  #
-  #     letters.each do |letter|
-  #       if letter === letters.first
-  #         letter_str << "[#{letter}]"
-  #       else
-  #         letter_str <<  ".*?[#{letter}]"
-  #       end
-  #     end
-  #
-  #     if query === user_input.first
-  #       columns.each do |col|
-  #         test_search = Card.send("_#{col}", letter_str)
-  #
-  #         unless test_search.blank?
-  #           results_hash[col] = test_search.to_sql
-  #           matched_columns << col unless matched_columns.include? col
-  #         end
-  #       end
-  #     else
-  #       columns.each do |col|
-  #         if multi_result.count > 0
-  #           hash = multi_result.clone
-  #         else
-  #           hash = results_hash
-  #         end
-  #
-  #         hash.each do |result_key, sql|
-  #           unless result_key.include? col
-  #             test_search = Card.send("_#{col}", letter_str)
-  #             unless test_search.blank?
-  #
-  #               sql_to_chain = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
-  #
-  #               multi_result["#{result_key} > #{col}"] = sql + " AND " + sql_to_chain
-  #             end
-  #           end
-  #         end
-  #       end
-  #     end
-  #   end
-  #
-  #   unless user_input.count > 1
-  #     results = results_hash
-  #   else
-  #     results = multi_result
-  #
-  #     # split_keys = []
-  #     #
-  #     # multi_result.keys.each do |key|
-  #     #   split_keys << key.split(" > ")
-  #     # end
-  #   end
-  #
-  #   return results
-  # end
+  def self.regex_test user_input, columns, slot
+    multi_result = Hash.new
+    results_hash = Hash.new
+    matched_columns = []
+
+    user_input.each do |query|
+      letter_str = ""
+      column_string = ''
+      num_matched_terms = 0
+      letters = query.first.chars
+
+      letters.each do |letter|
+        if letter === letters.first
+          letter_str << "[#{letter}]"
+        else
+          letter_str <<  ".*?[#{letter}]"
+        end
+      end
+
+      if query === user_input.first
+        columns.each do |col|
+          test_search = Card.send("_#{col}", letter_str)
+
+          unless test_search.blank?
+            results_hash[col] = test_search.to_sql
+            matched_columns << col unless matched_columns.include? col
+          end
+        end
+      else
+        columns.each do |col|
+          if multi_result.count > 0
+            hash = multi_result.clone
+          else
+            hash = results_hash
+          end
+
+          hash.each do |result_key, sql|
+            unless result_key.include? col
+              test_search = Card.send("_#{col}", letter_str)
+              unless test_search.blank?
+
+                sql_to_chain = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
+
+                multi_result["#{result_key} > #{col}"] = sql + " AND " + sql_to_chain
+              end
+            end
+          end
+        end
+      end
+    end
+
+    unless user_input.count > 1
+      results = results_hash
+    else
+      results = multi_result
+
+      # split_keys = []
+      #
+      # multi_result.keys.each do |key|
+      #   split_keys << key.split(" > ")
+      # end
+    end
+
+    return results
+  end
   # ###########################################################################################
   # ###########################################################################################
 
