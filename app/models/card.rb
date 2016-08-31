@@ -29,11 +29,6 @@ class Card < ActiveRecord::Base
 
       # query_arr = search_str.split()
       # regex_str = ""
-
-      # query_arr.each do |query|
-      #   regex_str << "/^.*?[" + query
-      # end
-
       # reg_ex = Regexp.new("/^.*?[" + query[i]
 
 
