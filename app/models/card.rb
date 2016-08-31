@@ -61,18 +61,9 @@ class Card < ActiveRecord::Base
     return [results, matched_terms]
   end
 
-  # Experimental version
+  # # Experimental version
   def self.regex_test user_input, columns, slot
-    # multi_result = Hash.new
     results_hash = Hash.new
-    # matched_columns = []
-    # matched_column_term = Hash.new
-    match_pair = []
-    cards = {}
-    search_strings = []
-    index = 0
-
-    puts "USER INPUT #{user_input}"
 
     if user_input.length == 1
       letter_regex = get_regex_from_partial_string(user_input.first)
@@ -82,49 +73,58 @@ class Card < ActiveRecord::Base
 
         unless test_search.blank?
           results_hash[col] = test_search.to_sql
-          # matched_columns << col unless matched_columns.include? col
         end
       end
     else
-
+      term_arr = []
+      index = 0
+      # eval_string =  ""
+      eval_arr =  []
+      eval_hash = Hash.new
+      matched_columns = []
 
       user_input.each do |query|
-        # puts "********RESULTS HASH #{results_hash}"
-        letter_regex = get_regex_from_partial_string(query)
-        puts "letter regex #{letter_regex}"
+        term_arr << get_regex_from_partial_string(query)
+      end
 
-        columns.each do |col|
-          test_search = Card.send("_#{col}", letter_regex)
+      puts "term array = #{term_arr}"
 
-          unless test_search.blank?
-              # match_pair << {col: col, term: letter_regex}
-              # search_strings[index] = '.send("_#{col}", #{letter_regex})'
-              search_strings << ".send('_#{col}', '#{letter_regex}')"
-              # index = index + 1
-          end
+      columns.each do |col|
+        cards = Card.send("_#{col}", term_arr[index])
+        # puts "cards from send #{cards}"
+
+        unless cards.empty?
+          # eval_string << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+          eval_arr << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+          # eval_hash[col] = ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+          matched_columns << col
         end
       end
 
-      search_strings = search_strings.join
+      # unmatched_columns = columns - matched_columns
 
-      search_strings = "Card#{search_strings}"
 
-      puts "concat #{search_strings}"
-      test = eval(search_strings)
-      puts "eval test #{ test } "
+      # puts "eval string #{eval_string}"
+      # puts "eval string #{eval_hash}"
+      # chain_scopes(eval_string[0])
+      # chain_scopes(columns, eval_string[0], index, term_arr.length)
 
-      # puts "********************MATCHED COLUMNS #{matched_columns}"
+      # unmatched_columns = columns - matched_columns[0]
+      unmatched_columns = Array.new(columns)
+      unmatched_columns.delete(matched_columns[0])
 
-      # cards = Card.all
-      #
-      # matched_column_term.each do |col, term|
-      #   cards = test_scope(cards, col, term)
-      # end
+      # chain_scopes(columns, term_arr, eval_arr[0], index, term_arr.length)
+      index = index + 1
+      results = chain_scopes(unmatched_columns, term_arr, eval_arr[0], index, term_arr.length)
     end
+
+    # results =
 
     return results_hash
   end
 
+  # ###########################################################################################
+  # ###########################################################################################
     # Confirmed version
   # def self.regex_test user_input, columns, slot
   #   multi_result = Hash.new
@@ -163,7 +163,6 @@ class Card < ActiveRecord::Base
   #         end
   #
   #         hash.each do |result_key, sql|
-  #           puts "*****************result key is #{result_key}"
   #           unless result_key.include? col
   #             test_search = Card.send("_#{col}", letter_str)
   #             unless test_search.blank?
@@ -182,12 +181,65 @@ class Card < ActiveRecord::Base
   #     results = results_hash
   #   else
   #     results = multi_result
+  #
+  #     # split_keys = []
+  #     #
+  #     # multi_result.keys.each do |key|
+  #     #   split_keys << key.split(" > ")
+  #     # end
   #   end
   #
   #   return results
   # end
+  # ###########################################################################################
+  # ###########################################################################################
 
   private
+
+
+
+  # def self.chain_scopes eval_string, columns, index=0
+  def self.chain_scopes columns, term_arr, eval_string=nil, index=0, max_index
+    result_string = ''
+
+    if index < max_index
+      columns.each do |col|
+        test_str = ''
+        unless eval_string.nil?
+          test_str << eval_string
+          old_card_set = eval( "Card#{eval_string}" )
+        end
+
+        test_str << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+        new_card_set = eval( "Card#{test_str}" )
+
+        continue = false
+
+        unless eval_string.nil?
+          if old_card_set.count != new_card_set.count
+            continue = true
+          end
+
+        else
+          unless new_card_set.blank?
+            continue = true
+          end
+        end
+
+        if continue
+          index = index + 1
+          columns.delete(col)
+          result_string = test_str
+
+          chain_scopes(columns, term_arr, test_str, index, max_index)
+        end
+      end
+    end
+
+    puts "result string #{result_string}"
+
+    return result_string
+  end
 
   def self.get_regex_from_partial_string arr
     regex = ""
@@ -204,12 +256,12 @@ class Card < ActiveRecord::Base
     return regex
   end
 
-  def self.chain_scopes cards, scopes, queries
-
-    def test_scope cards, scope_str
-
-    end
-  end
+  # def self.chain_scopes cards, scopes, queries
+  #
+  #   def test_scope cards, scope_str
+  #
+  #   end
+  # end
 
   # def self.test_scope cards, scopes, query
   #   scopes.each do |s|
@@ -221,18 +273,18 @@ class Card < ActiveRecord::Base
   #   end
   # end
 
-  def self.chain_scopes (cards, scope, queries)
-
-
-    test = cards.send("_#{scope}", query)
-    if test.any?
-      chain_scopes(test, scope.next, query)
-    else
-      # ????
-    end
-
-    # test = cards.send("#{scope}", term)
-  end
+  # def self.chain_scopes (cards, scope, queries)
+  #
+  #
+  #   test = cards.send("_#{scope}", query)
+  #   if test.any?
+  #     chain_scopes(test, scope.next, query)
+  #   else
+  #     # ????
+  #   end
+  #
+  #   # test = cards.send("#{scope}", term)
+  # end
 
   def self.get_relevant_columns
     exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
@@ -290,6 +342,8 @@ class Card < ActiveRecord::Base
     else
       _results = multi_result
     end
+
+
     return _results
   end
 
