@@ -31,7 +31,6 @@ class Card < ActiveRecord::Base
         search_queries = [search_str.to_s]
       end
 
-      # results = regex_test(search_queries, columns, slot)
       sql_hash = regex_test(search_queries, columns, slot)
 
 
