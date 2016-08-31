@@ -1,15 +1,23 @@
 class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
 
-  cards = Arel::Table.new(:cards)
+  # cards = Arel::Table.new(:cards)
 
-  scope :_name, -> (name) {Card.where(cards[:name].matches("%#{name}%"))}
-  scope :_types, -> (types) {Card.where(cards[:types].matches("%#{types}%"))}
-  scope :_category, -> (category) {Card.where(cards[:category].matches("%#{category}%"))}
-  scope :_cost, -> (cost) {Card.where(cards[:cost].eq(cost)) }
-  scope :_expansion, -> (expansion) {Card.where(cards[:expansion].matches("%#{expansion}%"))}
-  scope :_strategy, -> (strategy) {Card.where(cards[:strategy].matches("%#{strategy}%"))}
-  scope :_terminality, -> (terminality) {Card.where(cards[:terminality].matches("%#{terminality}%"))}
+  # scope :_name, -> (name) {Card.where(cards[:name].matches("%#{name}%"))}
+  # scope :_types, -> (types) {Card.where(cards[:types].matches("%#{types}%"))}
+  # scope :_category, -> (category) {Card.where(cards[:category].matches("%#{category}%"))}
+  # scope :_cost, -> (cost) {Card.where(cards[:cost].eq(cost)) }
+  # scope :_expansion, -> (expansion) {Card.where(cards[:expansion].matches("%#{expansion}%"))}
+  # scope :_strategy, -> (strategy) {Card.where(cards[:strategy].matches("%#{strategy}%"))}
+  # scope :_terminality, -> (terminality) {Card.where(cards[:terminality].matches("%#{terminality}%"))}
+
+  scope :_name, -> (regex){Card.where("name REGEXP ?", regex)}
+  scope :_types, -> (regex){Card.where("types REGEXP ?", regex)}
+  scope :_category, -> (regex){Card.where("category REGEXP ?", regex)}
+  scope :_cost, -> (regex){Card.where("cost REGEXP ?", regex)}
+  scope :_expansion, -> (regex){Card.where("expansion REGEXP ?", regex)}
+  scope :_strategy, -> (regex){Card.where("strategy REGEXP ?", regex)}
+  scope :_terminality, -> (regex){Card.where("terminality REGEXP ?", regex)}
 
   single_term_columns = ["cost"]
 
@@ -22,23 +30,6 @@ class Card < ActiveRecord::Base
       else
         search_queries = [search_str.to_s]
       end
-
-      # Test against non-consecutive input
-      # Loop through each character in search_str to construct regex
-
-      # query_arr = search_str.split()
-      # regex_str = ""
-
-      # query_arr.each do |query|
-      #   regex_str << "/^.*?[" + query
-      # end
-
-      # reg_ex = Regexp.new("/^.*?[" + query[i]
-
-      # regex = Regexp.new("/"+query[i] + )
-
-      #  ]\w*[y].?\w*/g")
-
 
       # results = regex_test(search_queries, columns, slot)
       sql_hash = regex_test(search_queries, columns, slot)
@@ -70,122 +61,178 @@ class Card < ActiveRecord::Base
     return [results, matched_terms]
   end
 
+  # Experimental version
   def self.regex_test user_input, columns, slot
-    # TODO only create if required
-    multi_result = Hash.new
-    matched_columns = [];
-
-    #Generate regex from user input for each query
-    # queries = user_input.split;
-    # puts "User #{user_input}"
-    # puts "queries #{queries}"
+    # multi_result = Hash.new
     results_hash = Hash.new
+    # matched_columns = []
+    # matched_column_term = Hash.new
+    match_pair = []
+    cards = {}
+    search_strings = []
+    index = 0
 
-    user_input.each do |query|
-      letter_str = ""
-      column_string = ''
-      letters = query.first.chars
+    puts "USER INPUT #{user_input}"
 
-      letters.each do |letter|
-        if letter === letters.first
-          letter_str << "[#{letter}]"
-        else
-          letter_str <<  ".*?[#{letter}]"
+    if user_input.length == 1
+      letter_regex = get_regex_from_partial_string(user_input.first)
+
+      columns.each do |col|
+        test_search = Card.send("_#{col}", letter_regex)
+
+        unless test_search.blank?
+          results_hash[col] = test_search.to_sql
+          # matched_columns << col unless matched_columns.include? col
         end
       end
+    else
 
-      if query === user_input.first
+
+      user_input.each do |query|
+        # puts "********RESULTS HASH #{results_hash}"
+        letter_regex = get_regex_from_partial_string(query)
+        puts "letter regex #{letter_regex}"
+
         columns.each do |col|
-          test_search = Card.where("#{col} REGEXP ?", letter_str)
+          test_search = Card.send("_#{col}", letter_regex)
 
           unless test_search.blank?
-            results_hash[col] = test_search.to_sql
-            # matched_columns << col unless matched_columns.include? col
-          end
-        end
-      else
-        columns.each do |col|
-          if multi_result.count > 0
-            hash = multi_result.clone
-          else
-            hash = results_hash
-          end
-
-          hash.each do |result_key, sql|
-            # unless result_key === col
-            unless result_key.include? col
-              test_search = Card.where("#{col} REGEXP ?", letter_str)
-
-              unless test_search.blank?
-                sql_to_chain = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
-
-                multi_result["#{result_key} > #{col}"] = sql + " AND " + sql_to_chain
-                # matched_columns << col unless matched_columns.include? col
-              end
-            end
-          end
-
-          hash.delete_if do |h|
-            # unless matched_terms.all? {|term| h.key.include? term }
-            #   true
-            # else
-            #   false
-            # end
+              # match_pair << {col: col, term: letter_regex}
+              # search_strings[index] = '.send("_#{col}", #{letter_regex})'
+              search_strings << ".send('_#{col}', '#{letter_regex}')"
+              # index = index + 1
           end
         end
       end
+
+      search_strings = search_strings.join
+
+      search_strings = "Card#{search_strings}"
+
+      puts "concat #{search_strings}"
+      test = eval(search_strings)
+      puts "eval test #{ test } "
+
+      # puts "********************MATCHED COLUMNS #{matched_columns}"
+
+      # cards = Card.all
+      #
+      # matched_column_term.each do |col, term|
+      #   cards = test_scope(cards, col, term)
+      # end
     end
 
-    unless user_input.count > 1
-      results = results_hash
-    else
-      results = multi_result
-    end
-
-    puts "*************************Results passed #{results}"
-    puts "*************************Results COUNT #{results.count}"
-    # puts "************************matched #{matched_columns}"
-
-    return results
-
-    # letters = user_input.first.chars
-    #
-    # letters.each do |letter|
-    #   if letter === letters.first
-    #     letter_str << "[#{letter}]"
-    #   else
-    #     letter_str <<  ".*?[#{letter}]"
-    #   end
-    # end
-
-    # TODO add prepend support
-    # TODO concatenate multiple regex statements separated by spaces
-    # TODO display text of matching word with bolded matching letters
-
-    # Test all query regexes against column
-    # columns.each do |col|
-    #   # TODO replace with sql string
-    #   test_search = Card.where("#{col} REGEXP ?", letter_str)
-    #
-    #   unless test_search.blank?
-    #     unless slot.sql_prepend.blank?
-    #       sql_without_select_prepend = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
-    #
-    #       results_hash[col] = slot.sql_prepend + " AND "+ sql_without_select_prepend
-    #     else
-    #       results_hash[col] = test_search.to_sql
-    #     end
-    #
-    #     column_string = col;
-    #   end
-    #
-    #   results_hash[col] = results unless results.empty?
-    # end
-    #
-    # return results_hash
+    return results_hash
   end
 
+    # Confirmed version
+  # def self.regex_test user_input, columns, slot
+  #   multi_result = Hash.new
+  #   results_hash = Hash.new
+  #   matched_columns = []
+  #
+  #   user_input.each do |query|
+  #     letter_str = ""
+  #     column_string = ''
+  #     num_matched_terms = 0
+  #     letters = query.first.chars
+  #
+  #     letters.each do |letter|
+  #       if letter === letters.first
+  #         letter_str << "[#{letter}]"
+  #       else
+  #         letter_str <<  ".*?[#{letter}]"
+  #       end
+  #     end
+  #
+  #     if query === user_input.first
+  #       columns.each do |col|
+  #         test_search = Card.send("_#{col}", letter_str)
+  #
+  #         unless test_search.blank?
+  #           results_hash[col] = test_search.to_sql
+  #           matched_columns << col unless matched_columns.include? col
+  #         end
+  #       end
+  #     else
+  #       columns.each do |col|
+  #         if multi_result.count > 0
+  #           hash = multi_result.clone
+  #         else
+  #           hash = results_hash
+  #         end
+  #
+  #         hash.each do |result_key, sql|
+  #           puts "*****************result key is #{result_key}"
+  #           unless result_key.include? col
+  #             test_search = Card.send("_#{col}", letter_str)
+  #             unless test_search.blank?
+  #
+  #               sql_to_chain = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
+  #
+  #               multi_result["#{result_key} > #{col}"] = sql + " AND " + sql_to_chain
+  #             end
+  #           end
+  #         end
+  #       end
+  #     end
+  #   end
+  #
+  #   unless user_input.count > 1
+  #     results = results_hash
+  #   else
+  #     results = multi_result
+  #   end
+  #
+  #   return results
+  # end
+
   private
+
+  def self.get_regex_from_partial_string arr
+    regex = ""
+    letters = arr.chars
+
+    letters.each do |letter|
+      if letter === letters.first
+        regex << "[#{letter}]"
+      else
+        regex <<  ".*?[#{letter}]"
+      end
+    end
+
+    return regex
+  end
+
+  def self.chain_scopes cards, scopes, queries
+
+    def test_scope cards, scope_str
+
+    end
+  end
+
+  # def self.test_scope cards, scopes, query
+  #   scopes.each do |s|
+  #     test = cards.send("_#{s}", query)
+  #
+  #     if test.any?
+  #       test_scope(test, scopes, )
+  #     end
+  #   end
+  # end
+
+  def self.chain_scopes (cards, scope, queries)
+
+
+    test = cards.send("_#{scope}", query)
+    if test.any?
+      chain_scopes(test, scope.next, query)
+    else
+      # ????
+    end
+
+    # test = cards.send("#{scope}", term)
+  end
 
   def self.get_relevant_columns
     exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
