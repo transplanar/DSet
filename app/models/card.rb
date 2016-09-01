@@ -76,30 +76,57 @@ class Card < ActiveRecord::Base
         end
       end
     else
+      # Concept
+      # Loop through all columns for matches
+        # if a match is found, add to array
+      # pass array as single element of new array, recursive
+
+
+
+
       term_arr = []
       index = 0
       # eval_string =  ""
-      eval_arr =  []
-      eval_hash = Hash.new
-      matched_columns = []
+      # eval_arr =  []
+      # eval_hash = Hash.new
+      # matched_columns = []
 
       user_input.each do |query|
         term_arr << get_regex_from_partial_string(query)
       end
 
-      puts "term array = #{term_arr}"
+      # hits = []
+      cards = Card.all
 
-      columns.each do |col|
-        cards = Card.send("_#{col}", term_arr[index])
-        # puts "cards from send #{cards}"
+      test = test_scope(cards, term_arr, index, columns)
 
-        unless cards.empty?
-          # eval_string << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-          eval_arr << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-          # eval_hash[col] = ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-          matched_columns << col
+      puts "Test result =  #{test}"
+      puts "Number #{test.count}"
+
+      test.each do |elem|
+        elem.each do |sub|
+          puts "****"
+          puts "elem #{sub}"
+          # sub.each do |e|
+
+          # end
         end
       end
+
+
+      # puts "term array = #{term_arr}"
+      #
+      # columns.each do |col|
+      #   cards = Card.send("_#{col}", term_arr[index])
+      #   # puts "cards from send #{cards}"
+      #
+      #   unless cards.empty?
+      #     # eval_string << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+      #     eval_arr << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+      #     # eval_hash[col] = ".send(\"_#{col}\", \"#{term_arr[index]}\")"
+      #     matched_columns << col
+      #   end
+      # end
 
       # unmatched_columns = columns - matched_columns
 
@@ -110,12 +137,12 @@ class Card < ActiveRecord::Base
       # chain_scopes(columns, eval_string[0], index, term_arr.length)
 
       # unmatched_columns = columns - matched_columns[0]
-      unmatched_columns = Array.new(columns)
-      unmatched_columns.delete(matched_columns[0])
+      # unmatched_columns = Array.new(columns)
+      # unmatched_columns.delete(matched_columns[0])
 
       # chain_scopes(columns, term_arr, eval_arr[0], index, term_arr.length)
-      index = index + 1
-      results = chain_scopes(unmatched_columns, term_arr, eval_arr[0], index, term_arr.length)
+      # index = index + 1
+      # results = chain_scopes(unmatched_columns, term_arr, eval_arr[0], index, term_arr.length)
     end
 
     # results =
@@ -254,6 +281,36 @@ class Card < ActiveRecord::Base
     end
 
     return regex
+  end
+
+  def self.test_scope cards, terms, index, columns, results = []
+    hits = []
+    # results = []
+
+    columns.each do |col|
+      # test = Card.send("_#{col}", terms[index])
+      puts "Testing collection of #{cards.count} cards"
+      puts "against column #{col} with term #{terms[index]}"
+      test = cards.send("_#{col}", terms[index])
+      puts "result is #{test}"
+
+      unless test.empty?
+        hits << test
+      end
+    end
+
+    if hits.any? && index < (terms.length - 1)
+      results << [hits]
+      # results = hits
+      index = index + 1
+      hits.each do |hit|
+        # results << [test_scope(hit, terms, index, columns)]
+        # test_scope(hit, terms, index, columns, results)
+        test_scope(hit, terms, index, columns, results)
+      end
+    end
+
+    return results
   end
 
   # def self.chain_scopes cards, scopes, queries
