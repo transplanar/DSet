@@ -76,20 +76,8 @@ class Card < ActiveRecord::Base
         end
       end
     else
-      # Concept
-      # Loop through all columns for matches
-        # if a match is found, add to array
-      # pass array as single element of new array, recursive
-
-
-
-
       term_arr = []
       index = 0
-      # eval_string =  ""
-      # eval_arr =  []
-      # eval_hash = Hash.new
-      # matched_columns = []
 
       user_input.each do |query|
         term_arr << get_regex_from_partial_string(query)
@@ -101,17 +89,17 @@ class Card < ActiveRecord::Base
       test = test_scope(cards, term_arr, index, columns)
 
       puts "Test result =  #{test}"
-      puts "Number #{test.count}"
+      # puts "Number #{test.count}"
 
-      test.each do |elem|
-        elem.each do |sub|
-          puts "****"
-          puts "elem #{sub}"
-          # sub.each do |e|
-
-          # end
-        end
-      end
+      # test.each do |elem|
+        # elem.each do |sub|
+      #     puts "****"
+      #     puts "elem #{sub}"
+      #     # sub.each do |e|
+      #
+      #     # end
+      #   end
+      # end
 
 
       # puts "term array = #{term_arr}"
@@ -283,34 +271,34 @@ class Card < ActiveRecord::Base
     return regex
   end
 
-  def self.test_scope cards, terms, index, columns, results = []
-    hits = []
-    # results = []
+  # def self.test_scope cards, terms, index, columns, results = []
+  def self.test_scope cards, terms, index, columns
+    if index === terms.length
+      return cards
+    else
+      hits = []
+      results = []
 
-    columns.each do |col|
-      # test = Card.send("_#{col}", terms[index])
-      puts "Testing collection of #{cards.count} cards"
-      puts "against column #{col} with term #{terms[index]}"
-      test = cards.send("_#{col}", terms[index])
-      puts "result is #{test}"
+      columns.each do |col|
+        test = cards.send("_#{col}", terms[index])
 
-      unless test.empty?
-        hits << test
+        unless test.empty?
+          hits << test
+        end
+      end
+
+      if hits.blank?
+        return nil
+      else
+        index = index + 1
+
+        hits.each do |hit|
+          results << test_scope(hit, terms, index, columns)
+        end
       end
     end
 
-    if hits.any? && index < (terms.length - 1)
-      results << [hits]
-      # results = hits
-      index = index + 1
-      hits.each do |hit|
-        # results << [test_scope(hit, terms, index, columns)]
-        # test_scope(hit, terms, index, columns, results)
-        test_scope(hit, terms, index, columns, results)
-      end
-    end
-
-    return results
+    return results.compact
   end
 
   # def self.chain_scopes cards, scopes, queries
