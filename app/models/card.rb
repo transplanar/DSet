@@ -309,10 +309,27 @@ class Card < ActiveRecord::Base
             term_matches = matched_hsh[:term_matches]
           end
 
-          term_matches << terms[term_index]
+          # TODO fix edge case where a descriptor is comma-separated
+          card_match_arr.each do |card|
+            if !is_numeric?(card["#{col}"])
+              multi_desc = card["#{col}"].split(', ')
 
+              if multi_desc.length > 1
+                multi_desc.each do |d|
+                  if d.include? terms[term_index]
+                    term_matches << d
+                  end
+                end
+              else
+                term_matches << card["#{col}"]
+              end
+            else
+              term_matches << card["#{col}"]
+            end
+          end
 
-          # matched_hsh[:term_matches] << terms[term_index]
+          term_matches.uniq!
+
 
           # hits << {cards: hits, term_matches: col_matches}
           # hits << {cards: card_match_arr, col_matches: col_matches, term_matches: terms[term_index]}
