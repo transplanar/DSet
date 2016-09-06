@@ -293,16 +293,23 @@ class Card < ActiveRecord::Base
       # end
 
       columns.each do |col|
-        # col_matches = ''
+        col_matches = ''
+        term_matches = []
         card_match_arr = matched_hsh[:cards].send("_#{col}", terms[term_index])
 
-        # TODO figure out a way to pass matching terms
         unless card_match_arr.empty?
-          # if matched_hsh[:col_matches].length < 1
-          #   col_matches << "#{col}"
-          # elsif !col_matches.include? col
-          #   col_matches << " < #{col}"
-          # end
+          if !matched_hsh[:col_matches]
+            col_matches << "#{col}"
+          elsif !col_matches.include? col
+            col_matches << "#{matched_hsh[:col_matches]} > #{col}"
+          end
+
+          # REVIEW will this work right?
+          if matched_hsh[:term_matches]
+            term_matches = matched_hsh[:term_matches]
+          end
+
+          term_matches << terms[term_index]
 
 
           # matched_hsh[:term_matches] << terms[term_index]
@@ -311,7 +318,7 @@ class Card < ActiveRecord::Base
           # hits << {cards: card_match_arr, col_matches: col_matches, term_matches: terms[term_index]}
           # hits << {cards: card_match_arr, col_matches: col_matches}
           # hits << {cards: card_match_arr, col_matches: col_matches}
-          hits << {cards: card_match_arr}
+          hits << {cards: card_match_arr, col_matches: col_matches, term_matches: term_matches}
           # hits << {cards: card_match_arr, col_matches: }
           # columns.delete(col)
         end
@@ -323,17 +330,6 @@ class Card < ActiveRecord::Base
         term_index = term_index + 1
 
         hits.each do |hit|
-          # puts "Card #{cards} terms #{terms}"
-          # puts hit[:cards]
-          # puts hit[:col_matches]
-
-          # results << test_scope(hit, terms, term_index, columns)
-          # results << test_scope(hit, terms, term_index, columns)
-          # results << test_scope(hit, terms, term_index, columns, col_matches)
-          # results << test_scope(hit, terms, term_index, columns, col_matches)
-          # results << test_scope(hit[:cards], terms, term_index, columns, hits)
-          # def self.test_scope terms, columns, matched_hsh=Hash.new, term_index=0
-
           results << test_scope(terms, columns, hit, term_index)
         end
       end
