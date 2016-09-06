@@ -87,7 +87,7 @@ Card.create!(name: "Gardens",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/8/8c/Gardens.jpg/200px-Gardens.jpg",
             cost: 4,
             types: "Victory",
-            category: "alt-VP",
+            category: "",
             expansion: "Base",
             strategy: "Rush, alt-VP",
             terminality: "")

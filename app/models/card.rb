@@ -23,6 +23,7 @@ class Card < ActiveRecord::Base
 
   def self.search search_str, slot
     unless search_str.blank?
+      # TODO restore prepend functionality?
       columns = get_relevant_columns()
 
       unless is_numeric?(search_str)
@@ -31,17 +32,15 @@ class Card < ActiveRecord::Base
         search_queries = [search_str.to_s]
       end
 
-      # results = regex_test(search_queries, columns, slot)
-      sql_hash = regex_test(search_queries, columns, slot)
+      # TODO refactor to single-term query parsing
+      # sql_hash = regex_test(search_queries, columns, slot)
+      results = regex_test(search_queries, columns, slot)
 
+      if results.length < 2
+        results = [results]
+      end
 
-      # sql_hash = generate_sql_hash(search_queries, columns, slot)
-      #
-      results = generate_results_from_sql (sql_hash)
-      #
-      # matched_terms = get_matching_terms(search_queries, columns, results)
-      #
-      # save_cards_to_slot(search_str, results, slot)
+      # results = generate_results_from_sql (sql_hash)
     else
       unless slot.sql_prepend.blank?
         cards = Card.find_by_sql(slot.sql_prepend)
@@ -55,27 +54,27 @@ class Card < ActiveRecord::Base
       end
 
       results = {}
-      matched_terms = {}
+      # matched_terms = {}
     end
 
-    return [results, matched_terms]
+    # return [results, matched_terms]
+    return results
   end
 
-  # # Experimental version
   def self.regex_test user_input, columns, slot
     results_hash = Hash.new
 
-    if user_input.length == 1
-      letter_regex = get_regex_from_partial_string(user_input.first)
-
-      columns.each do |col|
-        test_search = Card.send("_#{col}", letter_regex)
-
-        unless test_search.blank?
-          results_hash[col] = test_search.to_sql
-        end
-      end
-    else
+    # if user_input.length == 1
+    #   letter_regex = get_regex_from_partial_string(user_input.first)
+    #
+    #   columns.each do |col|
+    #     test_search = Card.send("_#{col}", letter_regex)
+    #
+    #     unless test_search.blank?
+    #       results_hash[col] = test_search.to_sql
+    #     end
+    #   end
+    # else
       term_arr = []
       index = 0
 
@@ -83,180 +82,13 @@ class Card < ActiveRecord::Base
         term_arr << get_regex_from_partial_string(query)
       end
 
-      # cards = Card.all
-
-      # test = test_scope(cards, term_arr, index, columns)
-      # test = test_scope(term_arr, index, columns)
-      test = test_scope(term_arr, columns)
-
-      puts "Test result =  #{test}"
-      # puts "Matching terms: #{term_matches}"
-      # puts "Number #{test.count}"
-
-      # test.each do |elem|
-        # elem.each do |sub|
-      #     puts "****"
-      #     puts "elem #{sub}"
-      #     # sub.each do |e|
-      #
-      #     # end
-      #   end
-      # end
-
-
-      # puts "term array = #{term_arr}"
-      #
-      # columns.each do |col|
-      #   cards = Card.send("_#{col}", term_arr[index])
-      #   # puts "cards from send #{cards}"
-      #
-      #   unless cards.empty?
-      #     # eval_string << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-      #     eval_arr << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-      #     # eval_hash[col] = ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-      #     matched_columns << col
-      #   end
-      # end
-
-      # unmatched_columns = columns - matched_columns
-
-
-      # puts "eval string #{eval_string}"
-      # puts "eval string #{eval_hash}"
-      # chain_scopes(eval_string[0])
-      # chain_scopes(columns, eval_string[0], index, term_arr.length)
-
-      # unmatched_columns = columns - matched_columns[0]
-      # unmatched_columns = Array.new(columns)
-      # unmatched_columns.delete(matched_columns[0])
-
-      # chain_scopes(columns, term_arr, eval_arr[0], index, term_arr.length)
-      # index = index + 1
-      # results = chain_scopes(unmatched_columns, term_arr, eval_arr[0], index, term_arr.length)
-    end
-
-    # results =
+      results_hash = test_scope(term_arr, columns)
+    # end
 
     return results_hash
   end
 
-  # ###########################################################################################
-  # ###########################################################################################
-    # Confirmed version
-  # def self.regex_test user_input, columns, slot
-  #   multi_result = Hash.new
-  #   results_hash = Hash.new
-  #   matched_columns = []
-  #
-  #   user_input.each do |query|
-  #     letter_str = ""
-  #     column_string = ''
-  #     num_matched_terms = 0
-  #     letters = query.first.chars
-  #
-  #     letters.each do |letter|
-  #       if letter === letters.first
-  #         letter_str << "[#{letter}]"
-  #       else
-  #         letter_str <<  ".*?[#{letter}]"
-  #       end
-  #     end
-  #
-  #     if query === user_input.first
-  #       columns.each do |col|
-  #         test_search = Card.send("_#{col}", letter_str)
-  #
-  #         unless test_search.blank?
-  #           results_hash[col] = test_search.to_sql
-  #           matched_columns << col unless matched_columns.include? col
-  #         end
-  #       end
-  #     else
-  #       columns.each do |col|
-  #         if multi_result.count > 0
-  #           hash = multi_result.clone
-  #         else
-  #           hash = results_hash
-  #         end
-  #
-  #         hash.each do |result_key, sql|
-  #           unless result_key.include? col
-  #             test_search = Card.send("_#{col}", letter_str)
-  #             unless test_search.blank?
-  #
-  #               sql_to_chain = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
-  #
-  #               multi_result["#{result_key} > #{col}"] = sql + " AND " + sql_to_chain
-  #             end
-  #           end
-  #         end
-  #       end
-  #     end
-  #   end
-  #
-  #   unless user_input.count > 1
-  #     results = results_hash
-  #   else
-  #     results = multi_result
-  #
-  #     # split_keys = []
-  #     #
-  #     # multi_result.keys.each do |key|
-  #     #   split_keys << key.split(" > ")
-  #     # end
-  #   end
-  #
-  #   return results
-  # end
-  # ###########################################################################################
-  # ###########################################################################################
-
   private
-
-
-
-  # def self.chain_scopes eval_string, columns, index=0
-  def self.chain_scopes columns, term_arr, eval_string=nil, index=0, max_index
-    result_string = ''
-
-    if index < max_index
-      columns.each do |col|
-        test_str = ''
-        unless eval_string.nil?
-          test_str << eval_string
-          old_card_set = eval( "Card#{eval_string}" )
-        end
-
-        test_str << ".send(\"_#{col}\", \"#{term_arr[index]}\")"
-        new_card_set = eval( "Card#{test_str}" )
-
-        continue = false
-
-        unless eval_string.nil?
-          if old_card_set.count != new_card_set.count
-            continue = true
-          end
-
-        else
-          unless new_card_set.blank?
-            continue = true
-          end
-        end
-
-        if continue
-          index = index + 1
-          columns.delete(col)
-          result_string = test_str
-
-          chain_scopes(columns, term_arr, test_str, index, max_index)
-        end
-      end
-    end
-
-    puts "result string #{result_string}"
-
-    return result_string
-  end
 
   def self.get_regex_from_partial_string arr
     regex = ""
@@ -273,27 +105,23 @@ class Card < ActiveRecord::Base
     return regex
   end
 
-  # def self.test_scope cards, terms, index, columns, results = []
-  # def self.test_scope terms, index, columns, matched_hsh
   def self.test_scope terms, columns, matched_hsh=Hash.new, term_index=0
-    # cards = Card.all
-    # matched_hsh = Card.all
     matched_hsh[:cards] ||= Card.all
 
     if term_index === terms.length
-      # return cards
       return matched_hsh
     else
       hits = []
       results = []
 
-      # Prevent columns from being matched more than once per recursion thread
-      # matched_hsh[:col_matches].each do |m|
-      #   columns.delete(m)
-      # end
+      if matched_hsh[:col_matches]
+        matched_hsh[:col_matches].each do |m|
+          columns.delete(m)
+        end
+      end
 
       columns.each do |col|
-        col_matches = ''
+        col_matches = []
         term_matches = []
         card_match_arr = matched_hsh[:cards].send("_#{col}", terms[term_index])
 
@@ -301,15 +129,14 @@ class Card < ActiveRecord::Base
           if !matched_hsh[:col_matches]
             col_matches << "#{col}"
           elsif !col_matches.include? col
-            col_matches << "#{matched_hsh[:col_matches]} > #{col}"
+          # else
+            col_matches << matched_hsh[:col_matches] << [col]
           end
 
-          # REVIEW will this work right?
           if matched_hsh[:term_matches]
             term_matches = matched_hsh[:term_matches]
           end
 
-          # TODO fix edge case where a descriptor is comma-separated
           card_match_arr.each do |card|
             if !is_numeric?(card["#{col}"])
               multi_desc = card["#{col}"].split(', ')
@@ -330,14 +157,7 @@ class Card < ActiveRecord::Base
 
           term_matches.uniq!
 
-
-          # hits << {cards: hits, term_matches: col_matches}
-          # hits << {cards: card_match_arr, col_matches: col_matches, term_matches: terms[term_index]}
-          # hits << {cards: card_match_arr, col_matches: col_matches}
-          # hits << {cards: card_match_arr, col_matches: col_matches}
           hits << {cards: card_match_arr, col_matches: col_matches, term_matches: term_matches}
-          # hits << {cards: card_match_arr, col_matches: }
-          # columns.delete(col)
         end
       end
 
@@ -352,40 +172,8 @@ class Card < ActiveRecord::Base
       end
     end
 
-    # return results.compact
     return results.compact
-    # return results
   end
-
-  # def self.chain_scopes cards, scopes, queries
-  #
-  #   def test_scope cards, scope_str
-  #
-  #   end
-  # end
-
-  # def self.test_scope cards, scopes, query
-  #   scopes.each do |s|
-  #     test = cards.send("_#{s}", query)
-  #
-  #     if test.any?
-  #       test_scope(test, scopes, )
-  #     end
-  #   end
-  # end
-
-  # def self.chain_scopes (cards, scope, queries)
-  #
-  #
-  #   test = cards.send("_#{scope}", query)
-  #   if test.any?
-  #     chain_scopes(test, scope.next, query)
-  #   else
-  #     # ????
-  #   end
-  #
-  #   # test = cards.send("#{scope}", term)
-  # end
 
   def self.get_relevant_columns
     exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
@@ -394,86 +182,6 @@ class Card < ActiveRecord::Base
 
   def self.is_numeric?(obj)
     obj.to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
-  end
-
-  def self.generate_sql_hash queries, columns, slot
-    # query = queries.first
-
-    results_hash = Hash.new
-    multi_result = Hash.new
-    header_string = ""
-
-
-    queries.each do |query|
-      if query == queries.first
-        columns.each do |col|
-          if (col == "cost" && is_numeric?(query)) || col != "cost"
-            test_search = Card.send( "_#{col}", query )
-
-            unless test_search.blank?
-              unless slot.sql_prepend.blank?
-                sql_without_select_prepend = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
-
-                results_hash[col] = slot.sql_prepend + " AND "+ sql_without_select_prepend
-              else
-                results_hash[col] = test_search.to_sql
-              end
-
-              header_string =  col
-            end
-          end
-        end
-      elsif query == queries.second
-        columns.each do |col|
-          results_hash.each do |col_1, sql |
-            test_search = Card.send( "_#{col}", query)
-
-            unless test_search.blank?
-              sql_without_select_prepend = test_search.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", "")
-
-              multi_result["#{col_1} > #{col}"] = sql + " AND " + sql_without_select_prepend
-            end
-          end
-        end
-      end
-    end
-
-    unless queries.count > 1
-      _results = results_hash
-    else
-      _results = multi_result
-    end
-
-
-    return _results
-  end
-
-  def self.get_matching_terms search_queries, columns, results
-    matches = Hash.new
-
-    columns.each do |col|
-      results.each do |k, card|
-        card.each do |c|
-          unless col == 'name'
-            if col == "cost"
-              split_terms = [c["#{col}"].to_s]
-            else
-              split_terms = c["#{col}"].split(', ')
-            end
-
-            split_terms.each do |term|
-              search_queries.each do |query|
-                if term.downcase.include? query.downcase
-                  matches[col] = term
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-
-    return matches
   end
 
   def self.generate_results_from_sql sql_hash
