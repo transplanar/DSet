@@ -83,12 +83,14 @@ class Card < ActiveRecord::Base
         term_arr << get_regex_from_partial_string(query)
       end
 
-      # hits = []
-      cards = Card.all
+      # cards = Card.all
 
-      test = test_scope(cards, term_arr, index, columns)
+      # test = test_scope(cards, term_arr, index, columns)
+      # test = test_scope(term_arr, index, columns)
+      test = test_scope(term_arr, columns)
 
       puts "Test result =  #{test}"
+      # puts "Matching terms: #{term_matches}"
       # puts "Number #{test.count}"
 
       # test.each do |elem|
@@ -272,33 +274,74 @@ class Card < ActiveRecord::Base
   end
 
   # def self.test_scope cards, terms, index, columns, results = []
-  def self.test_scope cards, terms, index, columns
-    if index === terms.length
-      return cards
+  # def self.test_scope terms, index, columns, matched_hsh
+  def self.test_scope terms, columns, matched_hsh=Hash.new, term_index=0
+    # cards = Card.all
+    # matched_hsh = Card.all
+    matched_hsh[:cards] ||= Card.all
+
+    if term_index === terms.length
+      # return cards
+      return matched_hsh
     else
       hits = []
       results = []
 
-      columns.each do |col|
-        test = cards.send("_#{col}", terms[index])
+      # Prevent columns from being matched more than once per recursion thread
+      # matched_hsh[:col_matches].each do |m|
+      #   columns.delete(m)
+      # end
 
-        unless test.empty?
-          hits << test
+      columns.each do |col|
+        # col_matches = ''
+        card_match_arr = matched_hsh[:cards].send("_#{col}", terms[term_index])
+
+        # TODO figure out a way to pass matching terms
+        unless card_match_arr.empty?
+          # if matched_hsh[:col_matches].length < 1
+          #   col_matches << "#{col}"
+          # elsif !col_matches.include? col
+          #   col_matches << " < #{col}"
+          # end
+
+
+          # matched_hsh[:term_matches] << terms[term_index]
+
+          # hits << {cards: hits, term_matches: col_matches}
+          # hits << {cards: card_match_arr, col_matches: col_matches, term_matches: terms[term_index]}
+          # hits << {cards: card_match_arr, col_matches: col_matches}
+          # hits << {cards: card_match_arr, col_matches: col_matches}
+          hits << {cards: card_match_arr}
+          # hits << {cards: card_match_arr, col_matches: }
+          # columns.delete(col)
         end
       end
 
       if hits.blank?
         return nil
       else
-        index = index + 1
+        term_index = term_index + 1
 
         hits.each do |hit|
-          results << test_scope(hit, terms, index, columns)
+          # puts "Card #{cards} terms #{terms}"
+          # puts hit[:cards]
+          # puts hit[:col_matches]
+
+          # results << test_scope(hit, terms, term_index, columns)
+          # results << test_scope(hit, terms, term_index, columns)
+          # results << test_scope(hit, terms, term_index, columns, col_matches)
+          # results << test_scope(hit, terms, term_index, columns, col_matches)
+          # results << test_scope(hit[:cards], terms, term_index, columns, hits)
+          # def self.test_scope terms, columns, matched_hsh=Hash.new, term_index=0
+
+          results << test_scope(terms, columns, hit, term_index)
         end
       end
     end
 
+    # return results.compact
     return results.compact
+    # return results
   end
 
   # def self.chain_scopes cards, scopes, queries
