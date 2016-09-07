@@ -6,11 +6,20 @@
     <% end %>
 
     <% results.each do |r| %>
-      <h1>TEST</h1>
-      <h1><%= r[:col_matches].join(' > ') %></h1>
-      <h3><%= r[:term_matches] %></h3>
-      <% r[:cards].each do |card| %>
-        <%= link_to image_tag(card.image_url, class: 'card_image'), assign_card_path(slot, card), method: :post, remote: true %>
+      <% if r.class == Array %>
+        <% r.each do |hsh| %>
+          <h1><%= hsh[:col_matches].join(' > ') %></h1>
+          <h3><%= hsh[:term_matches] %></h3>
+          <% hsh[:cards].each do |card| %>
+            <%= link_to image_tag(card.image_url, class: 'card_image'), assign_card_path(slot, card), method: :post, remote: true %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <h1><%= r[:col_matches].join(' > ') %></h1>
+        <h3><%= r[:term_matches] %></h3>
+        <% r[:cards].each do |card| %>
+          <%= link_to image_tag(card.image_url, class: 'card_image'), assign_card_path(slot, card), method: :post, remote: true %>
+        <% end %>
       <% end %>
     <% end %>
 </div>

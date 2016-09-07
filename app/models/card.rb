@@ -34,11 +34,10 @@ class Card < ActiveRecord::Base
 
       # TODO refactor to single-term query parsing
       # sql_hash = regex_test(search_queries, columns, slot)
+      # card_results = regex_test(search_queries, columns, slot)
       results = regex_test(search_queries, columns, slot)
 
-      if results.length < 2
-        results = [results]
-      end
+      # results = format_results(card_results)
 
       # results = generate_results_from_sql (sql_hash)
     else
@@ -133,10 +132,15 @@ class Card < ActiveRecord::Base
             col_matches << matched_hsh[:col_matches] << [col]
           end
 
+          # FIXME returns correct cards, but too many term matches
+          # FIXME does not show "alt-VP" strategy for Gardens
+          # FIXME detect depth to support 2+ chained queries
+
           if matched_hsh[:term_matches]
             term_matches = matched_hsh[:term_matches]
           end
 
+          # Is loop needed here?
           card_match_arr.each do |card|
             if !is_numeric?(card["#{col}"])
               multi_desc = card["#{col}"].split(', ')
