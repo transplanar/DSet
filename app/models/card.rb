@@ -106,6 +106,9 @@ class Card < ActiveRecord::Base
 
   def self.test_scope terms, columns, matched_hsh=Hash.new, term_index=0
     matched_hsh[:cards] ||= Card.all
+    # matched_hsh[:matches] = Hash.new
+    # matched_hsh[:matches][:columns] = matched_hsh[:matches][:columns]
+    # matched_hsh[:matches][:terms] ||= matched_hsh[:matches][:columns]
 
     if term_index === terms.length
       return matched_hsh
@@ -113,8 +116,15 @@ class Card < ActiveRecord::Base
       hits = []
       results = []
 
-      if matched_hsh[:col_matches]
-        matched_hsh[:col_matches].each do |m|
+      if !matched_hsh[:matches]
+        matched_hsh[:matches] = Hash.new
+        matched_hsh[:matches][:columns] = []
+        matched_hsh[:matches][:terms] = []
+      elsif matched_hsh[:matches][:columns]
+
+        # if matched_hsh[:matches][:columns]
+      # if matched_hsh[:col_matches]
+        matched_hsh[:matches][:columns].each do |m|
           columns.delete(m)
         end
       end
@@ -122,22 +132,32 @@ class Card < ActiveRecord::Base
       columns.each do |col|
         col_matches = []
         term_matches = []
+        # matches = Hash.new
         card_match_arr = matched_hsh[:cards].send("_#{col}", terms[term_index])
 
         unless card_match_arr.empty?
-          if !matched_hsh[:col_matches]
+          # if !matched_hsh[:col_matches]
+          if matched_hsh[:matches][:columns].length == 0
             col_matches << "#{col}"
-          elsif !col_matches.include? col
+          # elsif !col_matches.include? col
+          elsif !matched_hsh[:matches][:columns].include? col
           # else
-            col_matches << matched_hsh[:col_matches] << [col]
+            col_matches << matched_hsh[:matches][:columns] << [col]
           end
 
           # FIXME returns correct cards, but too many term matches
           # FIXME does not show "alt-VP" strategy for Gardens
           # FIXME detect depth to support 2+ chained queries
 
-          if matched_hsh[:term_matches]
-            term_matches = matched_hsh[:term_matches]
+          if matched_hsh[:matches][:terms]
+            # term_matches = matched_hsh[:matches][:terms]
+            matched_hsh[:matches].each do |t, c|
+              # puts "m value #{t} and #{c}"
+              # m[:columns].each do |col|
+                # FIXME close???
+                term_matches << matched_hsh[:cards]["#{c}"]
+              # end
+            end
           end
 
           # Is loop needed here?
@@ -161,7 +181,8 @@ class Card < ActiveRecord::Base
 
           term_matches.uniq!
 
-          hits << {cards: card_match_arr, col_matches: col_matches, term_matches: term_matches}
+          # hits << {cards: card_match_arr, col_matches: col_matches, term_matches: term_matches}
+          hits << {cards: card_match_arr, matches: {columns: col_matches, terms: term_matches} }
         end
       end
 
