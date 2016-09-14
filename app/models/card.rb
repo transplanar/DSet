@@ -24,7 +24,6 @@ class Card < ActiveRecord::Base
   def self.search search_str, slot
     unless search_str.blank?
       # TODO restore prepend functionality?
-      columns = get_relevant_columns()
 
       unless is_numeric?(search_str)
         search_queries = search_str.split
@@ -35,7 +34,8 @@ class Card < ActiveRecord::Base
       # TODO refactor to single-term query parsing
       # sql_hash = regex_test(search_queries, columns, slot)
       # card_results = regex_test(search_queries, columns, slot)
-      results = regex_test(search_queries, columns, slot)
+      # results = regex_test(search_queries, columns, slot)
+      results = regex_test(search_queries, slot)
 
       # results = format_results(card_results)
 
@@ -60,36 +60,27 @@ class Card < ActiveRecord::Base
     return results
   end
 
-  def self.regex_test user_input, columns, slot
+  # def self.regex_test user_input, columns, slot
+  def self.regex_test user_input, slot
     results_hash = Hash.new
 
-    # if user_input.length == 1
-    #   letter_regex = get_regex_from_partial_string(user_input.first)
-    #
-    #   columns.each do |col|
-    #     test_search = Card.send("_#{col}", letter_regex)
-    #
-    #     unless test_search.blank?
-    #       results_hash[col] = test_search.to_sql
-    #     end
-    #   end
-    # else
-      term_arr = []
-      index = 0
+    term_arr = []
 
-      user_input.each do |query|
-        term_arr << get_regex_from_partial_string(query)
-      end
+    user_input.each do |query|
+      term_arr << format_query_for_scope(query)
+    end
 
-      results_hash = test_scope(term_arr, columns)
-    # end
+    # results_hash = get_matches(term_arr, columns)
+    results_hash = get_matches(term_arr)
+    results = format_results(results_hash)
 
-    return results_hash
+    # return results_hash
+    return results
   end
 
   private
 
-  def self.get_regex_from_partial_string arr
+  def self.format_query_for_scope arr
     regex = ""
     letters = arr.chars
 
@@ -104,100 +95,67 @@ class Card < ActiveRecord::Base
     return regex
   end
 
-  def self.test_scope terms, columns, matched_hsh=Hash.new, term_index=0
-    matched_hsh[:cards] ||= Card.all
-    # matched_hsh[:matches] = Hash.new
-    # matched_hsh[:matches][:columns] = matched_hsh[:matches][:columns]
-    # matched_hsh[:matches][:terms] ||= matched_hsh[:matches][:columns]
+  # def self.get_matches queries, columns
+  def self.get_matches queries
+    cards = Card.all
+    results_arr = []
+    columns = get_relevant_columns()
 
-    if term_index === terms.length
-      return matched_hsh
-    else
-      hits = []
-      results = []
-
-      if !matched_hsh[:matches]
-        matched_hsh[:matches] = Hash.new
-        matched_hsh[:matches][:columns] = []
-        matched_hsh[:matches][:terms] = []
-      elsif matched_hsh[:matches][:columns]
-
-        # if matched_hsh[:matches][:columns]
-      # if matched_hsh[:col_matches]
-        matched_hsh[:matches][:columns].each do |m|
-          columns.delete(m)
-        end
-      end
-
+    queries.each do |query|
       columns.each do |col|
-        col_matches = []
-        term_matches = []
-        # matches = Hash.new
-        card_match_arr = matched_hsh[:cards].send("_#{col}", terms[term_index])
+        card_matches = cards.send("_#{col}", query)
 
-        unless card_match_arr.empty?
-          # if !matched_hsh[:col_matches]
-          if matched_hsh[:matches][:columns].length == 0
-            col_matches << "#{col}"
-          # elsif !col_matches.include? col
-          elsif !matched_hsh[:matches][:columns].include? col
-          # else
-            col_matches << matched_hsh[:matches][:columns] << [col]
-          end
+        unless card_matches.empty?
+          card_matches.each do |card|
+            test = results_arr.select { |elem|
+              elem[:card].id == card[:id]
+            }
 
-          # FIXME returns correct cards, but too many term matches
-          # FIXME does not show "alt-VP" strategy for Gardens
-          # FIXME detect depth to support 2+ chained queries
-
-          if matched_hsh[:matches][:terms]
-            # term_matches = matched_hsh[:matches][:terms]
-            matched_hsh[:matches].each do |t, c|
-              # puts "m value #{t} and #{c}"
-              # m[:columns].each do |col|
-                # FIXME close???
-                term_matches << matched_hsh[:cards]["#{c}"]
-              # end
-            end
-          end
-
-          # Is loop needed here?
-          card_match_arr.each do |card|
-            if !is_numeric?(card["#{col}"])
-              multi_desc = card["#{col}"].split(', ')
-
-              if multi_desc.length > 1
-                multi_desc.each do |d|
-                  if d.include? terms[term_index]
-                    term_matches << d
-                  end
-                end
-              else
-                term_matches << card["#{col}"]
-              end
+            if test.length > 0
+              elem = test.first
+              elem[:columns] << col
+              term = isolate_term(card["#{col}"], query)
+              elem[:terms] << term
             else
-              term_matches << card["#{col}"]
+              term = isolate_term(card["#{col}"], query)
+              results_arr << {card: card, columns: [col], terms: [card["#{col}"]]}
             end
           end
-
-          term_matches.uniq!
-
-          # hits << {cards: card_match_arr, col_matches: col_matches, term_matches: term_matches}
-          hits << {cards: card_match_arr, matches: {columns: col_matches, terms: term_matches} }
-        end
-      end
-
-      if hits.blank?
-        return nil
-      else
-        term_index = term_index + 1
-
-        hits.each do |hit|
-          results << test_scope(terms, columns, hit, term_index)
         end
       end
     end
 
-    return results.compact
+    results_arr.delete_if{|elem| elem[:columns].length < queries.length}
+
+    return results_arr
+  end
+
+  def self.isolate_term term_string, query
+    unless is_numeric? term_string
+      test = term_string.split(", ")
+
+      if test.length > 1
+        clean_query = query.gsub(/[\[\]]/,"")
+
+        test.each do |word|
+          if word.downcase.include? clean_query.downcase
+            return word
+          end
+        end
+      end
+    end
+
+    return term_string
+  end
+
+  def self.format_results hash
+    groups = hash.group_by{|e| e[:columns]}
+
+    groups.keys.each do |key|
+      groups[key.join(" < ")] = groups.delete key
+    end
+
+    return groups
   end
 
   def self.get_relevant_columns

@@ -5,21 +5,11 @@
       <br>No results found.
     <% end %>
 
-    <% results.each do |r| %>
-      <% if r.class == Array %>
-        <% r.each do |hsh| %>1
-          <h1><%= hsh[:matches][:columns].join(' > ') %></h1>
-          <h3><%= hsh[:matches][:terms] %></h3>
-          <% hsh[:cards].each do |card| %>
-            <%= link_to image_tag(card.image_url, class: 'card_image'), assign_card_path(slot, card), method: :post, remote: true %>
-          <% end %>
-        <% end %>
-      <% else %>
-        <h1><%= r[:matches][:columns].join(' > ') %></h1>
-        <h3><%= r[:matches][:terms] %></h3>
-        <% r[:cards].each do |card| %>
-          <%= link_to image_tag(card.image_url, class: 'card_image'), assign_card_path(slot, card), method: :post, remote: true %>
-        <% end %>
+    <% results.each do |group, matches| %>
+      <h1><%= group %></h1>
+      <% matches.each do |match| %>
+        <%= link_to image_tag(match[:card][:image_url], class: 'card_image'), assign_card_path(slot, match[:card]), method: :post, remote: true %>
+        <%= match[:terms] %>
       <% end %>
     <% end %>
 </div>
