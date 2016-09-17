@@ -1,16 +1,6 @@
 class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
 
-  # cards = Arel::Table.new(:cards)
-
-  # scope :_name, -> (name) {Card.where(cards[:name].matches("%#{name}%"))}
-  # scope :_types, -> (types) {Card.where(cards[:types].matches("%#{types}%"))}
-  # scope :_category, -> (category) {Card.where(cards[:category].matches("%#{category}%"))}
-  # scope :_cost, -> (cost) {Card.where(cards[:cost].eq(cost)) }
-  # scope :_expansion, -> (expansion) {Card.where(cards[:expansion].matches("%#{expansion}%"))}
-  # scope :_strategy, -> (strategy) {Card.where(cards[:strategy].matches("%#{strategy}%"))}
-  # scope :_terminality, -> (terminality) {Card.where(cards[:terminality].matches("%#{terminality}%"))}
-
   scope :_name, -> (regex){Card.where("name REGEXP ?", regex)}
   scope :_types, -> (regex){Card.where("types REGEXP ?", regex)}
   scope :_category, -> (regex){Card.where("category REGEXP ?", regex)}
@@ -24,22 +14,13 @@ class Card < ActiveRecord::Base
   def self.search search_str, slot
     unless search_str.blank?
       # TODO restore prepend functionality?
-
       unless is_numeric?(search_str)
         search_queries = search_str.split
       else
         search_queries = [search_str.to_s]
       end
 
-      # TODO refactor to single-term query parsing
-      # sql_hash = regex_test(search_queries, columns, slot)
-      # card_results = regex_test(search_queries, columns, slot)
-      # results = regex_test(search_queries, columns, slot)
       results = regex_test(search_queries, slot)
-
-      # results = format_results(card_results)
-
-      # results = generate_results_from_sql (sql_hash)
     else
       unless slot.sql_prepend.blank?
         cards = Card.find_by_sql(slot.sql_prepend)
@@ -53,14 +34,11 @@ class Card < ActiveRecord::Base
       end
 
       results = {}
-      # matched_terms = {}
     end
 
-    # return [results, matched_terms]
     return results
   end
 
-  # def self.regex_test user_input, columns, slot
   def self.regex_test user_input, slot
     results_hash = Hash.new
 
@@ -70,11 +48,9 @@ class Card < ActiveRecord::Base
       term_arr << format_query_for_scope(query)
     end
 
-    # results_hash = get_matches(term_arr, columns)
     results_hash = get_matches(term_arr)
     results = format_results(results_hash)
 
-    # return results_hash
     return results
   end
 
@@ -95,9 +71,9 @@ class Card < ActiveRecord::Base
     return regex
   end
 
-  # def self.get_matches queries, columns
   def self.get_matches queries
     cards = Card.all
+    new_cards = Card.none
     results_arr = []
     columns = get_relevant_columns()
 
@@ -118,16 +94,42 @@ class Card < ActiveRecord::Base
               elem[:terms] << term
             else
               term = isolate_term(card["#{col}"], query)
-              results_arr << {card: card, columns: [col], terms: [card["#{col}"]]}
+              # results_arr << {card: card, columns: [col], terms: [card["#{col}"]]}
+              results_arr << {card: card, columns: [col], terms: [term] }
             end
           end
+          # cards = card_matches
+          # new_cards << card_matches
         end
       end
+      # cards = new_cards
     end
 
+    # FIXME remove results unless all queries represented among terms
+    # NOTE Close to the solution here
+    queries.each do |query|
+      rgx = query_to_regex(query)
+
+      results_arr.delete_if{|elem|
+        elem[:terms].any?{|term|
+          if is_numeric? term
+            term == query
+          else
+            rgx.match(term) != nil
+          end
+        }
+      }
+    end
+
+    # NOTE SOMEWHAT WORKS!
     results_arr.delete_if{|elem| elem[:columns].length < queries.length}
 
     return results_arr
+  end
+
+  def self.query_to_regex query
+    clean_query = query.gsub(/[\[\]]/,"")
+    return /#{clean_query}/i
   end
 
   def self.isolate_term term_string, query
@@ -135,10 +137,10 @@ class Card < ActiveRecord::Base
       test = term_string.split(", ")
 
       if test.length > 1
-        clean_query = query.gsub(/[\[\]]/,"")
+        regex = query_to_regex(query)
 
         test.each do |word|
-          if word.downcase.include? clean_query.downcase
+          if regex.match(word)
             return word
           end
         end
@@ -167,32 +169,19 @@ class Card < ActiveRecord::Base
     obj.to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
   end
 
-  def self.generate_results_from_sql sql_hash
-    results = Hash.new
-
-    sql_hash.each do |heading, sql|
-      cards = Card.find_by_sql(sql)
-
-      unless cards.blank?
-        results[heading] = cards
-      end
-    end
-
-    return results
-  end
-
-  def self.save_cards_to_slot search_str, results, slot
-    cards_to_slot = []
-
-    results.each do |k, card|
-      card.each do |c|
-        cards_to_slot << c
-      end
-    end
-
-    cards_to_slot.uniq!
-
-    slot.cards = cards_to_slot
-    slot.update_attribute(:queries, search_str)
-  end
+  # FIXME requires refactor
+  # def self.save_cards_to_slot search_str, results, slot
+  #   cards_to_slot = []
+  #
+  #   results.each do |k, card|
+  #     card.each do |c|
+  #       cards_to_slot << c
+  #     end
+  #   end
+  #
+  #   cards_to_slot.uniq!
+  #
+  #   slot.cards = cards_to_slot
+  #   slot.update_attribute(:queries, search_str)
+  # end
 end
