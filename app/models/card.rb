@@ -49,8 +49,10 @@ class Card < ActiveRecord::Base
     end
 
     results_hash = get_matches(term_arr)
-    results = format_results(results_hash)
+    # results = format_results(results_hash)
 
+    # TODO test
+    results = []
     return results
   end
 
@@ -75,8 +77,7 @@ class Card < ActiveRecord::Base
     columns = get_relevant_columns()
     results_arr = []
     sql_string_data = []
-
-    # sql_string_data = Hash.new
+    matches = []
 
     # Create array of sql statements for each possible query/column combination
     queries.each_with_index do |query, index|
@@ -85,209 +86,57 @@ class Card < ActiveRecord::Base
           sql_string_data[index] = []
         end
 
-        # TODO do gsub here if it is not the first query
-        if index == 0
-          test = Card.send("_#{col}", query)
-          unless test.empty?
-            # sql_string_data[index] << test.to_sql
-            terms = []
-            test.each do |card|
-              terms << card["#{col}"]
-            end
-            # sql_string_data[index] << {sql: test.to_sql, columns: col}
-            sql_string_data[index] << {sql: test.to_sql, columns: [col], terms: terms}
+        matches_in_column = []
+        cards_from_scope = Card.send("_#{col}", query)
+
+        unless cards_from_scope.empty?
+          if query == queries.first
+            sql = cards_from_scope.to_sql
+          else
+            sql = cards_from_scope.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", " AND ")
           end
-        else
-          #TODO Detect if a record is in given index position
-          test = Card.send("_#{col}", query)
-          unless test.empty?
-            terms = []
-            # sql_string_data[index] << Card.send("_#{col}", query).to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", " AND ")
-            # sql_string_data[index] << test.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", " AND ")
-            # sql_string_data[index] << {sql: test.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", " AND "), columns: col}
-            test.each do |card|
-              terms << card["#{col}"]
-            end
-            # sql_string_data[index] << {sql: test.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", " AND "), columns: col}
-            sql_string_data[index] << {sql: test.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", " AND "), columns: [col], terms: terms}
-          end
+
+          sql_string_data[index] << { sql: sql, columns: [col], cards: cards_from_scope}
         end
       end
     end
-
-    puts "sql string #{sql_string_data}"
 
     concat = []
 
     # FIXME works for two terms. Make it work for infinite!
-    # for q in 0..(queries.count-1) do
-      # for i in 0..(columns.count-1) do
-      # for i in 0..(sql_string_data[0].length) do
-      # TODO refactor to use two terms
-      sql_string_data[0].each_with_index do |e1, i|
-        # for j in 0..(columns.count-1) do
-        sql_string_data[1].each_with_index do |e2, j|
-          puts "concat i #{i} and j #{j}"
-          # concat << ["#{sql_string_data[0][i] + sql_string_data[1][j]}"]
-          # concat << ["#{sql_string_data[0][i][:sql] + sql_string_data[1][j][:sql]}"]
-          concat << {sql: sql_string_data[0][i][:sql] + sql_string_data[1][j][:sql],
-            #  columns: "#{sql_string_data[0][i][:columns]},#{sql_string_data[1][j][:columns]}",
-             columns: sql_string_data[0][i][:columns] + sql_string_data[1][j][:columns],
-            #  terms: "#{sql_string_data[0][i][:terms]},#{sql_string_data[1][j][:terms]}"}
-             terms: sql_string_data[0][i][:terms] + sql_string_data[1][j][:terms]}
-          # concat << ["#{sql_string_data[q][i] + sql_string_data[q+1][j]}"]
-        end
-      end
-    # end
-
-    concat.each do |test|
-      # result = Card.find_by_sql(test)
-      result = Card.find_by_sql(test[:sql])
-
-      if !result.empty?
-        puts "Columns #{test[:columns]}"
-        puts "result found #{result}"
-        # terms = test[:terms].flatten.uniq
-        puts "terms #{test[:terms].uniq}"
-        # puts "terms #{terms}"
+    sql_string_data[0].each_with_index do |e1, i|
+      sql_string_data[1].each_with_index do |e2, j|
+        concat << {
+          sql: sql_string_data[0][i][:sql] + sql_string_data[1][j][:sql],
+          columns: sql_string_data[0][i][:columns] + sql_string_data[1][j][:columns],
+          matches: sql_string_data[0][i][:cards] | sql_string_data[1][j][:cards]
+        }
       end
     end
 
+    results = Hash.new
 
+    concat.each do |test|
+      cards_from_sql = Card.find_by_sql(test[:sql])
 
+      if !cards_from_sql.empty?
+        cards_from_sql.each do |card|
+          card_terms = []
+          test[:columns].each do |col|
+            card_terms << card["#{col}"]
+          end
 
+          if results["#{test[:columns]}"]
+            results["#{test[:columns]}"] << {card: card, terms:card_terms}
+          else
+            results["#{test[:columns]}"] = [{card: card, terms:card_terms}]
+          end
+        end
+      end
+    end
 
-
-
-    # Concatenate sql statements to use all queries in single statement
-    # sql_tests = []
-
-    # iterations = sql_string_data.length
-    # eval_string = ''
-
-    # sql_concat = []
-    # index = 0
-    #
-    # for q in 0..(queries.count-2) do
-    #   for i in 0..(columns.count-1) do
-    #     for j in 0..(columns.count-1) do
-    #       if !sql_concat[index]
-    #         sql_concat[index] = []
-    #       end
-    #       sql_concat[index] << [(sql_string_data[q][i] << sql_string_data[q+1][j])]
-    #       index = index + 1
-    #       # sql_concat << sql_string_data[q].zip(sql_string_data[q+1])
-    #     end
-    #   end
-    # end
-    #
-    # puts "sql_concat #{sql_concat}"
-
-    # zipped = []
-
-    # for(i=0; i<columns.length; i++){
-    # for q in 0..(queries.length-2)
-    #   for i in 0..(columns.count-1) do
-    #     # for(j=0; j<columns.length; j++){
-    #     for j in 0..(columns.count-1) do
-    #       puts "testing with i #{i} and j #{j}"
-    #
-    #       zipped = sql_string_data[q].zip(sql_string_data[q+1])
-    #       zipped = zipped.map {|z| z.join('') }
-    #     end
-    #   end
-    # end
-    # sql_string_data.each_with_index do |sql, index|
-      # puts "zip attempt #{sql_string_data[0].zip(sql_string_data[1])}"
-      # zipped = sql_string_data[0].zip(sql_string_data[1])
-      # zipped = zipped.map {|z| z.join('') }
-      # puts "zipped result = #{zipped}"
-    # end
-
-
-    # sql_string_data.each do |col|
-
-    # end
-
-
-    # sql_tests = []
-    # sql_query_string = ''
-    # query_sql_chained = []
-
-    # sql_string_data.each do |query_sql|
-    #   chain = ''
-    #   query_sql.each do |col|
-    #
-    #   end
-    #
-    #   if query_sql_chained.empty?
-    #
-    #   else
-    #   end
-    # end
-
-    # Test all sql statements, store those that yeild hits as match hashes
-
-    # puts "sql_string_data is #{sql_string_data}"
-
-    return results_arr
+    return results
   end
-
-  # def self.get_matches queries
-  #   cards = Card.all
-  #   new_cards = Card.none
-  #   results_arr = []
-  #   columns = get_relevant_columns()
-  #
-  #   queries.each do |query|
-  #     columns.each do |col|
-  #       card_matches = cards.send("_#{col}", query)
-  #
-  #       unless card_matches.empty?
-  #         card_matches.each do |card|
-  #           test = results_arr.select { |elem|
-  #             elem[:card].id == card[:id]
-  #           }
-  #
-  #           if test.length > 0
-  #             elem = test.first
-  #             elem[:columns] << col
-  #             term = isolate_term(card["#{col}"], query)
-  #             elem[:terms] << term
-  #           else
-  #             term = isolate_term(card["#{col}"], query)
-  #             # results_arr << {card: card, columns: [col], terms: [card["#{col}"]]}
-  #             results_arr << {card: card, columns: [col], terms: [term] }
-  #           end
-  #         end
-  #         # cards = card_matches
-  #         # new_cards << card_matches
-  #       end
-  #     end
-  #     # cards = new_cards
-  #   end
-  #
-  #   # FIXME remove results unless all queries represented among terms
-  #   # NOTE Close to the solution here
-  #   queries.each do |query|
-  #     rgx = query_to_regex(query)
-  #
-  #     results_arr.delete_if{|elem|
-  #       elem[:terms].any?{|term|
-  #         if is_numeric? term
-  #           term == query
-  #         else
-  #           rgx.match(term) != nil
-  #         end
-  #       }
-  #     }
-  #   end
-  #
-  #   # NOTE SOMEWHAT WORKS!
-  #   results_arr.delete_if{|elem| elem[:columns].length < queries.length}
-  #
-  #   return results_arr
-  # end
 
   def self.query_to_regex query
     clean_query = query.gsub(/[\[\]]/,"")
