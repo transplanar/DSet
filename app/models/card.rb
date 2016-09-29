@@ -96,10 +96,55 @@ class Card < ActiveRecord::Base
             sql = cards_from_scope.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", " AND ")
           end
 
-          sql_string_data[index] << { sql: sql, columns: [col], cards: cards_from_scope}
+          # sql_string_data[index] << { sql: sql, columns: [col], cards: cards_from_scope}
+          sql_string_data[index] << { sql: sql, columns: [col]}
         end
       end
     end
+
+    puts "performing concatenation"
+    concat = []
+
+    # concat = sql_string_data.map do |memo, data|
+    # initial = {sql: '', columns: [], cards: Card.none}
+    # initial = {sql: '', columns: []}
+    #
+    # concat = sql_string_data.reduce(initial) do |memo, elem|
+    #   puts "test #{memo}"
+    #   puts "elem #{elem}"
+    #
+    #   elem.each do |e|
+    #     memo[:sql] = memo[:sql] + e[:sql]
+    #     memo[:columns] = memo[:columns] + e[:columns]
+    #   end
+    #   # memo[:sql] = memo[:sql] + elem[:sql]
+    #   # memo[:columns] = memo[:columns] + elem[:columns]
+    #   # memo[:cards] = memo[:cards] | elem[:cards]
+    #   # {
+    #   #   sql: memo[:sql] + elem[:sql],
+    #   #   columns: memo[:columns] + elem[:columns],
+    #   #   matches: memo[:cards] | elem[:cards]
+    #   # }
+    # end
+
+    init = {sql: '', columns: [], cards: Card.none}
+
+    # TODO create chain and put into .send method
+    # sql_string_data.reduce(init) do |memo, elem|
+    sql_string_data.each do |elem|
+      # {sql: elem[:sql] + memo[:sql], columns: elem[:columns] + memo[:columns]}
+      # elem.each do |e|
+      concat << elem.reduce(init) do |memo, e|
+        {
+          sql: memo[:sql] + e[:sql],
+          columns: memo[:columns] + e[:columns],
+        }
+      end
+      # puts "elem #{elem}"
+      # memo[:sql] = memo[:sql] + elem[:sql]
+    end
+    puts "concat method 1 #{concat}"
+    concat1 = concat
 
     concat = []
 
@@ -109,10 +154,14 @@ class Card < ActiveRecord::Base
         concat << {
           sql: sql_string_data[0][i][:sql] + sql_string_data[1][j][:sql],
           columns: sql_string_data[0][i][:columns] + sql_string_data[1][j][:columns],
-          matches: sql_string_data[0][i][:cards] | sql_string_data[1][j][:cards]
+          # matches: sql_string_data[0][i][:cards] | sql_string_data[1][j][:cards]
         }
       end
     end
+    concat2 = concat
+
+    puts "concat method 2 #{concat}"
+
 
     results = Hash.new
 
@@ -134,6 +183,8 @@ class Card < ActiveRecord::Base
         end
       end
     end
+
+    # puts "results #{results}"
 
     return results
   end
