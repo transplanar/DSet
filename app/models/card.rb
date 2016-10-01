@@ -48,11 +48,12 @@ class Card < ActiveRecord::Base
       term_arr << format_query_for_scope(query)
     end
 
-    results_hash = get_matches(term_arr)
+    # results_hash = get_matches(term_arr)
+    results = get_matches(term_arr)
     # results = format_results(results_hash)
 
     # TODO test
-    results = []
+    # results = []
     return results
   end
 
@@ -75,118 +76,42 @@ class Card < ActiveRecord::Base
 
   def self.get_matches queries
     columns = get_relevant_columns()
-    results_arr = []
-    sql_string_data = []
-    matches = []
+    results = []
+    card_match_data = []
 
-    # Create array of sql statements for each possible query/column combination
-    queries.each_with_index do |query, index|
+    queries.each do |query|
       columns.each do |col|
-        if !sql_string_data[index]
-          sql_string_data[index] = []
-        end
-
-        matches_in_column = []
         cards_from_scope = Card.send("_#{col}", query)
 
         unless cards_from_scope.empty?
-          if query == queries.first
-            sql = cards_from_scope.to_sql
-          else
-            sql = cards_from_scope.to_sql.gsub("SELECT \"cards\".* FROM \"cards\" WHERE ", " AND ")
-          end
-
-          # sql_string_data[index] << { sql: sql, columns: [col], cards: cards_from_scope}
-          sql_string_data[index] << { sql: sql, columns: [col]}
-        end
-      end
-    end
-
-    puts "performing concatenation"
-    concat = []
-
-    # concat = sql_string_data.map do |memo, data|
-    # initial = {sql: '', columns: [], cards: Card.none}
-    # initial = {sql: '', columns: []}
-    #
-    # concat = sql_string_data.reduce(initial) do |memo, elem|
-    #   puts "test #{memo}"
-    #   puts "elem #{elem}"
-    #
-    #   elem.each do |e|
-    #     memo[:sql] = memo[:sql] + e[:sql]
-    #     memo[:columns] = memo[:columns] + e[:columns]
-    #   end
-    #   # memo[:sql] = memo[:sql] + elem[:sql]
-    #   # memo[:columns] = memo[:columns] + elem[:columns]
-    #   # memo[:cards] = memo[:cards] | elem[:cards]
-    #   # {
-    #   #   sql: memo[:sql] + elem[:sql],
-    #   #   columns: memo[:columns] + elem[:columns],
-    #   #   matches: memo[:cards] | elem[:cards]
-    #   # }
-    # end
-
-    init = {sql: '', columns: [], cards: Card.none}
-
-    # TODO create chain and put into .send method
-    # sql_string_data.reduce(init) do |memo, elem|
-    sql_string_data.each do |elem|
-      # {sql: elem[:sql] + memo[:sql], columns: elem[:columns] + memo[:columns]}
-      # elem.each do |e|
-      concat << elem.reduce(init) do |memo, e|
-        {
-          sql: memo[:sql] + e[:sql],
-          columns: memo[:columns] + e[:columns],
-        }
-      end
-      # puts "elem #{elem}"
-      # memo[:sql] = memo[:sql] + elem[:sql]
-    end
-    puts "concat method 1 #{concat}"
-    concat1 = concat
-
-    concat = []
-
-    # FIXME works for two terms. Make it work for infinite!
-    sql_string_data[0].each_with_index do |e1, i|
-      sql_string_data[1].each_with_index do |e2, j|
-        concat << {
-          sql: sql_string_data[0][i][:sql] + sql_string_data[1][j][:sql],
-          columns: sql_string_data[0][i][:columns] + sql_string_data[1][j][:columns],
-          # matches: sql_string_data[0][i][:cards] | sql_string_data[1][j][:cards]
-        }
-      end
-    end
-    concat2 = concat
-
-    puts "concat method 2 #{concat}"
-
-
-    results = Hash.new
-
-    concat.each do |test|
-      cards_from_sql = Card.find_by_sql(test[:sql])
-
-      if !cards_from_sql.empty?
-        cards_from_sql.each do |card|
-          card_terms = []
-          test[:columns].each do |col|
-            card_terms << card["#{col}"]
-          end
-
-          if results["#{test[:columns]}"]
-            results["#{test[:columns]}"] << {card: card, terms:card_terms}
-          else
-            results["#{test[:columns]}"] = [{card: card, terms:card_terms}]
+          cards_from_scope.each do |card|
+            card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
           end
         end
       end
     end
 
-    # puts "results #{results}"
+    by_card = card_match_data.group_by{|e| e[:card]}
 
-    return results
+    by_card.each do |k, v|
+      query_matches = v.map{|e| e[:query_matches]}
+
+      if query_matches.uniq.length == queries.length
+          init =  v.shift
+          results << v.reduce(init) do |memo, elem|
+            {
+              card: elem[:card],
+              query_matches: memo[:query_matches] | elem[:query_matches],
+              columns: memo[:columns] + elem[:columns],
+              term_matches: memo[:term_matches] + elem[:term_matches]
+            }
+          end
+      end
+    end
+
+    results_by_columns = results.group_by{|elem| elem[:columns]}
+
+    return results_by_columns
   end
 
   def self.query_to_regex query
