@@ -12,13 +12,13 @@ class Card < ActiveRecord::Base
   # scope :_terminality, -> (regex){Card.where(cards[:terminality].matches(regex))}
 
   # sqlite3 version
-  scope :_name, -> (regex){Card.where("name SIMILAR TO ?", regex)}
-  scope :_types, -> (regex){Card.where("types SIMILAR TO ?", regex)}
-  scope :_category, -> (regex){Card.where("category SIMILAR TO ?", regex)}
+  scope :_name, -> (regex){Card.where("name ILIKE ?", regex)}
+  scope :_types, -> (regex){Card.where("types ILIKE ?", regex)}
+  scope :_category, -> (regex){Card.where("category ILIKE ?", regex)}
   scope :_cost, -> (regex){Card.where("cost = ?", regex) }
-  scope :_expansion, -> (regex){Card.where("expansion SIMILAR TO ?", regex)}
-  scope :_strategy, -> (regex){Card.where("strategy SIMILAR TO ?", regex)}
-  scope :_terminality, -> (regex){Card.where("terminality SIMILAR TO ?", regex)}
+  scope :_expansion, -> (regex){Card.where("expansion ILIKE ?", regex)}
+  scope :_strategy, -> (regex){Card.where("strategy ILIKE ?", regex)}
+  scope :_terminality, -> (regex){Card.where("terminality ILIKE ?", regex)}
 
   # postgres attempt
   # scope :_name, -> (regex){Card.where("name SIMILAR TO ?", regex)}
@@ -96,12 +96,18 @@ class Card < ActiveRecord::Base
     #   end
     # end
 
+    # FIXME bug- input of 'v' does not show 'village'
+    # fixed with ILIKE, but breaks non-consecutive
+    # need a way to make similar be case insensitive?
+
     # postgres
     letters.each do |letter|
       if letter === letters.first
-        regex << "[#{letter}]"
+        # regex << "[#{letter}]"
+        regex << "#{letter}"
       else
-        regex <<  "?[#{letter}]"
+        # regex <<  "?[#{letter}]"
+        regex <<  "%#{letter}"
       end
     end
 
@@ -126,6 +132,10 @@ class Card < ActiveRecord::Base
           end
         else
           cards_from_scope = Card.send("_#{col}", query)
+
+          cards_from_scope.each do |card|
+            puts "from column #{col} =  #{card[:name]}"
+          end
         end
 
         unless cards_from_scope.empty?
