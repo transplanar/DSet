@@ -30,4 +30,4 @@ gem 'bootstrap-sass'
 
 gem 'arel'
 
-# gem 'sqlite3_ar_regexp', '~> 2.1'
+gem 'sqlite3_ar_regexp', '~> 2.1'
