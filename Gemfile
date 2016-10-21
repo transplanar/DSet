@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby "2.3.0"
 
 gem 'rails', '4.2.5'
 
@@ -29,4 +30,4 @@ gem 'bootstrap-sass'
 
 gem 'arel'
 
-gem 'sqlite3_ar_regexp', '~> 2.1'
+# gem 'sqlite3_ar_regexp', '~> 2.1'

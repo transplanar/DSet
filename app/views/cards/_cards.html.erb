@@ -5,10 +5,11 @@
       <br>No results found.
     <% end %>
 
-    <% results.each do |k,v| %>
-      <h1><%= k %></h1>
-      <% v.each do |card| %>
-        <%= link_to image_tag(card.image_url, class: 'card_image'), assign_card_path(slot, card), method: :post, remote: true %>
+    <% results.each do |group, matches| %>
+      <h1><%= group %></h1>
+      <% matches.each do |match| %>
+        <%= link_to image_tag(match[:card][:image_url], class: 'card_image'), assign_card_path(slot, match[:card]), method: :post, remote: true %>
+        <%= match[:terms] %>
       <% end %>
     <% end %>
 </div>

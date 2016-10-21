@@ -4,7 +4,8 @@ class SlotsController < ApplicationController
   def show
     @slot = Slot.find(params[:id])
 
-    @results, @matched_terms = Card.search(params[:search], @slot)
+    # @results, @matched_terms = Card.search(params[:search], @slot)
+    @results = Card.search(params[:search], @slot)
 
     unless @slot.sql_prepend.blank?
       @saved_filters = @slot.filters_humanized.split(', ')
