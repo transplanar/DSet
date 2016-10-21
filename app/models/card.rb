@@ -47,16 +47,17 @@ class Card < ActiveRecord::Base
   end
 
   def self.regex_test user_input, slot
-    results_hash = Hash.new
+    # results_hash = Hash.new
 
-    term_arr = []
-
-    user_input.each do |query|
-      term_arr << format_query_for_scope(query)
-    end
+    # term_arr = []
+    #
+    # user_input.each do |query|
+    #   term_arr << format_query_for_scope(query)
+    # end
 
     # results_hash = get_matches(term_arr)
-    results = get_matches(term_arr)
+    # results = get_matches(term_arr)
+    results = get_matches(user_input)
     # results = format_results(results_hash)
 
     # TODO test
