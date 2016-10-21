@@ -91,7 +91,10 @@ class Card < ActiveRecord::Base
       end
     end
 
-    return regex
+    # regex = "/"+regex+'/'
+    regex = Regexp.new regex
+
+    return regex.to_s
   end
 
   def self.get_matches queries
