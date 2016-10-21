@@ -126,16 +126,10 @@ class Card < ActiveRecord::Base
       columns.each do |col|
         cards_from_scope = []
 
-        if col=='cost' || is_numeric?(query)
-          if is_numeric?(query)
-            cards_from_scope = Card.send("_cost", query)
-          end
-        else
+        if col=='cost' && is_numeric?(query)
+          cards_from_scope = Card.send("_cost", query)
+        elsif !is_numeric?(query) && col != 'cost'
           cards_from_scope = Card.send("_#{col}", query)
-
-          cards_from_scope.each do |card|
-            puts "from column #{col} =  #{card[:name]}"
-          end
         end
 
         unless cards_from_scope.empty?
@@ -157,7 +151,7 @@ class Card < ActiveRecord::Base
             {
               card: elem[:card],
               query_matches: memo[:query_matches] | elem[:query_matches],
-              columns: memo[:columns] + elem[:columns],
+              columns: memo[:columns] | elem[:columns],
               term_matches: memo[:term_matches] + elem[:term_matches]
             }
           end
@@ -208,7 +202,8 @@ class Card < ActiveRecord::Base
   end
 
   def self.is_numeric?(obj)
-    obj.to_s.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
+    new_str = obj.to_s.gsub('%','')
+    new_str.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
   end
 
   # FIXME requires refactor
