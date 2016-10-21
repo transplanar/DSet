@@ -88,7 +88,7 @@ class Card < ActiveRecord::Base
 
     queries.each do |query|
       columns.each do |col|
-        if cost=='col'
+        if col=='cost'
           if is_numeric?(query)
             cards_from_scope = Card.send("_cost", query)
           end
