@@ -88,11 +88,13 @@ class Card < ActiveRecord::Base
 
     queries.each do |query|
       columns.each do |col|
-        cards_from_scope = Card.send("_#{col}", query)
+        unless col=='cost' && is_numeric(query)
+          cards_from_scope = Card.send("_#{col}", query)
 
-        unless cards_from_scope.empty?
-          cards_from_scope.each do |card|
-            card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
+          unless cards_from_scope.empty?
+            cards_from_scope.each do |card|
+              card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
+            end
           end
         end
       end
