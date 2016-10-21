@@ -13,6 +13,9 @@
 
 ActiveRecord::Schema.define(version: 20160201001613) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "cards", force: :cascade do |t|
     t.string   "name"
     t.string   "image_url"
@@ -31,8 +34,8 @@ ActiveRecord::Schema.define(version: 20160201001613) do
     t.integer "card_id", null: false
   end
 
-  add_index "cards_slots", ["card_id", "slot_id"], name: "index_cards_slots_on_card_id_and_slot_id"
-  add_index "cards_slots", ["slot_id", "card_id"], name: "index_cards_slots_on_slot_id_and_card_id"
+  add_index "cards_slots", ["card_id", "slot_id"], name: "index_cards_slots_on_card_id_and_slot_id", using: :btree
+  add_index "cards_slots", ["slot_id", "card_id"], name: "index_cards_slots_on_slot_id_and_card_id", using: :btree
 
   create_table "slots", force: :cascade do |t|
     t.string   "queries"

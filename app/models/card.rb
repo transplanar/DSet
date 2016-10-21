@@ -12,13 +12,13 @@ class Card < ActiveRecord::Base
   # scope :_terminality, -> (regex){Card.where(cards[:terminality].matches(regex))}
 
   # sqlite3 version
-  scope :_name, -> (regex){Card.where("name REGEXP ?", regex)}
-  scope :_types, -> (regex){Card.where("types REGEXP ?", regex)}
-  scope :_category, -> (regex){Card.where("category REGEXP ?", regex)}
-  scope :_cost, -> (regex){Card.where("cost REGEXP ?", regex)}
-  scope :_expansion, -> (regex){Card.where("expansion REGEXP ?", regex)}
-  scope :_strategy, -> (regex){Card.where("strategy REGEXP ?", regex)}
-  scope :_terminality, -> (regex){Card.where("terminality REGEXP ?", regex)}
+  scope :_name, -> (regex){Card.where("name SIMILAR TO ?", regex)}
+  scope :_types, -> (regex){Card.where("types SIMILAR TO ?", regex)}
+  scope :_category, -> (regex){Card.where("category SIMILAR TO ?", regex)}
+  scope :_cost, -> (regex){Card.where("cost IS ?", regex)}
+  scope :_expansion, -> (regex){Card.where("expansion SIMILAR TO ?", regex)}
+  scope :_strategy, -> (regex){Card.where("strategy SIMILAR TO ?", regex)}
+  scope :_terminality, -> (regex){Card.where("terminality SIMILAR TO ?", regex)}
 
   # postgres attempt
   # scope :_name, -> (regex){Card.where("name SIMILAR TO ?", regex)}
@@ -83,18 +83,28 @@ class Card < ActiveRecord::Base
     regex = ""
     letters = arr.chars
 
+    # sqlite3
+    # letters.each do |letter|
+    #   if letter === letters.first
+    #     regex << "[#{letter}]"
+    #   else
+    #     regex <<  ".*?[#{letter}]"
+    #   end
+    # end
+
+    # postgres
     letters.each do |letter|
       if letter === letters.first
         regex << "[#{letter}]"
       else
-        regex <<  ".*?[#{letter}]"
+        regex <<  "?[#{letter}]"
       end
     end
 
-    # regex = "/"+regex+'/'
-    regex = Regexp.new regex
+    regex = "%"+regex+'%'
+    # regex = Regexp.new regex
 
-    return regex.to_s
+    return regex
   end
 
   def self.get_matches queries
@@ -104,11 +114,12 @@ class Card < ActiveRecord::Base
 
     queries.each do |query|
       columns.each do |col|
-        # if col=='cost'
-        #   if is_numeric?(query)
-        #     cards_from_scope = Card.send("_cost", query)
-        #   end
-        # else
+        if col=='cost' || is_numeric?(query)
+          if is_numeric?(query)
+            puts "cost is numeric"
+            cards_from_scope = Card.send("_cost", query)
+          end
+        else
           cards_from_scope = Card.send("_#{col}", query)
 
           puts "cards from scope #{cards_from_scope}"
@@ -118,7 +129,7 @@ class Card < ActiveRecord::Base
               card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
             end
           end
-        # end
+        end
       end
     end
 

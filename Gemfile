@@ -5,12 +5,13 @@ gem 'rails', '4.2.5'
 
 group :production do
   gem 'rails_12factor'
-  gem 'pg'
+  # gem 'pg'
 end
 
-group :development do
-  gem 'sqlite3'
-end
+# group :development do
+  # gem 'sqlite3'
+  gem 'pg'
+# end
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.0'
