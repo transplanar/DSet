@@ -1,20 +1,33 @@
 class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
 
-  # scope :_name, -> (regex){Card.where("name REGEXP ?", regex)}
-  # scope :_types, -> (regex){Card.where("types REGEXP ?", regex)}
-  # scope :_category, -> (regex){Card.where("category REGEXP ?", regex)}
-  # scope :_cost, -> (regex){Card.where("cost REGEXP ?", regex)}
-  # scope :_expansion, -> (regex){Card.where("expansion REGEXP ?", regex)}
-  # scope :_strategy, -> (regex){Card.where("strategy REGEXP ?", regex)}
-  # scope :_terminality, -> (regex){Card.where("terminality REGEXP ?", regex)}
-  scope :_name, -> (regex){Card.where("name SIMILAR TO ?", regex)}
-  scope :_types, -> (regex){Card.where("types SIMILAR TO ?", regex)}
-  scope :_category, -> (regex){Card.where("category SIMILAR TO ?", regex)}
-  scope :_cost, -> (regex){Card.where("cost = ?", regex)}
-  scope :_expansion, -> (regex){Card.where("expansion SIMILAR TO ?", regex)}
-  scope :_strategy, -> (regex){Card.where("strategy SIMILAR TO ?", regex)}
-  scope :_terminality, -> (regex){Card.where("terminality SIMILAR TO ?", regex)}
+  # Arel method
+  # cards = Arel::Table.new(:cards)
+  # scope :_name, -> (regex){Card.where(cards[:name].matches(regex))}
+  # scope :_types, -> (regex){Card.where(cards[:types].matches(regex))}
+  # scope :_category, -> (regex){Card.where(cards[:category].matches(regex))}
+  # scope :_cost, -> (regex){Card.where(cards[:cost].eq(regex))}
+  # scope :_expansion, -> (regex){Card.where(cards[:expansion].matches(regex))}
+  # scope :_strategy, -> (regex){Card.where(cards[:strategy].matches(regex))}
+  # scope :_terminality, -> (regex){Card.where(cards[:terminality].matches(regex))}
+
+  # sqlite3 version
+  scope :_name, -> (regex){Card.where("name REGEXP ?", regex)}
+  scope :_types, -> (regex){Card.where("types REGEXP ?", regex)}
+  scope :_category, -> (regex){Card.where("category REGEXP ?", regex)}
+  scope :_cost, -> (regex){Card.where("cost REGEXP ?", regex)}
+  scope :_expansion, -> (regex){Card.where("expansion REGEXP ?", regex)}
+  scope :_strategy, -> (regex){Card.where("strategy REGEXP ?", regex)}
+  scope :_terminality, -> (regex){Card.where("terminality REGEXP ?", regex)}
+
+  # postgres attempt
+  # scope :_name, -> (regex){Card.where("name SIMILAR TO ?", regex)}
+  # scope :_types, -> (regex){Card.where("types SIMILAR TO ?", regex)}
+  # scope :_category, -> (regex){Card.where("category SIMILAR TO ?", regex)}
+  # scope :_cost, -> (regex){Card.where("cost = ?", regex)}
+  # scope :_expansion, -> (regex){Card.where("expansion SIMILAR TO ?", regex)}
+  # scope :_strategy, -> (regex){Card.where("strategy SIMILAR TO ?", regex)}
+  # scope :_terminality, -> (regex){Card.where("terminality SIMILAR TO ?", regex)}
 
   single_term_columns = ["cost"]
 
@@ -49,15 +62,14 @@ class Card < ActiveRecord::Base
   def self.regex_test user_input, slot
     # results_hash = Hash.new
 
-    # term_arr = []
-    #
-    # user_input.each do |query|
-    #   term_arr << format_query_for_scope(query)
-    # end
+    term_arr = []
+
+    user_input.each do |query|
+      term_arr << format_query_for_scope(query)
+    end
 
     # results_hash = get_matches(term_arr)
-    # results = get_matches(term_arr)
-    results = get_matches(user_input)
+    results = get_matches(term_arr)
     # results = format_results(results_hash)
 
     # TODO test
@@ -89,19 +101,21 @@ class Card < ActiveRecord::Base
 
     queries.each do |query|
       columns.each do |col|
-        if col=='cost'
-          if is_numeric?(query)
-            cards_from_scope = Card.send("_cost", query)
-          end
-        else
+        # if col=='cost'
+        #   if is_numeric?(query)
+        #     cards_from_scope = Card.send("_cost", query)
+        #   end
+        # else
           cards_from_scope = Card.send("_#{col}", query)
+
+          puts "cards from scope #{cards_from_scope}"
 
           unless cards_from_scope.empty?
             cards_from_scope.each do |card|
               card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
             end
           end
-        end
+        # end
       end
     end
 
