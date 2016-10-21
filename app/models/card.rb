@@ -15,7 +15,7 @@ class Card < ActiveRecord::Base
   scope :_name, -> (regex){Card.where("name SIMILAR TO ?", regex)}
   scope :_types, -> (regex){Card.where("types SIMILAR TO ?", regex)}
   scope :_category, -> (regex){Card.where("category SIMILAR TO ?", regex)}
-  scope :_cost, -> (regex){Card.where("cost IS ?", regex)}
+  scope :_cost, -> (regex){Card.where("cost = ?", regex) }
   scope :_expansion, -> (regex){Card.where("expansion SIMILAR TO ?", regex)}
   scope :_strategy, -> (regex){Card.where("strategy SIMILAR TO ?", regex)}
   scope :_terminality, -> (regex){Card.where("terminality SIMILAR TO ?", regex)}
@@ -65,7 +65,11 @@ class Card < ActiveRecord::Base
     term_arr = []
 
     user_input.each do |query|
-      term_arr << format_query_for_scope(query)
+      unless is_numeric?(query)
+        term_arr << format_query_for_scope(query)
+      else
+        term_arr << query
+      end
     end
 
     # results_hash = get_matches(term_arr)
@@ -114,20 +118,19 @@ class Card < ActiveRecord::Base
 
     queries.each do |query|
       columns.each do |col|
+        cards_from_scope = []
+
         if col=='cost' || is_numeric?(query)
           if is_numeric?(query)
-            puts "cost is numeric"
             cards_from_scope = Card.send("_cost", query)
           end
         else
           cards_from_scope = Card.send("_#{col}", query)
+        end
 
-          puts "cards from scope #{cards_from_scope}"
-
-          unless cards_from_scope.empty?
-            cards_from_scope.each do |card|
-              card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
-            end
+        unless cards_from_scope.empty?
+          cards_from_scope.each do |card|
+            card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
           end
         end
       end
