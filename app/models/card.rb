@@ -8,13 +8,13 @@ class Card < ActiveRecord::Base
   # scope :_expansion, -> (regex){Card.where("expansion REGEXP ?", regex)}
   # scope :_strategy, -> (regex){Card.where("strategy REGEXP ?", regex)}
   # scope :_terminality, -> (regex){Card.where("terminality REGEXP ?", regex)}
-  scope :_name, -> (regex){Card.where("name ~* ?", regex)}
-  scope :_types, -> (regex){Card.where("types ~* ?", regex)}
-  scope :_category, -> (regex){Card.where("category ~* ?", regex)}
-  scope :_cost, -> (regex){Card.where("cost ~* ?", regex)}
-  scope :_expansion, -> (regex){Card.where("expansion ~* ?", regex)}
-  scope :_strategy, -> (regex){Card.where("strategy ~* ?", regex)}
-  scope :_terminality, -> (regex){Card.where("terminality ~* ?", regex)}
+  scope :_name, -> (regex){Card.where("((name as text) ~* ?", regex)}
+  scope :_types, -> (regex){Card.where("((types as text) ~* ?", regex)}
+  scope :_category, -> (regex){Card.where("((category as text) ~* ?", regex)}
+  scope :_cost, -> (regex){Card.where("((cost as integer) ~* ?", regex)}
+  scope :_expansion, -> (regex){Card.where("((expansion as text) ~* ?", regex)}
+  scope :_strategy, -> (regex){Card.where("((strategy as text) ~* ?", regex)}
+  scope :_terminality, -> (regex){Card.where("((terminality as text) ~* ?", regex)}
 
   single_term_columns = ["cost"]
 
