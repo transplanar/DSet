@@ -1,17 +1,6 @@
 class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
 
-  # Arel method
-  # cards = Arel::Table.new(:cards)
-  # scope :_name, -> (regex){Card.where(cards[:name].matches(regex))}
-  # scope :_types, -> (regex){Card.where(cards[:types].matches(regex))}
-  # scope :_category, -> (regex){Card.where(cards[:category].matches(regex))}
-  # scope :_cost, -> (regex){Card.where(cards[:cost].eq(regex))}
-  # scope :_expansion, -> (regex){Card.where(cards[:expansion].matches(regex))}
-  # scope :_strategy, -> (regex){Card.where(cards[:strategy].matches(regex))}
-  # scope :_terminality, -> (regex){Card.where(cards[:terminality].matches(regex))}
-
-  # sqlite3 version
   scope :_name, -> (regex){Card.where("name ILIKE ?", regex)}
   scope :_types, -> (regex){Card.where("types ILIKE ?", regex)}
   scope :_category, -> (regex){Card.where("category ILIKE ?", regex)}
@@ -19,15 +8,6 @@ class Card < ActiveRecord::Base
   scope :_expansion, -> (regex){Card.where("expansion ILIKE ?", regex)}
   scope :_strategy, -> (regex){Card.where("strategy ILIKE ?", regex)}
   scope :_terminality, -> (regex){Card.where("terminality ILIKE ?", regex)}
-
-  # postgres attempt
-  # scope :_name, -> (regex){Card.where("name SIMILAR TO ?", regex)}
-  # scope :_types, -> (regex){Card.where("types SIMILAR TO ?", regex)}
-  # scope :_category, -> (regex){Card.where("category SIMILAR TO ?", regex)}
-  # scope :_cost, -> (regex){Card.where("cost = ?", regex)}
-  # scope :_expansion, -> (regex){Card.where("expansion SIMILAR TO ?", regex)}
-  # scope :_strategy, -> (regex){Card.where("strategy SIMILAR TO ?", regex)}
-  # scope :_terminality, -> (regex){Card.where("terminality SIMILAR TO ?", regex)}
 
   single_term_columns = ["cost"]
 
@@ -60,8 +40,6 @@ class Card < ActiveRecord::Base
   end
 
   def self.regex_test user_input, slot
-    # results_hash = Hash.new
-
     term_arr = []
 
     user_input.each do |query|
@@ -72,12 +50,8 @@ class Card < ActiveRecord::Base
       end
     end
 
-    # results_hash = get_matches(term_arr)
     results = get_matches(term_arr)
-    # results = format_results(results_hash)
 
-    # TODO test
-    # results = []
     return results
   end
 
@@ -87,32 +61,15 @@ class Card < ActiveRecord::Base
     regex = ""
     letters = arr.chars
 
-    # sqlite3
-    # letters.each do |letter|
-    #   if letter === letters.first
-    #     regex << "[#{letter}]"
-    #   else
-    #     regex <<  ".*?[#{letter}]"
-    #   end
-    # end
-
-    # FIXME bug- input of 'v' does not show 'village'
-    # fixed with ILIKE, but breaks non-consecutive
-    # need a way to make similar be case insensitive?
-
-    # postgres
     letters.each do |letter|
       if letter === letters.first
-        # regex << "[#{letter}]"
         regex << "#{letter}"
       else
-        # regex <<  "?[#{letter}]"
         regex <<  "%#{letter}"
       end
     end
 
     regex = "%"+regex+'%'
-    # regex = Regexp.new regex
 
     return regex
   end
