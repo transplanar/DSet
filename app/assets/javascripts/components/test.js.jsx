@@ -4,6 +4,6 @@ var TestComponent = React.createClass ({
       <div>
         <h1>Success!</h1>
       </div>
-    )
+    );
   }
 });

@@ -24,7 +24,7 @@ class Card < ActiveRecord::Base
     else
       unless slot.sql_prepend.blank?
         cards = Card.find_by_sql(slot.sql_prepend)
-
+r
         slot.cards = cards
         slot.update_attribute(:queries, search_str)
       else
