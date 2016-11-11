@@ -6,8 +6,11 @@
 <h1>Welcome to DSet</h1>
 <div class='intro-text'>This app allows you to control the types of cards you play with for your Dominion game sessions.</div>
 
-</div>
+<!-- </div> -->
 
-<div class = "slot_container"> </div>
+<!-- REVIEW why doesn't this work when using a partial? -->
+<!-- <div class = "slot_container"> </div> -->
 
-<%# react_component('TestComponent') %>
+<% @slots.each do |slot| %>
+  <%= react_component('CardSlot', image_url: slot.image_url, url: slot_path(slot)) %>
+<% end %>
