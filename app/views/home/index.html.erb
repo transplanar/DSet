@@ -11,6 +11,8 @@
 <!-- REVIEW why doesn't this work when using a partial? -->
 <!-- <div class = "slot_container"> </div> -->
 
+<!-- TODO handle this in react component via map fxn -->
+<!-- http://andrewhfarmer.com/react-image-gallery/ -->
 <% @slots.each do |slot| %>
   <%= react_component('CardSlot', image_url: slot.image_url, url: slot_path(slot)) %>
 <% end %>
