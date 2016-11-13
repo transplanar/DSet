@@ -6,15 +6,4 @@
 <h1>Welcome to DSet</h1>
 <div class='intro-text'>This app allows you to control the types of cards you play with for your Dominion game sessions.</div>
 
-<!-- </div> -->
-
-<!-- REVIEW why doesn't this work when using a partial? -->
-<!-- <div class = "slot_container"> </div> -->
-
-<!-- TODO handle this in react component via map fxn -->
-<!-- http://andrewhfarmer.com/react-image-gallery/ -->
-<%# @slots.each do |slot| %>
-  <%#= react_component('CardSlot', image_url: slot.image_url, url: slot_path(slot)) %>
-<%# end %>
-
-<%= react_component('CardSlots', slots: @slots_arr) %>
+<%= react_component('SlotContainer', slots: @slots_arr) %>
