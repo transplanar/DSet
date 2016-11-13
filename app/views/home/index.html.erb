@@ -1,4 +1,4 @@
-<div class = "randomized_buttons">
+<div class = "randomizer_control_btns">
   <%= link_to "Generate Card Set", generate_cards_path, class: "btn btn-success", method: :post, remote: true %>
   <%= link_to "Clear Card Filters", clear_filters_path, class: "btn btn-warning", method: :post, remote: true %>
 </div>
@@ -13,6 +13,8 @@
 
 <!-- TODO handle this in react component via map fxn -->
 <!-- http://andrewhfarmer.com/react-image-gallery/ -->
-<% @slots.each do |slot| %>
-  <%= react_component('CardSlot', image_url: slot.image_url, url: slot_path(slot)) %>
-<% end %>
+<%# @slots.each do |slot| %>
+  <%#= react_component('CardSlot', image_url: slot.image_url, url: slot_path(slot)) %>
+<%# end %>
+
+<%= react_component('CardSlots', slots: @slots_arr) %>
