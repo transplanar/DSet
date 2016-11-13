@@ -1,8 +1,18 @@
-var mouseOverStyles = {
-  margin: '1%',
-  width: '18%',
-  opacity: 0.5
-};
+var styles = {
+  default: {
+    margin: '1%',
+    width: '18%'
+  },
+  mouseOver: {
+    margin: '1%',
+    width: '18%',
+    opacity: 0.5
+  },
+  //TODO create text overlay
+  text: {
+    display: 'none'
+  }
+}
 
 var Slot = React.createClass ({
   getInitialState: function(){
@@ -25,14 +35,15 @@ var Slot = React.createClass ({
     var path = this.props.path;
     var img = slot.image_url;
 
-    var currentStyle = this.state.hover? mouseOverStyles : cardStyles;
+    var currentStyle = this.state.hover? styles.mouseOver : styles.default;
 
     return(
-      <a key={slot.id} href={path}>
+      <a href={path}>
         <img style={currentStyle} src={img}
           onMouseEnter={this.onMouseEnterHandler}
           onMouseLeave={this.onMouseLeaveHandler}
          />
+         <div style={styles.text}>Test</div>
       </a>
     )
   }
