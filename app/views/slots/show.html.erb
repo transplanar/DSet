@@ -1,9 +1,18 @@
 <div class='info-header'>Filter Rules for Slot <%= @slot.id %></div>
-<div class='info-text'>Begin typing into the input box below to search for desired cards or card categories.</div>
 
 <%= form_tag slot_path(@slot), :method => 'get', :id => "card_search", :class => 'search_box', remote: true do%>
   <%= text_field_tag :search, params[:search], value: @slot.queries %>
 <% end %>
+
+<div class='info-text'>
+  <p>Type your desired query into the input box above to narrow the list of acceptable cards.</p>
+  Input accepts partial queries and will match non-consecutive characters.
+  <p class='example-text'>Example: "v" or "vlg" will match against "Village"</p>
+  <p>Queries may be chained by separating them with spaces.</p>
+  <p class='example-text'>Example: "v 3" will only display cards that contain both 'v' and '3' in their descriptor fields.</p>
+
+  </p>
+</div>
 
 <div class ="saved_filters"> </div>
 

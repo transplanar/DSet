@@ -7,9 +7,11 @@
 
     <% results.each do |group, matches| %>
       <h1><%= group %></h1>
-      <% matches.each do |match| %>
+      <p>
+        <% matches.each do |match| %>
         <%= link_to image_tag(match[:card][:image_url], class: 'card_image'), assign_card_path(slot, match[:card]), method: :post, remote: true %>
-        <%= match[:terms].join(', ') %>
-      <% end %>
+        <%= match[:term_matches].join(', ') %>
+        <% end %>
+      </p>
     <% end %>
 </div>

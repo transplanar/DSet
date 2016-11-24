@@ -1,5 +1,6 @@
-<% unless slots.empty? %>
-  <% slots.each do |slot| %>
-    <%= link_to image_tag(slot.image_url, class: 'card_image'), slot_path(slot) %>
-  <% end %>
-<% end %>
+<%# unless slots.empty? %>
+  <!-- <%= react_component('CardSlot', image_url: slots.first[:image_url], slot: slots.first) %> -->
+  <%# slots.each do |slot| %>
+    <%#= react_component('CardSlot', image_url: slot.image_url, url: slot_path(slot)) %>
+  <%# end %>
+<%# end %>
