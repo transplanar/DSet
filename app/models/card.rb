@@ -13,7 +13,6 @@ class Card < ActiveRecord::Base
 
   def self.search search_str, slot
     unless search_str.blank?
-      # TODO restore prepend functionality?
       unless is_numeric?(search_str)
         search_queries = search_str.split
       else
