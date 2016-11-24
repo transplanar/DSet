@@ -1,8 +1,4 @@
-<div class='info-header'>Filter Rules for Slot <%= @slot.id %></div>
-
-<%= form_tag slot_path(@slot), :method => 'get', :id => "card_search", :class => 'search_box', remote: true do%>
-  <%= text_field_tag :search, params[:search], value: @slot.queries %>
-<% end %>
+<div class='slot-header'> EDITTING SLOT <%= @slot.id %></div>
 
 <div class='info-text'>
   <p>Type your desired query into the input box above to narrow the list of acceptable cards.</p>
@@ -13,6 +9,11 @@
 
   </p>
 </div>
+
+<%= form_tag slot_path(@slot), :method => 'get', :id => "card_search", remote: true do%>
+  <%= text_field_tag :search, params[:search], value: @slot.queries %>
+<% end %>
+
 
 <div class ="saved_filters"> </div>
 
