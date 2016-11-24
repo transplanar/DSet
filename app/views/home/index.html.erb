@@ -4,6 +4,12 @@
 </div>
 
 <h1>Welcome to DSet</h1>
-<div class='intro-text'>This app allows you to control the types of cards you play with for your Dominion game sessions.</div>
+<div class='intro-text'>Use this app to control the types of cards are randomly chosen for your play session of Dominion.</div>
+
+<div class='how-to'>
+  <p>To begin, click a slot below to edit its filtering settings.</p>
+  <p>When ready, click <b>Generate Card Set</b> above to randomize your cards.</p>
+  <p>Click <b>Clear Card Filters</b> to reset the filters for all slots to default.</p>
+</div>
 
 <%= react_component('SlotContainer', slots: @slots_arr) %>
