@@ -1,3 +1,5 @@
+[View Live Version Here](https://dset-app.herokuapp.com/)
+
 ## DSet: A Dominion Card Set Generator
 
 This app simulates a [Dominion](https://boardgamegeek.com/boardgame/36218/dominion) randomizer deck to produce a set of 10 cards to play a game of Dominion. It provides additional features defining what cards to include/exclude, search functionality, and the ability to set global rules for what expansions should be allowed and/or to enforce a spread of card costs.
@@ -11,7 +13,6 @@ Capstone for [Bloc's Full Stack Web Development Apprenticeship](https://www.bloc
 * Multi-category search (in the style of Ubuntu's Unity search)
 * Chainable search queries
 * Fuzzy search (find by minimum number of characters)
-* Autocomplete filters (scopes)
 
 ###What is a Randomizer?
 Dominion is a deckbuilding game where players acquire cards over the course of play in order to combo their effects together and ultimately claim cards that will earn
@@ -28,10 +29,7 @@ the [Dominion Strategy Wiki](http://wiki.dominionstrategy.com). The app performs
 filters as well as a list of cards organized by the category under which the term was matched (modeled after [Ubuntu's Unity search system](http://linuxconfig.net/wp-content/uploads/2012/06/oneric_unity_dash.jpg))
 
 ####Query chaining
-As of this writing (2.23.16), users may chain up to two search terms together separated by a comma. For example, "v, 3" will return three cards: Village (matched by name, type, and cost), Chancellor, and Woodcutter (the latter two matched by cost and terminality (terminal silver)).
-
-####Filter Autocomplete
-Users may click any of the "Matched filters" to autocomplete their search result. These will display as "saved filters," which can be cleared by clicking their link again.
+Users may chain multiple queries together by separating them with a space. For example, an input of "v 3" will filter cards down to only those containing the letter v (Village, Terminal Silver) or number 3 (Cost).
 
 ####Direct Selection
 Users may click any card in the slots page to directly select that card, assigning that singular card to that slot. This will discard all other search criteria. As of this writing (2.23.16), this can only be cleared by using "Clear Filters" from the slots index view.
@@ -41,10 +39,8 @@ When desired filters and cards have been selected, simply go back to the card in
 
 ###Future Development
 This is an ongoing project. Future features include:
-* "Infinite" query chaining
 * Conditional filters
 * Multi-slot filtering rules
-* Improved filter term matching
 * User profiles and decklist saving
 * Links to card strategies
 * Links to the "story" behind the creation of each card (by Donald X himself)

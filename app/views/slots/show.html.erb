@@ -6,8 +6,7 @@
   <p class='example-text'>Example: "v" or "vlg" will match against "Village"</p>
   <p>Queries may be chained by separating them with spaces.</p>
   <p class='example-text'>Example: "v 3" will only display cards that contain both 'v' and '3' in their descriptor fields.</p>
-
-  </p>
+  <p>If you want only a single card to be allowed to this slot, simply click the desired card below. </p>
 </div>
 
 <%= form_tag slot_path(@slot), :method => 'get', :id => "card_search", remote: true do%>
