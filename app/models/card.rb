@@ -73,44 +73,54 @@ class Card < ActiveRecord::Base
     return regex
   end
 
-  def self.get_card_subset query, card_match_data = []
+  def self.get_card_subset query, card_match_data
+    results = []
     if card_match_data.empty?
       card_set = Card.all
     else
-      card_set = card_match_data.map{|e| e[:card]}
+      card_set = Card.where(id: card_match_data.map{|e| e[:card].id})
     end
 
+    columns = get_relevant_columns()
+
     columns.each do |col|
-      puts "Column = #{col.name}"
       if col=='cost' && is_numeric?(query)
         cards_from_scope = card_set.send("_cost", query)
       elsif !is_numeric?(query) && col != 'cost'
         cards_from_scope = card_set.send("_#{col}", query)
       end
 
-      unless cards_from_scope.empty?
+      unless cards_from_scope.nil?
         cards_from_scope.each do |card|
+          # if results.empty? || !(results.map{|e| e[:card]}.include?(card) )
           if card_match_data.empty?
             results << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
           else
-            results << card_match_data.reduce(init) do |memo, elem|
+            # FIXME Need to concatenate at appropriate time
+          # elsif cards_from_scope.any?
+            # REVIEW is init needed?
+            # init = card_match_data.shift
+            # results << card_match_data.reduce(init) do |memo, elem|
+            results << card_match_data.reduce do |memo, elem|
               {
                 card: elem[:card],
                 query_matches: memo[:query_matches] | [query],
                 columns: memo[:columns] | [col],
-                term_matches: memo[:term_matches] + card["#{col}"]
+                term_matches: memo[:term_matches] | [card["#{col}"]]
               }
             end
           end
         end
       end
 
-      return {card_data: results}
+      # return {card_data: results}
     end
+
+    return results
   end
 
   def self.get_matches queries
-    columns = get_relevant_columns()
+    # columns = get_relevant_columns()
     results = []
     card_match_data = []
 
@@ -119,6 +129,7 @@ class Card < ActiveRecord::Base
     end
 
     results_by_columns = card_match_data.group_by{|elem| elem[:columns]}
+
 
     return results_by_columns
 
