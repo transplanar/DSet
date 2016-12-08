@@ -73,50 +73,96 @@ class Card < ActiveRecord::Base
     return regex
   end
 
+  def self.get_card_subset query, card_match_data = []
+    if card_match_data.empty?
+      card_set = Card.all
+    else
+      card_set = card_match_data.map{|e| e[:card]}
+    end
+
+    columns.each do |col|
+      puts "Column = #{col.name}"
+      if col=='cost' && is_numeric?(query)
+        cards_from_scope = card_set.send("_cost", query)
+      elsif !is_numeric?(query) && col != 'cost'
+        cards_from_scope = card_set.send("_#{col}", query)
+      end
+
+      unless cards_from_scope.empty?
+        cards_from_scope.each do |card|
+          if card_match_data.empty?
+            results << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
+          else
+            results << card_match_data.reduce(init) do |memo, elem|
+              {
+                card: elem[:card],
+                query_matches: memo[:query_matches] | [query],
+                columns: memo[:columns] | [col],
+                term_matches: memo[:term_matches] + card["#{col}"]
+              }
+            end
+          end
+        end
+      end
+
+      return {card_data: results}
+    end
+  end
+
   def self.get_matches queries
     columns = get_relevant_columns()
     results = []
     card_match_data = []
 
     queries.each do |query|
-      columns.each do |col|
-        cards_from_scope = []
-
-        if col=='cost' && is_numeric?(query)
-          cards_from_scope = Card.send("_cost", query)
-        elsif !is_numeric?(query) && col != 'cost'
-          cards_from_scope = Card.send("_#{col}", query)
-        end
-
-        unless cards_from_scope.empty?
-          cards_from_scope.each do |card|
-            card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
-          end
-        end
-      end
+      card_match_data = get_card_subset(query, card_match_data)
     end
 
-    by_card = card_match_data.group_by{|e| e[:card]}
-
-    by_card.each do |k, v|
-      query_matches = v.map{|e| e[:query_matches]}
-
-      if query_matches.uniq.length == queries.length
-          init =  v.shift
-          results << v.reduce(init) do |memo, elem|
-            {
-              card: elem[:card],
-              query_matches: memo[:query_matches] | elem[:query_matches],
-              columns: memo[:columns] | elem[:columns],
-              term_matches: memo[:term_matches] + elem[:term_matches]
-            }
-          end
-      end
-    end
-
-    results_by_columns = results.group_by{|elem| elem[:columns]}
+    results_by_columns = card_match_data.group_by{|elem| elem[:columns]}
 
     return results_by_columns
+
+
+
+    # queries.each do |query|
+    #   columns.each do |col|
+    #     cards_from_scope = []
+    #
+    #     if col=='cost' && is_numeric?(query)
+    #       cards_from_scope = Card.send("_cost", query)
+    #     elsif !is_numeric?(query) && col != 'cost'
+    #       cards_from_scope = Card.send("_#{col}", query)
+    #     end
+    #
+    #     unless cards_from_scope.empty?
+    #       cards_from_scope.each do |card|
+    #         card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
+    #       end
+    #     end
+    #   end
+    # end
+    #
+    # by_card = card_match_data.group_by{|e| e[:card]}
+    #
+    # by_card.each do |k, v|
+    #   query_matches = v.map{|e| e[:query_matches]}
+    #
+    #   if query_matches.uniq.length == queries.length
+    #       init =  v.shift
+    #       results << v.reduce(init) do |memo, elem|
+    #         {
+    #           card: elem[:card],
+    #           query_matches: memo[:query_matches] | elem[:query_matches],
+    #           columns: memo[:columns] | elem[:columns],
+    #           term_matches: memo[:term_matches] + elem[:term_matches]
+    #         }
+    #       end
+    #   end
+    # end
+    #
+    # results_by_columns = results.group_by{|elem| elem[:columns]}
+    #
+    # return results_by_columns
   end
 
   def self.query_to_regex query
