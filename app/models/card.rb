@@ -83,6 +83,7 @@ class Card < ActiveRecord::Base
 
     columns = get_relevant_columns()
 
+    # FIXME Returns multiple copies of the same card
     columns.each do |col|
       if col=='cost' && is_numeric?(query)
         cards_from_scope = card_set.send("_cost", query)
@@ -92,31 +93,17 @@ class Card < ActiveRecord::Base
 
       unless cards_from_scope.nil?
         cards_from_scope.each do |card|
-          # if results.empty? || !(results.map{|e| e[:card]}.include?(card) )
           if card_match_data.empty?
-            # results << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
-            # results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
             results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
           else
-            # FIXME Need to concatenate at appropriate time
-          # elsif cards_from_scope.any?
-            # REVIEW is init needed?
-            # init = card_match_data.shift
-            # results << card_match_data.reduce(init) do |memo, elem|
-            existing_card = card_match_data.select{|e| e[:card] == card}
-            results << existing_card.reduce do |memo, elem|
-              {
-                card: elem[:card],
-                # query_matches: memo[:query_matches] | [query],
-                columns: memo[:columns] | [col],
-                term_matches: memo[:term_matches] | [card["#{col}"]]
-              }
-            end
+            existing_card = card_match_data.select{|e| e[:card] == card}.first
+            existing_card[:columns] << col
+            existing_card[:term_matches] << card["#{col}"]
+
+            results << existing_card
           end
         end
       end
-
-      # return {card_data: results}
     end
 
     return results
