@@ -94,17 +94,20 @@ class Card < ActiveRecord::Base
         cards_from_scope.each do |card|
           # if results.empty? || !(results.map{|e| e[:card]}.include?(card) )
           if card_match_data.empty?
-            results << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
+            # results << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
+            # results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
+            results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
           else
             # FIXME Need to concatenate at appropriate time
           # elsif cards_from_scope.any?
             # REVIEW is init needed?
             # init = card_match_data.shift
             # results << card_match_data.reduce(init) do |memo, elem|
-            results << card_match_data.reduce do |memo, elem|
+            existing_card = card_match_data.select{|e| e[:card] == card}
+            results << existing_card.reduce do |memo, elem|
               {
                 card: elem[:card],
-                query_matches: memo[:query_matches] | [query],
+                # query_matches: memo[:query_matches] | [query],
                 columns: memo[:columns] | [col],
                 term_matches: memo[:term_matches] | [card["#{col}"]]
               }
@@ -128,7 +131,7 @@ class Card < ActiveRecord::Base
       card_match_data = get_card_subset(query, card_match_data)
     end
 
-    results_by_columns = card_match_data.group_by{|elem| elem[:columns]}
+    results_by_columns = card_match_data.group_by{|elem| elem[:columns]}.sort_by{|k,v| k}
 
 
     return results_by_columns
