@@ -73,50 +73,107 @@ class Card < ActiveRecord::Base
     return regex
   end
 
-  def self.get_matches queries
+  def self.get_card_subset query, card_match_data
+    results = []
+    if card_match_data.empty?
+      card_set = Card.all
+    else
+      card_set = Card.where(id: card_match_data.map{|e| e[:card].id})
+    end
+
     columns = get_relevant_columns()
+
+    columns.each do |col|
+      if col=='cost' && is_numeric?(query)
+        cards_from_scope = card_set.send("_cost", query)
+      elsif !is_numeric?(query) && col != 'cost'
+        cards_from_scope = card_set.send("_#{col}", query)
+      end
+
+      unless cards_from_scope.nil?
+        cards_from_scope.each do |card|
+          # if results.empty? || !(results.map{|e| e[:card]}.include?(card) )
+          if card_match_data.empty?
+            results << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
+          else
+            # FIXME Need to concatenate at appropriate time
+          # elsif cards_from_scope.any?
+            # REVIEW is init needed?
+            # init = card_match_data.shift
+            # results << card_match_data.reduce(init) do |memo, elem|
+            results << card_match_data.reduce do |memo, elem|
+              {
+                card: elem[:card],
+                query_matches: memo[:query_matches] | [query],
+                columns: memo[:columns] | [col],
+                term_matches: memo[:term_matches] | [card["#{col}"]]
+              }
+            end
+          end
+        end
+      end
+
+      # return {card_data: results}
+    end
+
+    return results
+  end
+
+  def self.get_matches queries
+    # columns = get_relevant_columns()
     results = []
     card_match_data = []
 
     queries.each do |query|
-      columns.each do |col|
-        cards_from_scope = []
-
-        if col=='cost' && is_numeric?(query)
-          cards_from_scope = Card.send("_cost", query)
-        elsif !is_numeric?(query) && col != 'cost'
-          cards_from_scope = Card.send("_#{col}", query)
-        end
-
-        unless cards_from_scope.empty?
-          cards_from_scope.each do |card|
-            card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
-          end
-        end
-      end
+      card_match_data = get_card_subset(query, card_match_data)
     end
 
-    by_card = card_match_data.group_by{|e| e[:card]}
+    results_by_columns = card_match_data.group_by{|elem| elem[:columns]}
 
-    by_card.each do |k, v|
-      query_matches = v.map{|e| e[:query_matches]}
-
-      if query_matches.uniq.length == queries.length
-          init =  v.shift
-          results << v.reduce(init) do |memo, elem|
-            {
-              card: elem[:card],
-              query_matches: memo[:query_matches] | elem[:query_matches],
-              columns: memo[:columns] | elem[:columns],
-              term_matches: memo[:term_matches] + elem[:term_matches]
-            }
-          end
-      end
-    end
-
-    results_by_columns = results.group_by{|elem| elem[:columns]}
 
     return results_by_columns
+
+
+
+    # queries.each do |query|
+    #   columns.each do |col|
+    #     cards_from_scope = []
+    #
+    #     if col=='cost' && is_numeric?(query)
+    #       cards_from_scope = Card.send("_cost", query)
+    #     elsif !is_numeric?(query) && col != 'cost'
+    #       cards_from_scope = Card.send("_#{col}", query)
+    #     end
+    #
+    #     unless cards_from_scope.empty?
+    #       cards_from_scope.each do |card|
+    #         card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
+    #       end
+    #     end
+    #   end
+    # end
+    #
+    # by_card = card_match_data.group_by{|e| e[:card]}
+    #
+    # by_card.each do |k, v|
+    #   query_matches = v.map{|e| e[:query_matches]}
+    #
+    #   if query_matches.uniq.length == queries.length
+    #       init =  v.shift
+    #       results << v.reduce(init) do |memo, elem|
+    #         {
+    #           card: elem[:card],
+    #           query_matches: memo[:query_matches] | elem[:query_matches],
+    #           columns: memo[:columns] | elem[:columns],
+    #           term_matches: memo[:term_matches] + elem[:term_matches]
+    #         }
+    #       end
+    #   end
+    # end
+    #
+    # results_by_columns = results.group_by{|elem| elem[:columns]}
+    #
+    # return results_by_columns
   end
 
   def self.query_to_regex query
