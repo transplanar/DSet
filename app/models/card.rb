@@ -77,20 +77,12 @@ class Card < ActiveRecord::Base
     results = []
     exclude_columns = []
 
-    # if columns.empty?
-    #   columns = get_relevant_columns()
-    # end
-    #
-    # puts "*** COLUMNS #{columns}"
-
     if card_match_data.empty?
       card_set = Card.all
     else
       card_set = Card.where(id: card_match_data.map{|e| e[:card].id})
     end
 
-
-    # FIXME Returns multiple copies of the same card
     columns.each do |col|
       if col=='cost' && is_numeric?(query)
         cards_from_scope = card_set.send("_cost", query)
@@ -102,15 +94,15 @@ class Card < ActiveRecord::Base
         cards_from_scope.each do |card|
           if card_match_data.empty?
             results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
-            exclude_columns << col
           else
             existing_card = card_match_data.select{|e| e[:card] == card}.first
             existing_card[:columns] = existing_card[:columns] | [col]
             existing_card[:term_matches] = existing_card[:term_matches] | [card["#{col}"]]
 
-            exclude_columns << col
             results << existing_card
           end
+
+          exclude_columns << col
         end
       end
     end
@@ -132,7 +124,6 @@ class Card < ActiveRecord::Base
     end
 
     results_by_columns = card_match_data.group_by{|elem| elem[:columns]}.sort_by{|k,v| k}
-
 
     return results_by_columns
   end
