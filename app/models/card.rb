@@ -73,15 +73,22 @@ class Card < ActiveRecord::Base
     return regex
   end
 
-  def self.get_card_subset query, card_match_data
+  def self.get_card_subset query, card_match_data, columns = []
     results = []
+    exclude_columns = []
+
+    # if columns.empty?
+    #   columns = get_relevant_columns()
+    # end
+    #
+    # puts "*** COLUMNS #{columns}"
+
     if card_match_data.empty?
       card_set = Card.all
     else
       card_set = Card.where(id: card_match_data.map{|e| e[:card].id})
     end
 
-    columns = get_relevant_columns()
 
     # FIXME Returns multiple copies of the same card
     columns.each do |col|
@@ -95,75 +102,39 @@ class Card < ActiveRecord::Base
         cards_from_scope.each do |card|
           if card_match_data.empty?
             results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
+            exclude_columns << col
           else
             existing_card = card_match_data.select{|e| e[:card] == card}.first
-            existing_card[:columns] << col
-            existing_card[:term_matches] << card["#{col}"]
+            existing_card[:columns] = existing_card[:columns] | [col]
+            existing_card[:term_matches] = existing_card[:term_matches] | [card["#{col}"]]
 
+            exclude_columns << col
             results << existing_card
           end
         end
       end
     end
 
-    return results
+    return [results, exclude_columns]
   end
 
   def self.get_matches queries
-    # columns = get_relevant_columns()
     results = []
     card_match_data = []
+    columns = get_relevant_columns()
 
     queries.each do |query|
-      card_match_data = get_card_subset(query, card_match_data)
+      card_match_data, exclude_columns = get_card_subset(query, card_match_data, columns)
+
+      unless query == query.last
+        columns = columns - exclude_columns
+      end
     end
 
     results_by_columns = card_match_data.group_by{|elem| elem[:columns]}.sort_by{|k,v| k}
 
 
     return results_by_columns
-
-
-
-    # queries.each do |query|
-    #   columns.each do |col|
-    #     cards_from_scope = []
-    #
-    #     if col=='cost' && is_numeric?(query)
-    #       cards_from_scope = Card.send("_cost", query)
-    #     elsif !is_numeric?(query) && col != 'cost'
-    #       cards_from_scope = Card.send("_#{col}", query)
-    #     end
-    #
-    #     unless cards_from_scope.empty?
-    #       cards_from_scope.each do |card|
-    #         card_match_data << {card: card, query_matches: [query], columns: [col], term_matches: [card["#{col}"]]}
-    #       end
-    #     end
-    #   end
-    # end
-    #
-    # by_card = card_match_data.group_by{|e| e[:card]}
-    #
-    # by_card.each do |k, v|
-    #   query_matches = v.map{|e| e[:query_matches]}
-    #
-    #   if query_matches.uniq.length == queries.length
-    #       init =  v.shift
-    #       results << v.reduce(init) do |memo, elem|
-    #         {
-    #           card: elem[:card],
-    #           query_matches: memo[:query_matches] | elem[:query_matches],
-    #           columns: memo[:columns] | elem[:columns],
-    #           term_matches: memo[:term_matches] + elem[:term_matches]
-    #         }
-    #       end
-    #   end
-    # end
-    #
-    # results_by_columns = results.group_by{|elem| elem[:columns]}
-    #
-    # return results_by_columns
   end
 
   def self.query_to_regex query
