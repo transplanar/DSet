@@ -4,6 +4,7 @@ class SlotsController < ApplicationController
   def show
     @slot = Slot.find(params[:id])
 
+    # @results = Card.search(params[:search], @slot)
     @results = Card.search(params[:search], @slot)
 
     unless @slot.sql_prepend.blank?

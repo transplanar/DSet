@@ -10,7 +10,7 @@
       <p>
         <% matches.each do |match| %>
         <%= link_to image_tag(match[:card][:image_url], class: 'card_image'), assign_card_path(slot, match[:card]), method: :post, remote: true %>
-        <%= match[:term_matches].join(', ') %>
+        <%= match[:term_matches].join(', ').html_safe %>
         <% end %>
       </p>
     <% end %>

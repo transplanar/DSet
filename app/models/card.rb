@@ -73,6 +73,43 @@ class Card < ActiveRecord::Base
     return regex
   end
 
+  # REVIEW can this be below get_card_subset?
+  # TODO parse multi-word categories, clean query to basic string
+  # def self.format_term string, character
+  def self.format_term string, sub_string
+    new_string = ''
+
+    # if is_numeric? character
+    if is_numeric? sub_string
+      # character = character.to_s
+      sub_string = sub_string.to_s
+    end
+
+    # character = character.gsub('%','')
+    sub_string = sub_string.gsub('%','')
+
+    # puts "Character length #{character.length}"
+    if is_numeric? string
+      string = "#{string}"
+    end
+
+    sub_string.split.each do |char|
+      index = string.downcase.index(char)
+
+      # formatted_term = "<b>#{string[index]}</b>"
+      formatted_term = "<span class='matched_letter_highlight'>#{string[index]}</span>"
+      new_string << string.gsub(string[index], formatted_term)
+    end
+
+    return new_string
+
+    # index = string.downcase.index(character)
+    #
+    # # formatted_term = "<b>#{string[index]}</b>"
+    # formatted_term = "<span class='matched_letter_highlight'>#{string[index]}</span>"
+    # string.gsub(string[index], formatted_term)
+  end
+
   def self.get_card_subset query, card_match_data, columns = []
     results = []
     exclude_columns = []
@@ -93,11 +130,15 @@ class Card < ActiveRecord::Base
       unless cards_from_scope.nil?
         cards_from_scope.each do |card|
           if card_match_data.empty?
-            results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
+            term_formatted = format_term(card["#{col}"], query)
+            # results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
+            results << {card: card, columns: [col], term_matches: [term_formatted]}
           else
             existing_card = card_match_data.select{|e| e[:card] == card}.first
             existing_card[:columns] = existing_card[:columns] | [col]
-            existing_card[:term_matches] = existing_card[:term_matches] | [card["#{col}"]]
+            term_formatted = format_term(card["#{col}"], query)
+            # existing_card[:term_matches] = existing_card[:term_matches] | [card["#{col}"]]
+            existing_card[:term_matches] = existing_card[:term_matches] | [term_formatted]
 
             results << existing_card
           end
