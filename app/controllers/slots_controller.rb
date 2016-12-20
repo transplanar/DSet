@@ -2,13 +2,14 @@ include SlotsHelper
 
 class SlotsController < ApplicationController
   def show
-    @slot = Slot.find(params[:id])
+    # @slot = Slot.find(params[:id])
+    @slot = Slot.first
 
     @results = Card.search(params[:search], @slot)
 
-    unless @slot.sql_prepend.blank?
-      @saved_filters = @slot.filters_humanized.split(', ')
-    end
+    # unless @slot.sql_prepend.blank?
+    #  @saved_filters = @slot.filters_humanized.split(', ')
+    #end
   end
 
   def assign_card

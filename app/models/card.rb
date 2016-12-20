@@ -12,6 +12,7 @@ class Card < ActiveRecord::Base
   single_term_columns = ["cost"]
 
   def self.search search_str, slot
+    
     unless search_str.blank?
       unless is_numeric?(search_str)
         search_queries = search_str.split
@@ -21,18 +22,18 @@ class Card < ActiveRecord::Base
 
       results = regex_test(search_queries, slot)
     else
-      unless slot.sql_prepend.blank?
-        cards = Card.find_by_sql(slot.sql_prepend)
-
-        slot.cards = cards
-        slot.update_attribute(:queries, search_str)
-      else
-        if slot.cards.blank?
-          slot.cards = Card.all
-        end
-      end
-
-      results = {}
+      # unless slot.sql_prepend.blank?
+      #   cards = Card.find_by_sql(slot.sql_prepend)
+      #
+      #   slot.cards = cards
+      #   slot.update_attribute(:queries, search_str)
+      # else
+      #   if slot.cards.blank?
+      #     slot.cards = Card.all
+      #   end
+      # end
+      #
+      # results = {}
     end
 
     return results
