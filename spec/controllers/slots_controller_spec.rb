@@ -63,7 +63,7 @@ RSpec.describe SlotsController, type: :controller do
       pair = "category: Village"
 
       patch :delete_filter, {slot_id: my_slot.id, pair: pair}
-      expect(my_slot.cards.count).to eq(25)
+      expect(my_slot.cards.count).to eq(0)
     end
   end
 

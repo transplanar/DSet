@@ -12,6 +12,10 @@ class Card < ActiveRecord::Base
   single_term_columns = ["cost"]
 
   def self.search search_str, slot
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     unless search_str.blank?
       unless is_numeric?(search_str)
         search_queries = search_str.split
@@ -70,7 +74,30 @@ class Card < ActiveRecord::Base
 
     regex = "%"+regex+'%'
 
-    return regex
+    # return regex
+  end
+
+  def self.get_matches queries
+    results = []
+    card_match_data = []
+    columns = get_relevant_columns()
+
+    queries.each do |query|
+      card_match_data, exclude_columns = get_card_subset(query, card_match_data, columns)
+
+      unless query == query.last
+        columns = columns - exclude_columns
+      end
+    end
+
+    results_by_columns = card_match_data.group_by{|elem| elem[:columns]}.sort_by{|k,v| k}
+
+    # return results_by_columns
+  end
+
+  def self.get_relevant_columns
+    exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
+    Card.attribute_names - exclude_columns
   end
 
   def self.get_matches queries
@@ -82,11 +109,23 @@ class Card < ActiveRecord::Base
       columns.each do |col|
         cards_from_scope = []
 
+<<<<<<< Updated upstream
         if col=='cost' && is_numeric?(query)
           cards_from_scope = Card.send("_cost", query)
         elsif !is_numeric?(query) && col != 'cost'
           cards_from_scope = Card.send("_#{col}", query)
         end
+=======
+      unless cards_from_scope.nil?
+        cards_from_scope.each do |card|
+          if card_match_data.empty?
+            results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
+          else
+            existing_card = card_match_data.select{|e| e[:card] == card}.first
+            # Merge column to existing array via Ruby pipe operator
+            existing_card[:columns] = existing_card[:columns] | [col]
+            existing_card[:term_matches] = existing_card[:term_matches] | [card["#{col}"]]
+>>>>>>> Stashed changes
 
         unless cards_from_scope.empty?
           cards_from_scope.each do |card|
@@ -98,6 +137,7 @@ class Card < ActiveRecord::Base
 
     by_card = card_match_data.group_by{|e| e[:card]}
 
+<<<<<<< Updated upstream
     by_card.each do |k, v|
       query_matches = v.map{|e| e[:query_matches]}
 
@@ -119,6 +159,8 @@ class Card < ActiveRecord::Base
     return results_by_columns
   end
 
+=======
+>>>>>>> Stashed changes
   def self.query_to_regex query
     clean_query = query.gsub(/[\[\]]/,"")
     return /#{clean_query}/i
@@ -150,11 +192,6 @@ class Card < ActiveRecord::Base
     end
 
     return groups
-  end
-
-  def self.get_relevant_columns
-    exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
-    Card.attribute_names - exclude_columns
   end
 
   def self.is_numeric?(obj)
