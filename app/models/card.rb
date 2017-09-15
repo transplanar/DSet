@@ -9,102 +9,184 @@ class Card < ActiveRecord::Base
   scope :_strategy, ->(regex) { Card.where('strategy ILIKE ?', regex) }
   scope :_terminality, ->(regex) { Card.where('terminality ILIKE ?', regex) }
 
-  def self.search(search_str, slot)
-    return [] if search_str.blank?
+  # TODO: fix to assign to slot
+  def self.search(queries_string, slot)
+    return [] if queries_string.blank?
 
-    search_queries = is_numeric?(search_str) ? [search_str.to_s] : search_str.split
-    regex_test(search_queries, slot)
+    queries_array = queries_to_array(queries_string)
+    subqueries = format_for_regex(queries_array)
+    get_matches(subqueries)
   end
 
-  def self.regex_test user_input, slot
-    term_arr = []
+  def self.queries_to_array(queries_string)
+    if is_numeric?(queries_string)
+      [queries_string.to_s]
+    else
+      queries_string.split
+    end
+  end
 
-    user_input.each do |query|
-      unless is_numeric?(query)
-        term_arr << format_query_for_scope(query)
-      else
-        term_arr << query
-      end
+  def self.format_for_regex(queries_array)
+    subqueries = []
+
+    queries_array.each do |query|
+      subqueries << (is_numeric?(query) ? query : string_to_fuzzy_regex(query))
     end
 
-    results = get_matches(term_arr)
-
-    return results
+    subqueries
   end
 
-  private
-
-  def self.format_query_for_scope arr
-    regex = ""
+  def self.string_to_fuzzy_regex(arr)
+    regex = ''
     letters = arr.chars
 
     letters.each do |letter|
-      if letter === letters.first
-        regex << "#{letter}"
-      else
-        regex <<  "%#{letter}"
-      end
+      regex << letter == letters.first ? letter.to_s : "%#{letter}"
     end
 
-    regex = "%"+regex+'%'
-
-    return regex
+    "%#{regex}%"
   end
 
-  def self.get_card_subset query, card_match_data, columns = []
-    results = []
-    exclude_columns = []
-
-    if card_match_data.empty?
-      card_set = Card.all
-    else
-      card_set = Card.where(id: card_match_data.map{|e| e[:card].id})
-    end
-
-    columns.each do |col|
-      if col=='cost' && is_numeric?(query)
-        cards_from_scope = card_set.send("_cost", query)
-      elsif !is_numeric?(query) && col != 'cost'
-        cards_from_scope = card_set.send("_#{col}", query)
-      end
-
-      unless cards_from_scope.nil?
-        cards_from_scope.each do |card|
-          if card_match_data.empty?
-            results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
-          else
-            existing_card = card_match_data.select{|e| e[:card] == card}.first
-            existing_card[:columns] = existing_card[:columns] | [col]
-            existing_card[:term_matches] = existing_card[:term_matches] | [card["#{col}"]]
-
-            results << existing_card
-          end
-
-          exclude_columns << col
-        end
-      end
-    end
-
-    return [results, exclude_columns]
-  end
-
-  def self.get_matches queries
-    results = []
-    card_match_data = []
-    columns = get_relevant_columns()
+  def self.get_matches(queries)
+    match_data = []
+    columns = relevant_columns
 
     queries.each do |query|
-      card_match_data, exclude_columns = get_card_subset(query, card_match_data, columns)
+      match_data, matched_columns =
+        get_card_subset(query, match_data, columns)
 
-      unless query == query.last
-        columns = columns - exclude_columns
+      columns -= matched_columns unless query == queries.last
+    end
+
+    return [] if match_data.empty?
+
+    match_data.group_by { |elem| elem[:columns] }.sort_by { |k, _| k }
+  end
+
+  # def self.get_card_subset(query, match_data, columns = [])
+  #     card_set =
+  #       (match_data.empty? ?
+  #         Card.all : Card.where(id: match_data.map { |e| e[:card].id }))
+  #
+  #     filter_by_column(query, card_set, columns)
+  # end
+  #
+
+  private_class_method def self.get_card_subset(query, match_data, columns = [])
+    results = []
+    matched_columns = []
+
+    card_set =
+      (match_data.empty? ?
+        Card.all : Card.where(id: match_data.map { |e| e[:card].id }))
+
+    columns.each do |col|
+      next if col == 'cost' && !is_numeric?(query)
+    #
+    #   matches_from_column(query, card_set, match_data, col)
+    # end
+
+
+
+      matches_from_scope = card_set.send("_#{col}", query)
+
+      next if matches_from_scope.nil?
+
+      matches_from_scope.each do |card|
+        if match_data.empty?
+          results <<
+            { card: card, columns: [col], term_matches: [card[col.to_s]] }
+        else
+          existing_card = match_data.select { |e| e[:card] == card }.first
+          existing_card[:columns] << col
+          existing_card[:term_matches] << card[col.to_s]
+
+          results << existing_card
+        end
+
+        matched_columns << col
       end
     end
 
-    results_by_columns = card_match_data.group_by{|elem| elem[:columns]}.sort_by{|k,v| k}
-
-    return results_by_columns
+    [results, matched_columns]
   end
+
+  private_class_method def self.matches_from_column(query, card_set, match_data, column)
+    results = []
+    matched_columns = []
+    matches_from_scope = card_set.send("_#{column}", query)
+
+    # next if matches_from_scope.nil?
+
+    matches_from_scope.each do |card|
+      if match_data.empty?
+        results <<
+          { card: card, columns: [column], term_matches: [card[column.to_s]] }
+      else
+        existing_card = match_data.select { |e| e[:card] == card }.first
+        existing_card[:columns] << column
+        existing_card[:term_matches] << card[column.to_s]
+
+        results << existing_card
+      end
+
+      matched_columns << column
+    end
+
+    [results, matched_columns]
+  end
+
+  # end
+
+  def self.filter_by_column(query, card_set, columns)
+    results = []
+    matched_columns = []
+
+    columns.each do |col|
+      # matches_from_scope = fetch_matches_from_scope(query, card_set, col)
+      if col == 'cost' && is_numeric?(query)
+        matches_from_scope = card_set.send('_cost', query)
+      elsif !is_numeric?(query) && col != 'cost'
+        matches_from_scope = card_set.send("_#{col}", query)
+      end
+
+      next if matches_from_scope.nil?
+
+      matches_from_scope.each do |card|
+        # if match_data.empty?
+        if card_set.empty?
+          results <<
+            { card: card, columns: [col], term_matches: [card[col.to_s]] }
+        else
+          # existing_card = match_data.select { |e| e[:card] == card }.first
+          existing_card = card_set.select { |e| e[:card] == card }.first
+          existing_card[:columns] = existing_card[:columns] | [col]
+          existing_card[:term_matches] =
+            existing_card[:term_matches] | [card[col.to_s]]
+
+          results << existing_card
+        end
+
+        matched_columns << col
+      end
+    end
+
+    [results, matched_columns]
+  end
+
+  # def self.fetch_matches_from_scope(query, card_set, column)
+  #   matches_from_scope = []
+  #   # (is_numeric?(query) && column == 'cost') ?
+  #     # card_set.send('_cost', query) : card_set.send(column.to_s, query)
+  #
+  #   if column == 'cost' && is_numeric?(query)
+  #     matches_from_scope = card_set.send('_cost', query)
+  #   elsif !is_numeric?(query) && column != 'cost'
+  #     matches_from_scope = card_set.send(column.to_s, query)
+  #   end
+  #
+  #   matches_from_scope
+  # end
 
   def self.query_to_regex query
     clean_query = query.gsub(/[\[\]]/,"")
@@ -139,9 +221,10 @@ class Card < ActiveRecord::Base
     return groups
   end
 
-  def self.get_relevant_columns
-    exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
-    Card.attribute_names - exclude_columns
+  def self.relevant_columns
+    # matched_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
+    matched_columns = %w[id image_url created_at updated_at slot_id]
+    Card.attribute_names - matched_columns
   end
 
   def self.is_numeric?(obj)
