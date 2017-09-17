@@ -47,30 +47,24 @@ class Card < ActiveRecord::Base
     "%#{regex}%"
   end
 
-  def self.get_matches(queries)
+  def self.get_matches(subqueries)
     match_data = []
     columns = relevant_columns
 
-    queries.each do |query|
+    subqueries.each do |query|
       match_data, matched_columns =
         get_card_subset(query, match_data, columns)
 
-      columns -= matched_columns unless query == queries.last
+      columns -= matched_columns unless query == subqueries.last
     end
 
     return [] if match_data.empty?
+    p "Match data #{match_data}"
 
+    # FIXME: Improperly storing data.
+    # Needs to be a single hash, not array of hashes
     match_data.group_by { |elem| elem[:columns] }.sort_by { |k, _| k }
   end
-
-  # def self.get_card_subset(query, match_data, columns = [])
-  #     card_set =
-  #       (match_data.empty? ?
-  #         Card.all : Card.where(id: match_data.map { |e| e[:card].id }))
-  #
-  #     filter_by_column(query, card_set, columns)
-  # end
-  #
 
   private_class_method def self.get_card_subset(query, match_data, columns = [])
     results = []
@@ -82,41 +76,51 @@ class Card < ActiveRecord::Base
 
     columns.each do |col|
       next if col == 'cost' && !is_numeric?(query)
-    #
-    #   matches_from_column(query, card_set, match_data, col)
-    # end
 
+      matches = matches_from_column(query, card_set, match_data, col)
+      # p "Matches #{matches}"
 
-
-      matches_from_scope = card_set.send("_#{col}", query)
-
-      next if matches_from_scope.nil?
-
-      matches_from_scope.each do |card|
-        if match_data.empty?
-          results <<
-            { card: card, columns: [col], term_matches: [card[col.to_s]] }
-        else
-          existing_card = match_data.select { |e| e[:card] == card }.first
-          existing_card[:columns] << col
-          existing_card[:term_matches] << card[col.to_s]
-
-          results << existing_card
-        end
-
-        matched_columns << col
+      if(matches.any?)
+          matched_columns << col
+          results = results | matches
       end
     end
 
     [results, matched_columns]
+
+    # NOTE: Working version
+    # results = []
+    # matched_columns = []
+    #
+    #   matches_from_scope = card_set.send("_#{col}", query)
+    #
+    #   # next if matches_from_scope.nil?
+    #
+    #   matches_from_scope.each do |card|
+    #     if match_data.empty?
+    #       results <<
+    #         { card: card, columns: [col], term_matches: [card[col.to_s]] }
+    #     else
+    #       existing_card = match_data.select { |e| e[:card] == card }.first
+    #       existing_card[:columns] << col
+    #       existing_card[:term_matches] << card[col.to_s]
+    #
+    #       results << existing_card
+    #     end
+    #
+    #     matched_columns << col
+    #   end
+    # end
+    #
+    # [results, matched_columns]
   end
 
   private_class_method def self.matches_from_column(query, card_set, match_data, column)
     results = []
-    matched_columns = []
+
     matches_from_scope = card_set.send("_#{column}", query)
 
-    # next if matches_from_scope.nil?
+    return [] if matches_from_scope.nil?
 
     matches_from_scope.each do |card|
       if match_data.empty?
@@ -127,52 +131,85 @@ class Card < ActiveRecord::Base
         existing_card[:columns] << column
         existing_card[:term_matches] << card[column.to_s]
 
+        # existing_card = card_set.select { |e| e[:card] == card }.first
+        # existing_card[:columns] = existing_card[:columns] | [col]
+        # existing_card[:term_matches] =
+        #   existing_card[:term_matches] | [card[col.to_s]]
+
         results << existing_card
       end
 
-      matched_columns << column
+      # matched_columns << column
     end
 
-    [results, matched_columns]
+    return results
+
+    # [results, matched_columns]
   end
+
+
+    # results = []
+    # matched_columns = []
+    # matches_from_scope = card_set.send("_#{column}", query)
+    #
+    # # next if matches_from_scope.nil?
+    # return [results, matched_columns] if matches_from_scope.nil?
+    #
+    # matches_from_scope.each do |card|
+    #   if match_data.empty?
+    #     results <<
+    #       { card: card, columns: [column], term_matches: [card[column.to_s]] }
+    #   else
+    #     existing_card = match_data.select { |e| e[:card] == card }.first
+    #     existing_card[:columns] << column
+    #     existing_card[:term_matches] << card[column.to_s]
+    #
+    #     results << existing_card
+    #   end
+    #
+    #   matched_columns << column
+    # end
+    #
+    # [results, matched_columns]
+  # end
 
   # end
 
-  def self.filter_by_column(query, card_set, columns)
-    results = []
-    matched_columns = []
-
-    columns.each do |col|
-      # matches_from_scope = fetch_matches_from_scope(query, card_set, col)
-      if col == 'cost' && is_numeric?(query)
-        matches_from_scope = card_set.send('_cost', query)
-      elsif !is_numeric?(query) && col != 'cost'
-        matches_from_scope = card_set.send("_#{col}", query)
-      end
-
-      next if matches_from_scope.nil?
-
-      matches_from_scope.each do |card|
-        # if match_data.empty?
-        if card_set.empty?
-          results <<
-            { card: card, columns: [col], term_matches: [card[col.to_s]] }
-        else
-          # existing_card = match_data.select { |e| e[:card] == card }.first
-          existing_card = card_set.select { |e| e[:card] == card }.first
-          existing_card[:columns] = existing_card[:columns] | [col]
-          existing_card[:term_matches] =
-            existing_card[:term_matches] | [card[col.to_s]]
-
-          results << existing_card
-        end
-
-        matched_columns << col
-      end
-    end
-
-    [results, matched_columns]
-  end
+  # def self.filter_by_column(query, card_set, columns)
+  #   results = []
+  #   matched_columns = []
+  #
+  #   columns.each do |col|
+  #     # matches_from_scope = fetch_matches_from_scope(query, card_set, col)
+  #     if col == 'cost' && is_numeric?(query)
+  #       matches_from_scope = card_set.send('_cost', query)
+  #     elsif !is_numeric?(query) && col != 'cost'
+  #       matches_from_scope = card_set.send("_#{col}", query)
+  #     end
+  #
+  #     next if matches_from_scope.nil?
+  #
+  #     matches_from_scope.each do |card|
+  #       # if match_data.empty?
+  #       if card_set.empty?
+  #         results <<
+  #           { card: card, columns: [col], term_matches: [card[col.to_s]] }
+  #       else
+  #         # existing_card = match_data.select { |e| e[:card] == card }.first
+  #         existing_card = card_set.select { |e| e[:card] == card }.first
+  #         existing_card[:columns] = existing_card[:columns] | [col]
+  #         existing_card[:term_matches] =
+  #           existing_card[:term_matches] | [card[col.to_s]]
+  #
+  #         results << existing_card
+  #       end
+  #
+  #       matched_columns << col
+  #     end
+  #   end
+  #
+  #   [results, matched_columns]
+  # end
 
   # def self.fetch_matches_from_scope(query, card_set, column)
   #   matches_from_scope = []
