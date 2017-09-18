@@ -67,6 +67,7 @@ class Card < ActiveRecord::Base
   end
 
   private_class_method def self.get_card_subset(query, match_data, columns = [])
+    # TODO: Convert results to hash instead of multidimensional array
     results = []
     matched_columns = []
 

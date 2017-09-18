@@ -20,9 +20,11 @@ RSpec.describe SlotsController, type: :controller do
     it 'returns correct number of search matches for ALPHABETICAL input' do
       get :show, {id: my_slot.id, search: "cantrip"}, format: :js
 
-      cards = card_array_from_results()
+      # cards = card_array_from_results()
+      results = assigns(:results)
 
-      expect(cards.count).to eq(2)
+      # expect(cards.count).to eq(2)
+      expect(results.count).to eq(2)
     end
 
     it 'returns correct number of search matches for NUMERIC input' do
