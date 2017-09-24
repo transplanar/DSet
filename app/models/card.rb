@@ -70,8 +70,7 @@ class Card < ActiveRecord::Base
     results = []
     matched_columns = []
 
-    card_set = (match_data.empty? ? Card.all
-                                  : Card.where(id: match_data.map { |e| e[:card].id }))
+    card_set = (match_data.empty? ? Card.all : to_active_record(match_data))
 
     columns.each do |col|
       next if col == 'cost' && !numeric?(query)
@@ -87,6 +86,10 @@ class Card < ActiveRecord::Base
     [results, matched_columns]
   end
 
+  private_class_method def self.to_active_record(match_data)
+    Card.where(id: match_data.map { |e| e[:card].id })
+  end
+
   private_class_method def self.matches_from_column(query, card_set, match_data, column)
     matches_from_scope = card_set.send("_#{column}", query)
 
@@ -98,22 +101,29 @@ class Card < ActiveRecord::Base
   private_class_method def self.sort_matches(matches_from_scope, match_data, column)
     results = []
 
-    matches_from_scope.each do |card|
-      if match_data.empty?
-        results << {
-                    columns: [column],
-                    card: card,
-                    term_matches: [card[column.to_s]]
-                  }
-      else
-        existing_card = match_data.select { |e| e[:card] == card }.first
-        existing_card[:columns] << column
-        existing_card[:term_matches] << card[column.to_s]
-        results << existing_card
-      end
+    if match_data.empty?
+      results << new_result_hash(column, card)
+    else
+      results << update_result_hash(column, card, match_data)
     end
 
     results
+  end
+
+  private_class_method def self.new_result_hash(column, card)
+    {
+      columns: [column],
+      card: card,
+      term_matches: [card[column.to_s]]
+    }
+  end
+
+  private_class_method def self.update_result_hash(column, card, match_data)
+    existing_card = match_data.select { |e| e[:card] == card }.first
+    existing_card[:columns] << column
+    existing_card[:term_matches] << card[column.to_s]
+
+    existing_card
   end
 
   private_class_method def self.query_to_regex(query)
