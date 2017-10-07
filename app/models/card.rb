@@ -101,10 +101,12 @@ class Card < ActiveRecord::Base
   private_class_method def self.sort_matches(matches_from_scope, match_data, column)
     results = []
 
-    if match_data.empty?
-      results << new_result_hash(column, card)
-    else
-      results << update_result_hash(column, card, match_data)
+    matches_from_scope.each do |card|
+      if match_data.empty?
+        results << new_result_hash(column, card)
+      else
+        results << update_result_hash(column, card, match_data)
+      end
     end
 
     results
