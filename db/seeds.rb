@@ -1,5 +1,68 @@
 require 'slots_helper'
 
+# Cards with using new two-database system
+# card = Card.create!(
+#                 name: 'Cellar',
+#                 image_url: 'http://wiki.dominionstrategy.com/images/thumb/1/1c/Cellar.jpg/200px-Cellar.jpg',
+#                 cost: 2
+#             )
+# Create Keyword instances
+def self.create_keyword_instance(name, card)
+    case name.capitalize
+    when 'Action'
+        Keyword.create!({
+            name: 'Action',
+            type: 'Card Type',
+            description: 'Standard card type',
+            card: card
+        })
+    when 'Reaction'
+        Keyword.create!({
+            name: 'Reaction',
+            type: 'Card Type',
+            description: 'Can be played after another player plays an Attack card',
+            card: card
+        })
+    when 'Attack' 
+        Keyword.create!({
+            name: 'Attack',
+            type: 'Card Type',
+            description: 'Causes a negative effect to all other players.',
+            card: card
+        })
+    when 'Base1' 
+        Keyword.create!({
+            name: 'Base (1st Edition)',
+            type: 'Expansion',
+            description: 'First release of Dominion (2008).',
+            card: card
+        })
+    when 'Sifter' 
+        Keyword.create!({
+            name: 'Sifter',
+            type: 'Archetype',
+            description: 'Enables players to cycle through junk cards in their deck faster.',
+            card: card
+        })
+    when 'Sifter' 
+        Keyword.create!({
+            name: 'Non-Terminal',
+            type: 'Terminality',
+            description: 'Additional Action cards can be played after this card.',
+            card: card
+        })
+    else
+        raise "Invalid keyword creation request. Params name:#{name} card:#{card}"
+    end
+end
+
+def self.assign_keyword(keywords, card)
+    keywords.split(', ').each do |kw|
+        create_keyword_instance(kw, card)
+    end
+end
+
+
 # 2 Cost cards >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 Card.create!(name: "Cellar",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/1/1c/Cellar.jpg/200px-Cellar.jpg",
@@ -245,4 +308,14 @@ Card.create!(name: "Adventurer",
 
 10.times do
   Slot.create!(image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
+end
+
+
+def self.get_base_game_info(card)
+    {
+        name: 'Base (1st Edition)',
+        type: 'Expansion',
+        description: 'First release of Dominion',
+        card: card
+    } 
 end

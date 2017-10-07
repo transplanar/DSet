@@ -3,6 +3,7 @@ require 'pp'
 
 class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
+  has_many :keywords
 
   scope :_name, ->(regex) { Card.where('name ILIKE ?', regex) }
   scope :_types, ->(regex) { Card.where('types ILIKE ?', regex) }
