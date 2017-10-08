@@ -11,10 +11,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171007011113) do
+ActiveRecord::Schema.define(version: 20171008221200) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "card_keywords", force: :cascade do |t|
+    t.string   "name"
+    t.string   "card_type"
+    t.string   "description"
+    t.integer  "card_id"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+  end
+
+  add_index "card_keywords", ["card_id"], name: "index_card_keywords_on_card_id", using: :btree
 
   create_table "cards", force: :cascade do |t|
     t.string   "name"
@@ -37,17 +48,6 @@ ActiveRecord::Schema.define(version: 20171007011113) do
   add_index "cards_slots", ["card_id", "slot_id"], name: "index_cards_slots_on_card_id_and_slot_id", using: :btree
   add_index "cards_slots", ["slot_id", "card_id"], name: "index_cards_slots_on_slot_id_and_card_id", using: :btree
 
-  create_table "keywords", force: :cascade do |t|
-    t.string   "name"
-    t.string   "description"
-    t.string   "type"
-    t.integer  "card_id"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-  end
-
-  add_index "keywords", ["card_id"], name: "index_keywords_on_card_id", using: :btree
-
   create_table "slots", force: :cascade do |t|
     t.string   "queries"
     t.string   "image_url"
@@ -57,5 +57,5 @@ ActiveRecord::Schema.define(version: 20171007011113) do
     t.datetime "updated_at",        null: false
   end
 
-  add_foreign_key "keywords", "cards"
+  add_foreign_key "card_keywords", "cards"
 end

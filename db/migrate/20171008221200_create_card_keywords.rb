@@ -1,9 +1,9 @@
-class CreateKeywords < ActiveRecord::Migration
+class CreateCardKeywords < ActiveRecord::Migration
   def change
-    create_table :keywords do |t|
+    create_table :card_keywords do |t|
       t.string :name
+      t.string :card_card_type
       t.string :description
-      t.string :type
       t.references :card, index: true, foreign_key: true
 
       t.timestamps null: false
