@@ -31,13 +31,8 @@ ActiveRecord::Schema.define(version: 20171008221200) do
     t.string   "name"
     t.string   "image_url"
     t.integer  "cost"
-    t.string   "types"
-    t.string   "category"
-    t.string   "expansion"
-    t.string   "strategy"
-    t.string   "terminality"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "cards_slots", id: false, force: :cascade do |t|

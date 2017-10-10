@@ -9,159 +9,161 @@ require 'slots_helper'
 # Create CardKeyword instances
 # TODO delete CardKeyWord, recreate as new model "CardKeyWord"
 def create_keyword_instance(name, card)
-    case name.capitalize
+    p "Recieved #{name} and #{card}"
+    
+    case name.downcase
     # Expansions
-    when 'Base1' 
+    when 'Base'.downcase 
         CardKeyword.create!({
             name: 'Base (1st Edition)',
             card_type: 'Expansion',
             description: 'First release of Dominion (2008).',
             card: card
         })
-    # Card card_types
-    when 'Action'
+    # Card types
+    when 'Action'.downcase
         CardKeyword.create!({
             name: 'Action',
-            card_type: 'Card card_type',
-            description: 'Standard card card_type',
+            card_type: 'Card Type',
+            description: 'Standard card type',
             card: card
         })
-    when 'Reaction'
+    when 'Reaction'.downcase
         CardKeyword.create!({
             name: 'Reaction',
-            card_type: 'Card card_type',
+            card_type: 'Card Type',
             description: 'Can be played after another player plays an Attack card',
             card: card
         })
-    when 'Attack' 
+    when 'Attack'.downcase 
         CardKeyword.create!({
             name: 'Attack',
-            card_type: 'Card card_type',
+            card_type: 'Card Type',
             description: 'Causes a negative effect to all other players.',
             card: card
         })
-    # Subcard_types
-    # Attack Subcard_types
-    when 'Handsize Attack' 
+    # Subtypes
+    # Attack Subtypes
+    when 'Handsize Attack'.downcase 
         CardKeyword.create!({
             name: 'Handsize Attack',
-            card_type: 'Subcard_type',
+            card_type: 'Subtype',
             description: 'Forces players to discard cards.',
             card: card
         })
-    when 'Deck Inspection Attack' 
+    when 'Deck Inspection Attack'.downcase 
         CardKeyword.create!({
             name: 'Deck Inspection Attack',
-            card_type: 'Subcard_type',
+            card_type: 'Subtype',
             description: 'Allows you to see other player\'s cards and choose whether they keep or discard them.',
             card: card
         })
-    when 'Trashing Attack' 
+    when 'Trashing Attack'.downcase 
         CardKeyword.create!({
             name: 'Trashing Attack',
-            card_type: 'Subcard_type',
+            card_type: 'Subtype',
             description: 'Forces other players to trash cards.',
             card: card
         })
-    when 'Curser' 
+    when 'Curser'.downcase 
         CardKeyword.create!({
             name: 'Curser',
-            card_type: 'Subcard_type',
+            card_type: 'Subtype',
             description: 'Gives other players curse cards.',
             card: card
         })
     
     
-    # Trasher Subcard_types
-    when 'Trash-For-Benefit' 
+    # Trasher Subtypes
+    when 'Trash-For-Benefit'.downcase 
         CardKeyword.create!({
             name: 'Trash-For-Benefit',
-            card_type: 'Subcard_type',
+            card_type: 'Subtype',
             description: 'Allow you to trash a card and gain an additional benefit.',
             card: card
         })
     
-    # Archecard_types
-    when 'Sifter' 
+    # Archetypes
+    when 'Sifter'.downcase 
         CardKeyword.create!({
             name: 'Sifter',
-            card_type: 'Archecard_type',
+            card_type: 'Archetype',
             description: 'Enables players to cycle through junk cards in their deck faster.',
             card: card
         })
         
-    when 'Trasher' 
+    when 'Trasher'.downcase 
         CardKeyword.create!({
             name: 'Trasher',
-            card_type: 'Archecard_type',
+            card_type: 'Archetype',
             description: 'Allows player to remove one or more cards from their deck.',
             card: card
         })
-    when 'Deck Discarder' 
+    when 'Deck Discarder'.downcase 
         CardKeyword.create!({
             name: 'Deck Discarder',
-            card_type: 'Archecard_type',
+            card_type: 'Archetype',
             description: 'Allows you to discard your deck, allowing you to draw recently bought cards more quickly.',
             card: card
         })
-    when '+Buy', '+buy' 
+    when '+Buy'.downcase 
         CardKeyword.create!({
             name: '+Buy',
-            card_type: 'Archecard_type',
+            card_type: 'Archetype',
             description: 'Grants you one or more additional Buys',
             card: card
         })
-    when 'Gainer' 
+    when 'Gainer'.downcase 
         CardKeyword.create!({
             name: 'Gainer',
-            card_type: 'Archecard_type',
+            card_type: 'Archetype',
             description: 'Allows you to obtain a Card during your Action Phase without consuming a Buy.',
             card: card
         })
-    when 'One-Shot' 
+    when "One-Shot".downcase 
         CardKeyword.create!({
             name: 'One-Shot',
-            card_type: 'Archecard_type',
+            card_type: 'Archetype',
             description: 'Card that can only be played once, then is removed from your deck.',
             card: card
         })
-    when 'Smithies' 
+    when 'Smithies'.downcase 
         CardKeyword.create!({
             name: 'Smithies',
-            card_type: 'Archecard_type',
+            card_type: 'Archetype',
             description: 'Allows you to draw 2 or more cards.',
             card: card
         })
-    when 'Virtual Coin' 
+    when 'Virtual Coin'.downcase 
         CardKeyword.create!({
             name: 'Virtual Coin',
-            card_type: 'Archecard_type',
+            card_type: 'Archetype',
             description: 'Non-Treasure card that gives Coins on the turn it is played.',
             card: card
         })
     # Terminality
-    when 'Non-Terminal' 
+    when 'Non-Terminal'.downcase 
         CardKeyword.create!({
             name: 'Non-Terminal',
             card_type: 'Terminality',
             description: 'Refunds the Action spent to use this card, allowing additional Action cards to be played.',
             card: card
         })
-    when 'Terminal' 
+    when 'Terminal'.downcase 
         CardKeyword.create!({
             name: 'Terminal',
             card_type: 'Terminality',
             description: 'Consumes the Action spent to use this card.',
             card: card
         })
-    when 'Village', 'Splitter'
+    when 'Village'.downcase, 'Splitter'.downcase
         CardKeyword.create!({
             name: 'Splitter / Village',
             card_type: 'Terminality',
             description: 'Refunds the Action spent to use this card plus provides one or more additional Actions.',
             card: card
         })
-    when 'Cantrip' 
+    when 'Cantrip'.downcase 
         CardKeyword.create!({
             name: 'Cantrip',
             card_type: 'Terminality',
@@ -169,35 +171,35 @@ def create_keyword_instance(name, card)
             card: card
         })
     # Strategies
-    when 'Trashing', 'Deckthinning' 
+    when 'Trashing'.downcase, 'Deckthinning'.downcase 
         CardKeyword.create!({
             name: 'Deckthinning / Trashing',
             card_type: 'Strategy',
             description: 'Removing as many low-value cards from your deck as possible to more consistently draw your strongest cards.',
             card: card
         })
-    when 'Engine' 
+    when 'Engine'.downcase 
         CardKeyword.create!({
             name: 'Engine',
             card_type: 'Strategy',
             description: 'Focusing on extra actions and card draw to build towards big turns that combo multiple effects.',
             card: card
         })
-    when 'Rush' 
+    when 'Rush'.downcase 
         CardKeyword.create!({
             name: 'Rush',
             card_type: 'Strategy',
             description: 'Attempt to end the game early by depleting victory card piles as fast as possible.',
             card: card
         })
-    when 'Alt-VP' 
+    when 'Alt-VP'.downcase 
         CardKeyword.create!({
             name: 'Alt-VP',
             card_type: 'Strategy',
             description: 'Focus on obtaining victory points through card effects rather than traditional victory cards.',
             card: card
         })
-    when 'Big Money' 
+    when 'Big Money'.downcase 
         CardKeyword.create!({
             name: 'Big Money',
             card_type: 'Strategy',
@@ -205,12 +207,14 @@ def create_keyword_instance(name, card)
             card: card
         })
     else
-        raise "Invalid keyword creation request. Params name:#{name} card:#{card}"
+        raise "Invalid keyword creation request. Params name: '#{name}' card: '#{card}'"
     end
 end
 
-def assign_keywords(keywordString, card)
-    keywordString.split(', ').each do |kw|
+# def assign_keywords(keywordString, card)
+def assign_keywords(keywords, card)
+    # keywordString.split(', ').each do |kw|
+    keywords.each do |kw|
         create_keyword_instance(kw, card)
     end
 end
@@ -463,13 +467,8 @@ end
 card = Card.create!(name: "Cellar",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/1/1c/Cellar.jpg/200px-Cellar.jpg",
             cost: 2)
-            # card_types: "Action",
-            # category: "Sifter",
-            # expansion: "Base",
-            # strategy: "",
-            # terminality: "Non-Terminal")
-            
-assign_keywords('Action, Sifter, Base, Non-Terminal', card)
+        
+assign_keywords(%w(Action Sifter Base Non-Terminal), card)
 
 10.times do
   Slot.create!(image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
