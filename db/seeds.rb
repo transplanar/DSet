@@ -84,6 +84,13 @@ def create_keyword_instance(name, card)
         })
     
     # Archetypes
+    when 'Blocker'.downcase 
+        CardKeyword.create!({
+            name: 'Blocker',
+            card_type: 'Archetype',
+            description: 'Nullifies the effects of Attacks against you.',
+            card: card
+        })
     when 'Sifter'.downcase 
         CardKeyword.create!({
             name: 'Sifter',
@@ -463,12 +470,31 @@ end
 #             strategy: "Engine",
 #             terminality: "Terminal Draw")
 
-# Two-Table Seed Method Test
+# 2 Cost Cards
 card = Card.create!(name: "Cellar",
             image_url: "http://wiki.dominionstrategy.com/images/thumb/1/1c/Cellar.jpg/200px-Cellar.jpg",
             cost: 2)
         
 assign_keywords(%w(Action Sifter Base Non-Terminal), card)
+
+card = Card.create!(name: "Chapel",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/2/29/Chapel.jpg/200px-Chapel.jpg",
+            cost: 2)
+        
+assign_keywords(%w(Action Trasher Base Trashing Terminal), card)
+
+card = Card.create!(name: "Moat",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/f/fe/Moat.jpg/200px-Moat.jpg",
+            cost: 2)
+        
+assign_keywords(%w(Action Reaction Blocker Base Terminal), card)
+
+# 3 Cost Cards
+card = Card.create!(name: "Chancellor",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/b/b7/Chancellor.jpg/200px-Chancellor.jpg",
+            cost: 3)
+        
+assign_keywords(%w(Action Deck\ Discarder Base Terminal), card)
 
 10.times do
   Slot.create!(image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
