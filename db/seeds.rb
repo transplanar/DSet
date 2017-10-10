@@ -496,6 +496,24 @@ card = Card.create!(name: "Chancellor",
         
 assign_keywords(%w(Action Deck\ Discarder Base Terminal), card)
 
+card = Card.create!(name: "Village",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/5/5a/Village.jpg/200px-Village.jpg",
+            cost: 3)
+        
+assign_keywords(%w(Action Splitter Village Base Non-Terminal Engine), card)
+
+card = Card.create!(name: "Woodcutter",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/d/d6/Woodcutter.jpg/200px-Woodcutter.jpg",
+            cost: 3)
+        
+assign_keywords(%w(Action Base +Buy Virtual\ Coin Engine Terminal), card)
+
+card = Card.create!(name: "Workshop",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/5/50/Workshop.jpg/200px-Workshop.jpg",
+            cost: 3)
+        
+assign_keywords(%w(Action Base Gainer Terminal), card)
+
 10.times do
   Slot.create!(image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
 end
