@@ -42,6 +42,13 @@ def create_keyword_instance(name, card)
             description: 'Causes a negative effect to all other players.',
             card: card
         })
+    when 'Victory'.downcase 
+        CardKeyword.create!({
+            name: 'Victory',
+            card_type: 'Card Type',
+            description: 'Award victory points at the end of the game.',
+            card: card
+        })
     # Subtypes
     # Attack Subtypes
     when 'Handsize Attack'.downcase 
@@ -513,6 +520,50 @@ card = Card.create!(name: "Workshop",
             cost: 3)
         
 assign_keywords(%w(Action Base Gainer Terminal), card)
+
+# Cost 4 Cards
+card = Card.create!(name: "Bureaucrat",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/4/4d/Bureaucrat.jpg/200px-Bureaucrat.jpg",
+            cost: 4)
+        
+assign_keywords(%w(Action Base Attack Gainer Terminal), card)
+
+card = Card.create!(name: "Feast",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/9/9c/Feast.jpg/200px-Feast.jpg",
+            cost: 4)
+        
+assign_keywords(%w(Action Base One-Shot Terminal), card)
+
+card = Card.create!(name: "Gardens",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/8/8c/Gardens.jpg/200px-Gardens.jpg",
+            cost: 4)
+        
+assign_keywords(%w(Base Victory Rush alt-VP Terminal), card)
+
+card = Card.create!(name: "Militia",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/a/a0/Militia.jpg/200px-Militia.jpg",
+            cost: 4)
+        
+assign_keywords(%w(Base Action Attack Handsize\ Attack Virtual\ Coin Terminal), card)
+
+card = Card.create!(name: "Moneylender",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/7/70/Moneylender.jpg/200px-Moneylender.jpg",
+            cost: 4)
+        
+assign_keywords(%w(Base Action Trasher Trash-For-Benefit Trashing Terminal), card)
+
+card = Card.create!(name: "Remodel",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/2/2e/Remodel.jpg/200px-Remodel.jpg",
+            cost: 4)
+        
+assign_keywords(%w(Base Action Trasher Trash-For-Benefit Trashing Terminal), card)
+
+card = Card.create!(name: "Smithy",
+            image_url: "http://wiki.dominionstrategy.com/images/thumb/3/36/Smithy.jpg/200px-Smithy.jpg",
+            cost: 4)
+
+#TODO fix card assignment with aliases to be separate case statements
+assign_keywords(%w(Base Action Smithies Big\ Money Engine Terminal), card)
 
 10.times do
   Slot.create!(image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
