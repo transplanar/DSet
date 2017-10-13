@@ -5,13 +5,13 @@ class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
   has_many :card_keywords
 
-  scope :_name, ->(regex) { Card.where('name ILIKE ?', regex) }
-  scope :_types, ->(regex) { Card.where('types ILIKE ?', regex) }
-  scope :_category, ->(regex) { Card.where('category ILIKE ?', regex) }
-  scope :_cost, ->(regex) { Card.where('cost = ?', regex)  }
-  scope :_expansion, ->(regex) { Card.where('expansion ILIKE ?', regex) }
-  scope :_strategy, ->(regex) { Card.where('strategy ILIKE ?', regex) }
-  scope :_terminality, ->(regex) { Card.where('terminality ILIKE ?', regex) }
+  # scope :_name, ->(regex) { Card.where('name ILIKE ?', regex) }
+  # scope :_types, ->(regex) { Card.where('types ILIKE ?', regex) }
+  # scope :_category, ->(regex) { Card.where('category ILIKE ?', regex) }
+  # scope :_cost, ->(regex) { Card.where('cost = ?', regex)  }
+  # scope :_expansion, ->(regex) { Card.where('expansion ILIKE ?', regex) }
+  # scope :_strategy, ->(regex) { Card.where('strategy ILIKE ?', regex) }
+  # scope :_terminality, ->(regex) { Card.where('terminality ILIKE ?', regex) }
 
   # TODO: fix to assign to slot
   def self.search(queries_string, slot)
@@ -20,19 +20,20 @@ class Card < ActiveRecord::Base
     queries_array = queries_to_array(queries_string)
     subqueries = format_for_regex(queries_array)
     matches = get_matches(subqueries)
-    convert_to_match_hash(matches)
+    # convert_to_match_hash(matches)
+# (query, match_data, columns = [])
+    # get_card_subset(subqueries.first, [], [])
   end
 
   def self.queries_to_array(queries_string)
     if numeric?(queries_string)
-      p "Query as string #{[queries_string.to_s]}"
       [queries_string.to_s]
     else
-      # FIXME only call format_for_regex with ALPHABETICAL input
       queries_string.split
     end
   end
 
+  # TODO failing to bookend characters with %
   private_class_method def self.format_for_regex(queries_array)
     subqueries = []
 
@@ -40,16 +41,15 @@ class Card < ActiveRecord::Base
       subqueries << (numeric?(query) ? query : string_to_fuzzy_regex(query))
     end
 
-    # p "subqueries #{subqueries}"
     subqueries
   end
 
-  private_class_method def self.string_to_fuzzy_regex(arr)
+  private_class_method def self.string_to_fuzzy_regex(str)
     regex = ''
-    letters = arr.chars
+    letters = str.chars
 
     letters.each do |letter|
-      regex << letter == letters.first ? letter.to_s : "%#{letter}"
+      regex << (letter == letters.first ? letter.to_s : "%#{letter}")
     end
 
     "%#{regex}%"
@@ -60,10 +60,10 @@ class Card < ActiveRecord::Base
     columns = relevant_columns
 
     subqueries.each do |query|
-      match_data, matched_columns =
+      match_data, matched_categories =
         get_card_subset(query, match_data, columns)
 
-      columns -= matched_columns unless query == subqueries.last
+      columns -= matched_categories unless query == subqueries.last
     end
 
     return [] if match_data.empty?
@@ -71,51 +71,67 @@ class Card < ActiveRecord::Base
     match_data.group_by { |elem| elem[:columns] }.sort
   end
 
+  # Pseudo
+
   private_class_method def self.get_card_subset(query, match_data, columns = [])
-    results = []
-    matched_columns = []
+    # results = []
+    # matched_categories = []
+    matched_categories = []
 
-    card_set = (match_data.empty? ? Card.all : to_active_record(match_data))
+    # card_set = (match_data.empty? ? Card.all : to_active_record(match_data))
 
-    columns.each do |col|
-      next if col == 'cost' && !numeric?(query)
+    if(numeric?(query))
+      results << Card.where(cost: query)
+      matched_categories << 'cost'
+    else
+      keyword_matches = CardKeyword.where('name ILIKE ?', query).distinct
+      card_ids = keyword_matches.pluck(:card_id)
+      results = Card.where(id: card_ids)
+      matched_categories = keyword_matches.pluck(:category).uniq!
 
-      matches = matches_from_column(query, card_set, match_data, col)
-
-      next if matches.empty?
-
-      matched_columns << col
-      results |= matches
+      p "RESULTS #{results.pluck(:name)}"
+      p "KEYWORDS #{keyword_matches.pluck(:name)}"
     end
 
-    [results, matched_columns]
+    # columns.each do |col|
+    #   next if col == 'cost' && !numeric?(query)
+    #
+    #   matches = matches_from_column(query, card_set, match_data, col)
+    #
+    #   next if matches.empty?
+    #
+    #   matched_categories << col
+    #   results |= matches
+    # end
+
+    [results, matched_categories]
   end
 
   private_class_method def self.to_active_record(match_data)
     Card.where(id: match_data.map { |e| e[:card].id })
   end
 
-  private_class_method def self.matches_from_column(query, card_set, match_data, column)
-    matches_from_scope = card_set.send("_#{column}", query)
+  # private_class_method def self.matches_from_column(query, card_set, match_data, column)
+  #   matches_from_scope = card_set.send("_#{column}", query)
+  #
+  #   return [] if matches_from_scope.nil?
+  #
+  #   sort_matches(matches_from_scope, match_data, column)
+  # end
 
-    return [] if matches_from_scope.nil?
-
-    sort_matches(matches_from_scope, match_data, column)
-  end
-
-  private_class_method def self.sort_matches(matches_from_scope, match_data, column)
-    results = []
-
-    matches_from_scope.each do |card|
-      if match_data.empty?
-        results << new_result(column, card)
-      else
-        results << update_result(column, card, match_data)
-      end
-    end
-
-    results
-  end
+  # private_class_method def self.sort_matches(matches_from_scope, match_data, column)
+  #   results = []
+  #
+  #   matches_from_scope.each do |card|
+  #     if match_data.empty?
+  #       results << new_result(column, card)
+  #     else
+  #       results << update_result(column, card, match_data)
+  #     end
+  #   end
+  #
+  #   results
+  # end
 
   private_class_method def self.new_result(column, card)
     {
@@ -170,8 +186,8 @@ class Card < ActiveRecord::Base
   end
 
   private_class_method def self.relevant_columns
-    matched_columns = %w[id image_url created_at updated_at slot_id]
-    Card.attribute_names - matched_columns
+    matched_categories = %w[id image_url created_at updated_at slot_id]
+    Card.attribute_names - matched_categories
   end
 
   private_class_method def self.numeric?(str)
