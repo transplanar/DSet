@@ -13,5 +13,6 @@ Rails.application.routes.draw do
   post 'slots/:slot_id/assign_filter/' => 'slots#assign_filter', as: :assign_filter
   patch 'slots/:slot_id/delete_filter/' => 'slots#delete_filter', as: :delete_filter
 
-  root to: 'home#index'
+  # root to: 'home#index'
+  root to: 'slots#show'
 end

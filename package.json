@@ -1,0 +1,23 @@
+{
+  "name": "dset",
+  "version": "0.2.0",
+  "description": "Randomizer and card database for Dominion.",
+  "main": "index.js",
+  "dependencies": {
+    "react-modal": "^1.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/transplanar/DSet.git"
+  },
+  "author": "Glen Cooney",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/transplanar/DSet/issues"
+  },
+  "homepage": "https://github.com/transplanar/DSet#readme"
+}
