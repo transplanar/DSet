@@ -80,6 +80,7 @@ class Card < ActiveRecord::Base
 
     # card_set = (match_data.empty? ? Card.all : to_active_record(match_data))
 
+    # TODO finish formatting results
     if(numeric?(query))
       results << Card.where(cost: query)
       matched_categories << 'cost'
