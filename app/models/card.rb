@@ -1,5 +1,5 @@
 
-require 'pp'
+# require "awesome_print"
 
 class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
@@ -18,13 +18,16 @@ class Card < ActiveRecord::Base
 
     queries_array = queries_to_array(queries_string)
     subqueries = format_for_regex(queries_array)
-    get_matches(subqueries)
+    matches = get_matches(subqueries)
+    convert_to_match_hash(matches)
   end
 
   def self.queries_to_array(queries_string)
     if numeric?(queries_string)
+      p "Query as string #{[queries_string.to_s]}"
       [queries_string.to_s]
     else
+      # FIXME only call format_for_regex with ALPHABETICAL input
       queries_string.split
     end
   end
@@ -36,6 +39,7 @@ class Card < ActiveRecord::Base
       subqueries << (numeric?(query) ? query : string_to_fuzzy_regex(query))
     end
 
+    # p "subqueries #{subqueries}"
     subqueries
   end
 
@@ -101,16 +105,18 @@ class Card < ActiveRecord::Base
   private_class_method def self.sort_matches(matches_from_scope, match_data, column)
     results = []
 
-    if match_data.empty?
-      results << new_result_hash(column, card)
-    else
-      results << update_result_hash(column, card, match_data)
+    matches_from_scope.each do |card|
+      if match_data.empty?
+        results << new_result(column, card)
+      else
+        results << update_result(column, card, match_data)
+      end
     end
 
     results
   end
 
-  private_class_method def self.new_result_hash(column, card)
+  private_class_method def self.new_result(column, card)
     {
       columns: [column],
       card: card,
@@ -118,7 +124,7 @@ class Card < ActiveRecord::Base
     }
   end
 
-  private_class_method def self.update_result_hash(column, card, match_data)
+  private_class_method def self.update_result(column, card, match_data)
     existing_card = match_data.select { |e| e[:card] == card }.first
     existing_card[:columns] << column
     existing_card[:term_matches] << card[column.to_s]
@@ -150,6 +156,16 @@ class Card < ActiveRecord::Base
     groups.each_key do |key|
       groups[key.join(' < ')] = groups.delete key
     end
+  end
+
+  private_class_method def self.convert_to_match_hash(match_array)
+    match_hash = {}
+
+    match_array.each do |k, v|
+      match_hash.store(k.map(&:capitalize).join(', '), v)
+    end
+
+    match_hash
   end
 
   private_class_method def self.relevant_columns
