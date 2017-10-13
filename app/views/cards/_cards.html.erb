@@ -1,17 +1,26 @@
 <div class="results">
     <% unless results.blank? %>
+<<<<<<< HEAD
       <h3>Filtered Card Selection</h3>
     <% else %>
       <br>No results found.
     <% end %>
 
     <% results.each do |group, matches| %>
-      <h1><%= group.map(&:capitalize).join(', ') %></h1>
+      <!-- <h1><%# group.map(&:capitalize).join(', ') %></h1> -->
+=======
+      <% results.each do |group, matches| %>
+>>>>>>> 2d9505691d1ecf9bf22d8cf3a9d504d6f1188604
+      <h1><%= group %></h1>
       <p>
         <% matches.each do |match| %>
         <%= link_to image_tag(match[:card][:image_url], class: 'card_image'), assign_card_path(slot, match[:card]), method: :post, remote: true %>
         <%= match[:term_matches].join(', ') %>
         <% end %>
       </p>
+      <% end %>
+    <% else %>
+      <br>No results found.
     <% end %>
+
 </div>
