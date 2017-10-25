@@ -78,8 +78,8 @@ class Card < ActiveRecord::Base
     # matched_categories = []
     matched_categories = []
 
-    # card_set = (match_data.empty? ? Card.all : to_active_record(match_data))
-
+    card_set = (match_data.empty? ? Card.all : to_active_record(match_data))
+    
     # TODO finish formatting results
     if(numeric?(query))
       results << Card.where(cost: query)
@@ -87,11 +87,22 @@ class Card < ActiveRecord::Base
     else
       keyword_matches = CardKeyword.where('name ILIKE ?', query).distinct
       card_ids = keyword_matches.pluck(:card_id)
-      results = Card.where(id: card_ids)
+      card_matches = card_set.where(id: card_ids)
       matched_categories = keyword_matches.pluck(:category).uniq!
+      
+      results = {}
+      
+      # TODO system for term letter highlighting, ensure consecutive
+      card_matches.each do |card|
+        results[card.id] = {
+          card: card,
+          terms: 
+        }  
+      end
 
-      p "RESULTS #{results.pluck(:name)}"
-      p "KEYWORDS #{keyword_matches.pluck(:name)}"
+      # p "RESULTS #{results.pluck(:name)}"
+      # p "KEYWORDS #{keyword_matches.pluck(:name)}"
+      # match_data[]
     end
 
     # columns.each do |col|
