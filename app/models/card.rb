@@ -56,14 +56,13 @@ class Card < ActiveRecord::Base
   end
 
   private_class_method def self.get_matches(subqueries)
-    match_data = []
-    columns = relevant_columns
+    match_data = {}
 
     subqueries.each do |query|
-      match_data, matched_categories =
-        get_card_subset(query, match_data, columns)
+      match_data =
+        get_card_subset(query, match_data)
 
-      columns -= matched_categories unless query == subqueries.last
+      # columns -= matched_categories unless query == subqueries.last
     end
 
     return [] if match_data.empty?
@@ -71,95 +70,134 @@ class Card < ActiveRecord::Base
     match_data.group_by { |elem| elem[:columns] }.sort
   end
 
-  # Pseudo
+  # Match data is a hash of query, card, column
 
-  private_class_method def self.get_card_subset(query, match_data, columns = [])
-    # results = []
-    # matched_categories = []
-    matched_categories = []
-
-    card_set = (match_data.empty? ? Card.all : to_active_record(match_data))
-    
-    # TODO finish formatting results
-    if(numeric?(query))
-      results << Card.where(cost: query)
-      matched_categories << 'cost'
+  private_class_method def self.get_card_subset(query, match_data)
+    # card_set = (match_data.empty? ? Card.all : to_active_record(match_data))
+    if(match_data.empty?)
+      card_set = Card.all
+      matched_columns = []
     else
-      keyword_matches = CardKeyword.where('name ILIKE ?', query).distinct
-      card_ids = keyword_matches.pluck(:card_id)
-      card_matches = card_set.where(id: card_ids)
-      matched_categories = keyword_matches.pluck(:category).uniq!
-      
-      results = {}
-      
-      # TODO system for term letter highlighting, ensure consecutive
-      card_matches.each do |card|
-        results[card.id] = {
-          card: card,
-          terms: 
-        }  
-      end
-
-      # p "RESULTS #{results.pluck(:name)}"
-      # p "KEYWORDS #{keyword_matches.pluck(:name)}"
-      # match_data[]
+      card_set = Card.where(name: match_data.keys)
+      matched_columns = match_data.pluck(:columns)
     end
+    
+    card_set = (match_data.empty? ? Card.all : Card.where(name: match_data.keys))
+    # columns = []
+    matched_card_ids = card_set.pluck(:id)
+    
+    if(numeric?(query))
+      matched_cards = card_set.where(cost: query)
 
-    # columns.each do |col|
-    #   next if col == 'cost' && !numeric?(query)
-    #
-    #   matches = matches_from_column(query, card_set, match_data, col)
-    #
-    #   next if matches.empty?
-    #
-    #   matched_categories << col
-    #   results |= matches
-    # end
+      # TODO move this to a separate method
+      matched_cards.each do |card|
+        if (match_data[card.name])
+          match_data[card.name][:columns] << 'cost'
+          match_data[card.name][:queries] << query
+        else
+          match_data[card.name] = {} 
+          match_data[card.name][:columns] = ['cost']
+          match_data[card.name][:queries] = [query]
+        end
+      end
+      
+      p "NUMERIC"
+      p "RAW MATCH DATA #{match_data}"
+      p "KEYS #{match_data.keys}"
+    else
+      # NOTE: Must associate each keyword/term/category match as single data object
+      # Field being compared against
+      # matched_columns = match_data.empty? ? [] : match_data.pluck(:columns)
+      # card_subset = Card.where(name: match_data.keys)
+      # matched_card_ids = match_data.pluck(:card)
+      
+      keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id))
+                              .where(CardKeyword.arel_table[:category].not_in matched_columns)
+                              .distinct
+      
+      keyword_matches = keyword_set.where('name ILIKE ?', query).distinct
+      # matched_cards = keyword_matches.pluck(:card)
+      
+      keyword_matches.each do |kw|
+        if (match_data[kw.card.name])
+          match_data[kw.card.name][:columns] << kw.category
+          # match_data[kw.card.name][:queries] << query
+          match_data[kw.card.name][:terms] << kw.name
+        else
+          match_data[kw.card.name] = {} 
+          match_data[kw.card.name][:columns] = [kw.category]
+          # match_data[kw.card.name][:queries] = [query]
+          match_data[kw.card.name][:terms] = [kw.name]
+        end
+      end
+      
+      p "ALPHA"
+      p "RAW MATCH DATA #{match_data}"
+      p "KEYS #{match_data.keys}"
+      
+      # matched_cards.each do |card|
+      #   if (match_data[card.name])
+      #     match_data[card.name][:columns] << 'cost'
+      #     match_data[card.name][:queries] << query
+      #   else
+      #     match_data[card.name] = {} 
+      #     match_data[card.name][:columns] = ['cost']
+      #     match_data[card.name][:queries] = [query]
+      #   end
+      # end
+      
+      # matched_categories = keyword_matches.pluck(:category).uniq!
+      # card_ids = keyword_matches.pluck(:card_id)
+      # matched_cards = Card.where(Card.arel_table[:id].in card_ids)
+      
+      # p "---CARDS #{matched_cards.pluck(:name)}"    
+      # p "---KEYWORDS #{keyword_matches.pluck(:name)}"    
+
+      # keyword_matches = CardKeyword.where('name ILIKE ?', query).distinct
+      
+      # Array of categories already matched (to prevent duplicates)
+      
+      
+      # keyword_matches.each do |keyword|
+      #   card = Card.where(id: keyword.card_id)
+        
+        
+      # end
+      
+      # card_ids = keyword_matches.pluck(:card_id)
+      # matched_cards = card_set.where(id: card_ids)
+      
+      # match_data.empty? new_result(matched_categories, matched_cards) 
+      #                   : update_result(matched_categories, matched_cards);
+    end
 
     [results, matched_categories]
   end
-
-  private_class_method def self.to_active_record(match_data)
-    Card.where(id: match_data.map { |e| e[:card].id })
-  end
-
-  # private_class_method def self.matches_from_column(query, card_set, match_data, column)
-  #   matches_from_scope = card_set.send("_#{column}", query)
-  #
-  #   return [] if matches_from_scope.nil?
-  #
-  #   sort_matches(matches_from_scope, match_data, column)
+  
+  # private_class_method def self.match_data_to_active_record(data)
+  #   CardKeyword.where(id: match_data.map {|e| e[:] })
   # end
 
-  # private_class_method def self.sort_matches(matches_from_scope, match_data, column)
-  #   results = []
-  #
-  #   matches_from_scope.each do |card|
-  #     if match_data.empty?
-  #       results << new_result(column, card)
-  #     else
-  #       results << update_result(column, card, match_data)
-  #     end
+  # private_class_method def self.to_active_record(match_data)
+  #   Card.where(id: match_data.keys)
+  # end
+
+  # private_class_method def self.new_result(cards, categories)
+  #   results = {}
+  #   cards.each do |card|
+  #     results[card.name] = {
+        
+  #     }
   #   end
-  #
-  #   results
   # end
 
-  private_class_method def self.new_result(column, card)
-    {
-      columns: [column],
-      card: card,
-      term_matches: [card[column.to_s]]
-    }
-  end
+  # private_class_method def self.update_result(column, card, match_data)
+  #   existing_card = match_data.select { |e| e[:card] == card }.first
+  #   existing_card[:columns] << column
+  #   existing_card[:term_matches] << card[column.to_s]
 
-  private_class_method def self.update_result(column, card, match_data)
-    existing_card = match_data.select { |e| e[:card] == card }.first
-    existing_card[:columns] << column
-    existing_card[:term_matches] << card[column.to_s]
-
-    existing_card
-  end
+  #   existing_card
+  # end
 
   private_class_method def self.query_to_regex(query)
     '/' + query.gsub(/[\[\]]/, '') + '/i'
