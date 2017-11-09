@@ -12,8 +12,8 @@ class Card < ActiveRecord::Base
     queries_array = queries_to_array(queries_string)
     subqueries = format_for_regex(queries_array)
     matches = get_matches(subqueries)
-    
-    matches.group_by{|k,v| v[:columns]}
+
+    matches.group_by { |_, v| v[:columns] }
   end
 
   def self.queries_to_array(queries_string)
@@ -52,7 +52,7 @@ class Card < ActiveRecord::Base
       # FIXME Not culling matches that do not match ALL supplied queries
       # get_card_subset(query, match_data)
       result = get_card_subset(query, match_data)
-      
+
       match_data = result == nil ? match_data : result
     end
 
@@ -65,7 +65,7 @@ class Card < ActiveRecord::Base
   # TODO needs new_match_data, cull matches that do not match ALL queries
   # only aggregate fields that need to carry over (columns)
     new_match_data = {}
-    
+
     if(match_data.empty?)
       card_set = Card.all
       matched_columns = []
@@ -80,7 +80,7 @@ class Card < ActiveRecord::Base
       matched_cards.each do |card|
         new_match_data[card.name] = {}
         new_match_data[card.name][:card] = card
-        
+
         if (match_data[card.name])
           new_match_data[card.name][:columns] = match_data[card.name][:columns] | ['Cost']
           new_match_data[card.name][:terms] = match_data[card.name][:terms] | [query]
@@ -93,13 +93,13 @@ class Card < ActiveRecord::Base
       keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
                                .where(!(CardKeyword.arel_table[:category].in matched_columns))
                                .distinct
-      
+
       keyword_matches = keyword_set.where('name ILIKE ?', query).distinct
 
       keyword_matches.each do |kw|
         new_match_data[kw.card.name] = {}
         new_match_data[kw.card.name][:card] = kw.card
-        
+
         if (match_data[kw.card.name])
           new_match_data[kw.card.name][:columns] = match_data[kw.card.name][:columns] | [kw.category]
           new_match_data[kw.card.name][:terms] = match_data[kw.card.name][:terms] | [kw.name]
@@ -109,10 +109,10 @@ class Card < ActiveRecord::Base
         end
       end
     end
-    
+
     new_match_data
   end
-  
+
   private_class_method def self.query_to_regex(query)
     '/' + query.gsub(/[\[\]]/, '') + '/i'
   end
