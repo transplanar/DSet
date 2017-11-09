@@ -4,11 +4,9 @@ class HomeController < ApplicationController
     @slots_arr = []
 
     @slots.each do |slot|
-      if slot.cards.count == 1
-        direct_card_assign(slot, slot.cards.first)
-      end
+      direct_card_assign(slot, slot.cards.first) if slot.cards.count == 1
 
-      @slots_arr << {slot: slot, path: slot_path(slot)}
+      @slots_arr << { slot: slot, path: slot_path(slot) }
     end
 
     respond_to do |format|
@@ -17,8 +15,7 @@ class HomeController < ApplicationController
     end
   end
 
-  def about
-  end
+  def about; end
 
   def generate_cards
     @slots = Slot.order('id ASC').all
@@ -34,9 +31,7 @@ class HomeController < ApplicationController
     end
 
     randomize_slots.each do |slot|
-      if slot.cards.blank?
-        slot.cards = Card.all
-      end
+      slot.cards = Card.all if slot.cards.blank?
 
       random_card = slot.cards.sample
 
@@ -56,11 +51,11 @@ class HomeController < ApplicationController
     @slots = Slot.order('id ASC').all
 
     @slots.each do |slot|
-      slot[:filters_humanized] = ""
-      slot[:sql_prepend] = ""
-      slot[:queries] = ""
+      slot[:filters_humanized] = ''
+      slot[:sql_prepend] = ''
+      slot[:queries] = ''
       slot.cards = Card.all
-      slot.update_attribute(:image_url, "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
+      slot.update_attribute(:image_url, 'http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917')
       slot.save
     end
 

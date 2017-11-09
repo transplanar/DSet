@@ -6,7 +6,6 @@ class SlotsController < ApplicationController
     @slot = Slot.first
 
     @results = Card.search(params[:search], @slot)
-
     # unless @slot.sql_prepend.blank?
     #  @saved_filters = @slot.filters_humanized.split(', ')
     #end

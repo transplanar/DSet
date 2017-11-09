@@ -1,190 +1,160 @@
+
+# require "awesome_print"
+
 class Card < ActiveRecord::Base
   has_and_belongs_to_many :slots
+  has_many :card_keywords
 
-  scope :_name, -> (regex){Card.where("name ILIKE ?", regex)}
-  scope :_types, -> (regex){Card.where("types ILIKE ?", regex)}
-  scope :_category, -> (regex){Card.where("category ILIKE ?", regex)}
-  scope :_cost, -> (regex){Card.where("cost = ?", regex) }
-  scope :_expansion, -> (regex){Card.where("expansion ILIKE ?", regex)}
-  scope :_strategy, -> (regex){Card.where("strategy ILIKE ?", regex)}
-  scope :_terminality, -> (regex){Card.where("terminality ILIKE ?", regex)}
+  # TODO: fix to assign to slot
+  def self.search(queries_string, slot)
+    return [] if queries_string.blank?
 
-  single_term_columns = ["cost"]
+    queries_array = queries_to_array(queries_string)
+    subqueries = format_for_regex(queries_array)
+    matches = get_matches(subqueries)
 
-  def self.search search_str, slot
-    
-    unless search_str.blank?
-      unless is_numeric?(search_str)
-        search_queries = search_str.split
-      else
-        search_queries = [search_str.to_s]
-      end
+    matches.group_by { |_, v| v[:columns] }
+  end
 
-      results = regex_test(search_queries, slot)
+  def self.queries_to_array(queries_string)
+    if numeric?(queries_string)
+      [queries_string.to_s]
     else
-      # unless slot.sql_prepend.blank?
-      #   cards = Card.find_by_sql(slot.sql_prepend)
-      #
-      #   slot.cards = cards
-      #   slot.update_attribute(:queries, search_str)
-      # else
-      #   if slot.cards.blank?
-      #     slot.cards = Card.all
-      #   end
-      # end
-      #
-      # results = {}
+      queries_string.split
     end
-
-    return results
   end
 
-  def self.regex_test user_input, slot
-    term_arr = []
+  private_class_method def self.format_for_regex(queries_array)
+    subqueries = []
 
-    user_input.each do |query|
-      unless is_numeric?(query)
-        term_arr << format_query_for_scope(query)
-      else
-        term_arr << query
-      end
+    queries_array.each do |query|
+      subqueries << (numeric?(query) ? query : string_to_fuzzy_regex(query))
     end
 
-    results = get_matches(term_arr)
-
-    return results
+    subqueries
   end
 
-  private
-
-  def self.format_query_for_scope arr
-    regex = ""
-    letters = arr.chars
+  private_class_method def self.string_to_fuzzy_regex(str)
+    regex = ''
+    letters = str.chars
 
     letters.each do |letter|
-      if letter === letters.first
-        regex << "#{letter}"
-      else
-        regex <<  "%#{letter}"
-      end
+      regex << (letter == letters.first ? letter.to_s : "%#{letter}")
     end
 
-    regex = "%"+regex+'%'
-
-    return regex
+    "%#{regex}%"
   end
 
-  def self.get_card_subset query, card_match_data, columns = []
-    results = []
-    exclude_columns = []
+  private_class_method def self.get_matches(subqueries)
+    match_data = {}
 
-    if card_match_data.empty?
+    subqueries.each do |query|
+      # FIXME Not culling matches that do not match ALL supplied queries
+      # get_card_subset(query, match_data)
+      result = get_card_subset(query, match_data)
+
+      match_data = result == nil ? match_data : result
+    end
+
+    match_data
+  end
+
+  # Match data is a hash of query, card, column
+
+  private_class_method def self.get_card_subset(query, match_data)
+  # TODO needs new_match_data, cull matches that do not match ALL queries
+  # only aggregate fields that need to carry over (columns)
+    new_match_data = {}
+
+    if(match_data.empty?)
       card_set = Card.all
+      matched_columns = []
     else
-      card_set = Card.where(id: card_match_data.map{|e| e[:card].id})
+      card_set = Card.where(name: match_data.keys)
+      matched_columns = match_data.map{|k,v| v[:columns]}.flatten.uniq
     end
 
-    columns.each do |col|
-      if col=='cost' && is_numeric?(query)
-        cards_from_scope = card_set.send("_cost", query)
-      elsif !is_numeric?(query) && col != 'cost'
-        cards_from_scope = card_set.send("_#{col}", query)
+    if(numeric?(query))
+      matched_cards = card_set.where(cost: query)
+
+      matched_cards.each do |card|
+        new_match_data[card.name] = {}
+        new_match_data[card.name][:card] = card
+
+        if (match_data[card.name])
+          new_match_data[card.name][:columns] = match_data[card.name][:columns] | ['Cost']
+          new_match_data[card.name][:terms] = match_data[card.name][:terms] | [query]
+        else
+          new_match_data[card.name][:columns] = ['Cost']
+          new_match_data[card.name][:terms] = [query]
+        end
       end
+    else
+      keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
+                               .where(!(CardKeyword.arel_table[:category].in matched_columns))
+                               .distinct
 
-      unless cards_from_scope.nil?
-        cards_from_scope.each do |card|
-          if card_match_data.empty?
-            results << {card: card, columns: [col], term_matches: [card["#{col}"]]}
-          else
-            existing_card = card_match_data.select{|e| e[:card] == card}.first
-            existing_card[:columns] = existing_card[:columns] | [col]
-            existing_card[:term_matches] = existing_card[:term_matches] | [card["#{col}"]]
+      keyword_matches = keyword_set.where('name ILIKE ?', query).distinct
 
-            results << existing_card
-          end
+      keyword_matches.each do |kw|
+        new_match_data[kw.card.name] = {}
+        new_match_data[kw.card.name][:card] = kw.card
 
-          exclude_columns << col
+        if (match_data[kw.card.name])
+          new_match_data[kw.card.name][:columns] = match_data[kw.card.name][:columns] | [kw.category]
+          new_match_data[kw.card.name][:terms] = match_data[kw.card.name][:terms] | [kw.name]
+        else
+          new_match_data[kw.card.name][:columns] = [kw.category]
+          new_match_data[kw.card.name][:terms] = [kw.name]
         end
       end
     end
 
-    return [results, exclude_columns]
+    new_match_data
   end
 
-  def self.get_matches queries
-    results = []
-    card_match_data = []
-    columns = get_relevant_columns()
+  private_class_method def self.query_to_regex(query)
+    '/' + query.gsub(/[\[\]]/, '') + '/i'
+  end
 
-    queries.each do |query|
-      card_match_data, exclude_columns = get_card_subset(query, card_match_data, columns)
+  private_class_method def self.isolate_term(term_string, query)
+    return if numeric?(term_string)
 
-      unless query == query.last
-        columns = columns - exclude_columns
-      end
+    test = term_string.split(', ')
+
+    return if test.empty?
+
+    regex = query_to_regex(query)
+
+    test.each do |word|
+      return word if regex.match(word)
+    end
+  end
+
+  private_class_method def self.format_results(hash)
+    groups = hash.group_by { |e| e[:columns] }
+
+    groups.each_key do |key|
+      groups[key.join(' < ')] = groups.delete key
+    end
+  end
+
+  private_class_method def self.convert_to_match_hash(match_array)
+    match_hash = {}
+
+    match_array.each do |k, v|
+      match_hash.store(k.map(&:capitalize).join(', '), v)
     end
 
-    results_by_columns = card_match_data.group_by{|elem| elem[:columns]}.sort_by{|k,v| k}
-
-    return results_by_columns
+    match_hash
   end
 
-  def self.query_to_regex query
-    clean_query = query.gsub(/[\[\]]/,"")
-    return /#{clean_query}/i
+  private_class_method def self.relevant_columns
+    matched_categories = %w[id image_url created_at updated_at slot_id]
+    Card.attribute_names - matched_categories
   end
 
-  def self.isolate_term term_string, query
-    unless is_numeric? term_string
-      test = term_string.split(", ")
-
-      if test.length > 1
-        regex = query_to_regex(query)
-
-        test.each do |word|
-          if regex.match(word)
-            return word
-          end
-        end
-      end
-    end
-
-    return term_string
+  private_class_method def self.numeric?(str)
+    str.to_s.delete('%').match(/\A[+-]?\d+?(\.\d+)?\Z/) != nil
   end
-
-  def self.format_results hash
-    groups = hash.group_by{|e| e[:columns]}
-
-    groups.keys.each do |key|
-      groups[key.join(" < ")] = groups.delete key
-    end
-
-    return groups
-  end
-
-  def self.get_relevant_columns
-    exclude_columns = ['id', 'image_url', 'created_at', 'updated_at', 'slot_id']
-    Card.attribute_names - exclude_columns
-  end
-
-  def self.is_numeric?(obj)
-    new_str = obj.to_s.gsub('%','')
-    new_str.match(/\A[+-]?\d+?(\.\d+)?\Z/) == nil ? false : true
-  end
-
-  # FIXME requires refactor
-  # def self.save_cards_to_slot search_str, results, slot
-  #   cards_to_slot = []
-  #
-  #   results.each do |k, card|
-  #     card.each do |c|
-  #       cards_to_slot << c
-  #     end
-  #   end
-  #
-  #   cards_to_slot.uniq!
-  #
-  #   slot.cards = cards_to_slot
-  #   slot.update_attribute(:queries, search_str)
-  # end
 end

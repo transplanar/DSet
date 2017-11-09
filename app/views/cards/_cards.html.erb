@@ -1,16 +1,16 @@
 <div class="results">
-    <% unless results.blank? %>
-      <% results.each do |group, matches| %>
-      <h1><%= group %></h1>
-      <p>
-        <% matches.each do |match| %>
-        <%= link_to image_tag(match[:card][:image_url], class: 'card_image'), assign_card_path(slot, match[:card]), method: :post, remote: true %>
-        <%= match[:term_matches].join(', ') %>
-        <% end %>
-      </p>
-      <% end %>
-    <% else %>
+    <% if results.blank? %>
       <br>No results found.
+    <% else %>
+      <h3>Filtered Card Selection</h3>
+      <% results.each do |group, matches| %>
+        <h1><%= group %></h1>
+        <p>
+          <% matches.each do |_, value| %>
+              <%= link_to image_tag(value[:card][:image_url], class: 'card_image'), assign_card_path(slot, value[:card]), method: :post, remote: true %>
+              <%= value[:terms].join(', ') %>
+          <% end %>
+        </p>
+      <% end %>
     <% end %>
-
 </div>

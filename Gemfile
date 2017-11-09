@@ -28,3 +28,9 @@ gem 'bootstrap-sass'
 gem 'arel'
 
 gem 'react-rails'
+
+gem 'awesome_print'
+
+gem 'rsense'
+
+gem 'rubocop'
