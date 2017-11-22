@@ -95,7 +95,7 @@ class Card < ActiveRecord::Base
                                .distinct
 
       keyword_matches = keyword_set.where('name ILIKE ?', query).distinct
-
+      
       keyword_matches.each do |kw|
         new_match_data[kw.card.name] = {}
         new_match_data[kw.card.name][:card] = kw.card
@@ -108,6 +108,22 @@ class Card < ActiveRecord::Base
           new_match_data[kw.card.name][:terms] = [kw.name]
         end
       end
+      
+      name_matches = card_set.where('name ILIKE ?', query).distinct
+      
+      name_matches.each do |card|
+        new_match_data[card.name] = {}
+        new_match_data[card.name][:card] = card
+
+        if (match_data[card.name])
+          new_match_data[card.name][:columns] = match_data[card.name][:columns] | ['Name']
+          new_match_data[card.name][:terms] = match_data[card.name][:terms] | [query]
+        else
+          new_match_data[card.name][:columns] = ['Name']
+          new_match_data[card.name][:terms] = [query]
+        end
+      end
+      
     end
 
     new_match_data
