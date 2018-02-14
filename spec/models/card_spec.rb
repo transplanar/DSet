@@ -3,12 +3,7 @@ require 'rails_helper'
 RSpec.describe Card, type: :model do
   let(:card) {Card.create!(name: "TestCard",
                             image_url: "http://example.com/card.jpg",
-                            cost: 3,
-                            types: "Action",
-                            category: "Tester",
-                            expansion: "Non-Game",
-                            strategy: "Unplayable",
-                            terminality: "Terminal"
+                            cost: 3
                             )}
 
 

@@ -39,40 +39,40 @@ RSpec.describe HomeController, type: :controller do
       end
     end
 
-    describe 'clear filters button' do
-      before :each do
-        @slots = Slot.all
-      end
+    # describe 'clear filters button' do
+    #   before :each do
+    #     @slots = Slot.all
+    #   end
 
-      it 'should clear directly assigned cards' do
-        @test_card = Card.first
+    #   it 'should clear directly assigned cards' do
+    #     @test_card = Card.first
 
-        @slots.each do |slot|
-          slot.cards = [@test_card]
-          expect(slot.cards.count).to eq(1)
-        end
+    #     @slots.each do |slot|
+    #       slot.cards = [@test_card]
+    #       expect(slot.cards.count).to eq(1)
+    #     end
 
-        post :clear_filters
+    #     post :clear_filters
 
-        @slots.each do |slot|
-          expect(slot.cards.count).to eq(25)
-        end
-      end
+    #     @slots.each do |slot|
+    #       expect(slot.cards.count).to eq(25)
+    #     end
+    #   end
 
-      it 'should clear saved search queries' do
-        @slots.each do |slot|
-          Card.search('v 3', slot)
-          expect(slot[:queries]).to eq('v 3')
-        end
+    #   it 'should clear saved search queries' do
+    #     @slots.each do |slot|
+    #       Card.search('v 3', slot)
+    #       expect(slot[:queries]).to eq('v 3')
+    #     end
 
-        post :clear_filters
+    #     post :clear_filters
 
-        @slots = Slot.all
+    #     @slots = Slot.all
 
-        @slots.each do |slot|
-          expect(slot[:queries]).to be_empty
-        end
-      end
-    end
+    #     @slots.each do |slot|
+    #       expect(slot[:queries]).to be_empty
+    #     end
+    #   end
+    # end
   end
 end

@@ -9,4 +9,16 @@ module SlotsHelper
 
     @slot.save
   end
+  
+  def cards_from_result hsh
+    hsh.map{|_,v| v.map{|_,v2| v2[:card]}}.flatten
+  end
+  
+  def names_from_result hsh
+    cards_from_result_hash(hsh).map{|c| c.name}
+  end
+  
+  def columns_from_result hsh
+    hsh.map{|_,v| v.map{|_,v2| v2[:columns]}}.flatten.uniq
+  end
 end
