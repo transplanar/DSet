@@ -91,35 +91,35 @@ class Card < ActiveRecord::Base
         end
       end
     else
-        # matched_cards = card_set.where('name ILIKE ?', query).distinct
-  
-        # matched_cards.each do |card|
-        #   new_match_data[card.name] = {}
-        #   new_match_data[card.name][:card] = card
-  
-        #   if (match_data[card.name])
-        #     new_match_data[card.name][:columns] = match_data[card.name][:columns] | ['Name']
-        #     new_match_data[card.name][:terms] = match_data[card.name][:terms] | [query]
-        #   else
-        #     new_match_data[card.name][:columns] = ['Name']
-        #     new_match_data[card.name][:terms] = [query]
-        #   end
-        # end
-        
+        matched_cards = card_set.where('name ILIKE ?', query).distinct
+
+        matched_cards.each do |card|
+          new_match_data[card.name] = {}
+          new_match_data[card.name][:card] = card
+
+          if (match_data[card.name])
+            new_match_data[card.name][:columns] = match_data[card.name][:columns] | ['Name']
+            new_match_data[card.name][:terms] = match_data[card.name][:terms] | [query]
+          else
+            new_match_data[card.name][:columns] = ['Name']
+            new_match_data[card.name][:terms] = [query]
+          end
+        end
+
         match_data = (new_match_data.any? ? new_match_data : match_data)
-        
+
         keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
                                 .where(!(CardKeyword.arel_table[:category].in matched_columns))
                                 .distinct
-  
+
         keyword_matches = keyword_set.where('name ILIKE ?', query).distinct
-        
+
         keyword_matches.each do |kw|
           if new_match_data[kw.card.name].nil?
             new_match_data[kw.card.name] = {}
             new_match_data[kw.card.name][:card] = kw.card
           end
-          
+
           if (match_data[kw.card.name])
             new_match_data[kw.card.name][:columns] = match_data[kw.card.name][:columns] | [kw.category]
             new_match_data[kw.card.name][:terms] = match_data[kw.card.name][:terms] | [kw.name]

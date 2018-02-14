@@ -1,7 +1,8 @@
-include SlotsHelper
 require 'rails_helper'
 
 RSpec.describe Slot, type: :model do
+  include SlotsHelper
+
   before :each do
     load Rails.root + "db/seeds.rb"
     @test_card = Card.first
@@ -10,11 +11,12 @@ RSpec.describe Slot, type: :model do
   describe 'search scopes' do
     before :each do
       @results = Card.search('cel', Slot.first)
+      p "Results are #{@results}"
       @cards = cards_from_result(@results)
     end
 
     context 'name search' do
-      it "cellar should appear in a name search" do
+      it "'Cellar' should appear in a name search" do
         expect(@cards).to include(@test_card)
       end
 
@@ -31,7 +33,7 @@ RSpec.describe Slot, type: :model do
 
       it 'cellar should NOT appear in an irrelevant search' do
         @results = Card.search('x', Slot.first)
-        @cards = cards_from_result_hash(@results)
+        @cards = cards_from_result(@results)
 
         expect(@cards).not_to include(@test_card)
       end
@@ -44,8 +46,6 @@ RSpec.describe Slot, type: :model do
       @cards = cards_from_result(@results)
       @columns = @results.keys.flatten.uniq.sort
     end
-    
-    
 
     it 'finds results in three categories' do
       expect(@columns).to eq(%w(Name Terminality Archetype).sort)
@@ -96,13 +96,13 @@ RSpec.describe Slot, type: :model do
       expect(result_values.first.name.downcase).to eq('village')
     end
   end
-  
-  # def cards_from_result_hash hsh
+
+  # def cards_from_result hsh
   #   return hsh.map{|k,v| v.map{|k2,v2| v2[:card]}}.flatten
   #   # return hsh.keys.flatten.uniq
   # end
-  
-  # def cards_from_result_hash hsh
+
+  # def cards_from_result hsh
   #   return hsh.map{|k,v| v.map{|k2,v2| v2[:columns]}}.flatten
   # end
 
