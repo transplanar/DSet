@@ -92,6 +92,7 @@ RSpec.describe Slot, type: :model do
     end
 
     it 'should display \'village\' as first result' do
+      pending("Incomplete")
       result_values = values_from_results
       expect(result_values.first.name.downcase).to eq('village')
     end
