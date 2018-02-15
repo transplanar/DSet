@@ -78,34 +78,15 @@ class Card < ActiveRecord::Base
       matched_cards = card_set.where(cost: query)
 
       matched_cards.each do |card|
-        p "Matched card #{card.name} by COST '#{query}'"
-        new_match_data[card.name] = {}
-        new_match_data[card.name][:card] = card
-
-        if (match_data[card.name])
-          new_match_data[card.name][:columns] = match_data[card.name][:columns] | ['Cost']
-          new_match_data[card.name][:terms] = match_data[card.name][:terms] | [query]
-        else
-          new_match_data[card.name][:columns] = ['Cost']
-          new_match_data[card.name][:terms] = [query]
-        end
+        merge_match_data(match_data, new_match_data, card, 'Cost', query)
       end
     else
         matched_cards = card_set.where('name ILIKE ?', query).distinct
 
         matched_cards.each do |card|
-          new_match_data[card.name] = {}
-          new_match_data[card.name][:card] = card
-
-          if (match_data[card.name])
-            new_match_data[card.name][:columns] = match_data[card.name][:columns] | ['Name']
-            new_match_data[card.name][:terms] = match_data[card.name][:terms] | [query]
-          else
-            new_match_data[card.name][:columns] = ['Name']
-            new_match_data[card.name][:terms] = [query]
-          end
+          merge_match_data(match_data, new_match_data, card, 'Name', query)
         end
-
+        
         match_data = (new_match_data.any? ? new_match_data : match_data)
 
         keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
@@ -115,67 +96,46 @@ class Card < ActiveRecord::Base
         keyword_matches = keyword_set.where('name ILIKE ?', query).distinct
 
         keyword_matches.each do |kw|
-          if new_match_data[kw.card.name].nil?
-            new_match_data[kw.card.name] = {}
-            new_match_data[kw.card.name][:card] = kw.card
-          end
-
-          if (match_data[kw.card.name])
-            new_match_data[kw.card.name][:columns] = match_data[kw.card.name][:columns] | [kw.category]
-            new_match_data[kw.card.name][:terms] = match_data[kw.card.name][:terms] | [kw.name]
-          else
-            new_match_data[kw.card.name][:columns] = [kw.category]
-            new_match_data[kw.card.name][:terms] = [kw.name]
-          end
+            merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
         end
-      # end
     end
 
-    new_match_data
+    return new_match_data
   end
 
   private_class_method def self.query_to_regex(query)
     '/' + query.gsub(/[\[\]]/, '') + '/i'
   end
 
-  private_class_method def self.isolate_term(term_string, query)
-    return if numeric?(term_string)
-
-    test = term_string.split(', ')
-
-    return if test.empty?
-
-    regex = query_to_regex(query)
-
-    test.each do |word|
-      return word if regex.match(word)
-    end
-  end
-
-  private_class_method def self.format_results(hash)
-    groups = hash.group_by { |e| e[:columns] }
-
-    groups.each_key do |key|
-      groups[key.join(' < ')] = groups.delete key
-    end
-  end
-
-  private_class_method def self.convert_to_match_hash(match_array)
-    match_hash = {}
-
-    match_array.each do |k, v|
-      match_hash.store(k.map(&:capitalize).join(', '), v)
-    end
-
-    match_hash
-  end
-
+    # FIXME move to helper?
   private_class_method def self.relevant_columns
     matched_categories = %w[id image_url created_at updated_at slot_id]
     Card.attribute_names - matched_categories
   end
 
+# FIXME move to helper?
   private_class_method def self.numeric?(str)
     str.to_s.delete('%').match(/\A[+-]?\d+?(\.\d+)?\Z/) != nil
+  end
+
+# FIXME move to helper? 
+  private_class_method def self.merge_match_data(match_data, new_match_data, card, column, query)
+    new_match_data[card.name] = {}
+    new_match_data[card.name][:card] = card
+    new_match_data[card.name][:columns] = merge_result_hash(match_data, card.name, :columns, column)
+    new_match_data[card.name][:terms] = merge_result_hash(match_data, card.name, :terms, query)
+  end
+  
+  # FIXME move to helper?
+  private_class_method def self.merge_result_hash(hsh, key, sub_key, new_elem)
+    if hsh[key].nil?
+      return [new_elem]
+    else
+      if hsh[key][sub_key].nil?
+        return [new_elem]
+      else
+        return hsh[key][sub_key] << new_elem
+      end
+    end
   end
 end
