@@ -1,7 +1,10 @@
 
 # require "awesome_print"
+# include SlotsHelper
 
 class Card < ActiveRecord::Base
+  extend SlotsHelper
+  
   has_and_belongs_to_many :slots
   has_many :card_keywords
 
@@ -81,13 +84,18 @@ class Card < ActiveRecord::Base
         merge_match_data(match_data, new_match_data, card, 'Cost', query)
       end
     else
-        matched_cards = card_set.where('name ILIKE ?', query).distinct
-
-        matched_cards.each do |card|
-          merge_match_data(match_data, new_match_data, card, 'Name', query)
-        end
-        
-        match_data = (new_match_data.any? ? new_match_data : match_data)
+        # p "Checking columns #{matched_columns}"
+        # if !matched_columns.include?('Name')
+          # p "No previous name matches detected."
+          matched_cards = card_set.where('name ILIKE ?', query).distinct
+  
+          matched_cards.each do |card|
+            merge_match_data(match_data, new_match_data, card, 'Name', query)
+          end
+          
+          match_data = (new_match_data.any? ? new_match_data : match_data)
+        #   p "Match data is #{match_data}"
+        # end
 
         keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
                                 .where(!(CardKeyword.arel_table[:category].in matched_columns))
@@ -99,6 +107,8 @@ class Card < ActiveRecord::Base
             merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
         end
     end
+    
+    # new_match_data = (new_match_data == match_data ? {} : new_match_data)
 
     return new_match_data
   end
@@ -124,6 +134,8 @@ class Card < ActiveRecord::Base
     new_match_data[card.name][:card] = card
     new_match_data[card.name][:columns] = merge_result_hash(match_data, card.name, :columns, column)
     new_match_data[card.name][:terms] = merge_result_hash(match_data, card.name, :terms, query)
+
+    return new_match_data
   end
   
   # FIXME move to helper?
@@ -134,8 +146,11 @@ class Card < ActiveRecord::Base
       if hsh[key][sub_key].nil?
         return [new_elem]
       else
-        return hsh[key][sub_key] << new_elem
+        # return hsh[key][sub_key] << new_elem if !hsh[key][sub_key].include?(new_elem)
+        return (hsh[key][sub_key].include?(new_elem) ? hsh[key][sub_key] : hsh[key][sub_key].push(new_elem))
       end
     end
+    
+    return nil
   end
 end
