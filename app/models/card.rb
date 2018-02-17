@@ -4,7 +4,7 @@
 
 class Card < ActiveRecord::Base
   extend SlotsHelper
-  
+
   has_and_belongs_to_many :slots
   has_many :card_keywords
 
@@ -45,6 +45,7 @@ class Card < ActiveRecord::Base
       regex << (letter == letters.first ? letter.to_s : "%#{letter}")
     end
 
+    # FIXME need to have variants (%thing%) (thing%) and (%thing)
     "%#{regex}%"
   end
 
@@ -74,7 +75,8 @@ class Card < ActiveRecord::Base
       matched_columns = []
     else
       card_set = Card.where(name: match_data.keys)
-      matched_columns = match_data.map{|k,v| v[:columns]}.flatten.uniq
+      matched_columns = match_data.map{ |_, v| v[:columns] }.flatten.uniq
+      matched_terms = match_data.map{ |_, v| v[:terms] }.flatten.uniq
     end
 
     if(numeric?(query))
@@ -88,11 +90,11 @@ class Card < ActiveRecord::Base
         # if !matched_columns.include?('Name')
           # p "No previous name matches detected."
           matched_cards = card_set.where('name ILIKE ?', query).distinct
-  
+
           matched_cards.each do |card|
-            merge_match_data(match_data, new_match_data, card, 'Name', query)
+            merge_match_data(match_data, new_match_data, card, 'Name', card[:name])
           end
-          
+
           match_data = (new_match_data.any? ? new_match_data : match_data)
         #   p "Match data is #{match_data}"
         # end
@@ -107,7 +109,7 @@ class Card < ActiveRecord::Base
             merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
         end
     end
-    
+
     # new_match_data = (new_match_data == match_data ? {} : new_match_data)
 
     return new_match_data
@@ -128,7 +130,7 @@ class Card < ActiveRecord::Base
     str.to_s.delete('%').match(/\A[+-]?\d+?(\.\d+)?\Z/) != nil
   end
 
-# FIXME move to helper? 
+# FIXME move to helper?
   private_class_method def self.merge_match_data(match_data, new_match_data, card, column, query)
     new_match_data[card.name] = {}
     new_match_data[card.name][:card] = card
@@ -137,7 +139,7 @@ class Card < ActiveRecord::Base
 
     return new_match_data
   end
-  
+
   # FIXME move to helper?
   private_class_method def self.merge_result_hash(hsh, key, sub_key, new_elem)
     if hsh[key].nil?
@@ -150,7 +152,7 @@ class Card < ActiveRecord::Base
         return (hsh[key][sub_key].include?(new_elem) ? hsh[key][sub_key] : hsh[key][sub_key].push(new_elem))
       end
     end
-    
+
     return nil
   end
 end
