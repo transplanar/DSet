@@ -8,34 +8,50 @@ RSpec.describe Card, type: :model do
     load Rails.root + "db/seeds.rb"
   end
 
-  describe 'search scopes' do
-    before :each do
-      @results = Card.search('cel', Slot.first)
-      @cards = cards_from_result(@results)
-      @test_card = Card.first
-    end
-
-    context 'name search' do
-      it "'Cellar' should appear in a name search" do
-        expect(@cards).to include(@test_card)
-      end
-
-      it "cellar should NOT appear in a cost search" do
-        if @results['cost'].nil?
-          @results['cost'] = {}
+  describe 'card search' do
+    context 'single query' do
+      describe 'against a character' do
+        before :each do
+          @results = Card.search('c', Slot.first)
+          @cards = cards_from_result(@results)
+          @names = names_from_result(@results)
         end
         
-        expect(@results['cost']).not_to include(@test_card)
-        expect(@results['cost']).to be_empty
+        it "should include 'Cellar' as a result" do
+          expect(@names).to include('Cellar')
+        end
       end
-
-      it 'cellar should NOT appear in an irrelevant search' do
-        @results = Card.search('x', Slot.first)
-        @cards = cards_from_result(@results)
-
-        expect(@cards).not_to include(@test_card)
+      
+      describe 'against a string' do
+        pending('WIP')
+      end
+      
+      describe 'against a number' do
+        pending('WIP')
       end
     end
+
+    # context 'string search' do
+    #   it "'Cellar' should appear in a name search" do
+    #     expect(@cards).to include(@test_card)
+    #   end
+
+    #   it "cellar should NOT appear in a cost search" do
+    #     if @results['cost'].nil?
+    #       @results['cost'] = {}
+    #     end
+        
+    #     expect(@results['cost']).not_to include(@test_card)
+    #     expect(@results['cost']).to be_empty
+    #   end
+
+    #   it 'cellar should NOT appear in an irrelevant search' do
+    #     @results = Card.search('x', Slot.first)
+    #     @cards = cards_from_result(@results)
+
+    #     expect(@cards).not_to include(@test_card)
+    #   end
+    # end
   end
   
   describe 'chained queries' do

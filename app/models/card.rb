@@ -12,50 +12,44 @@ class Card < ActiveRecord::Base
   def self.search(queries_string, slot)
     return [] if queries_string.blank?
 
-    queries_array = queries_to_array(queries_string)
-    # subqueries = format_for_regex(queries_array)
-    # matches = get_matches(subqueries)
-    matches = get_matches(queries_array)
+    query_array = queries_string.to_s.split
+    formatted_queries = format_multi_char_queries(query_array)
+    matches = get_matches(formatted_queries)
 
     matches.group_by { |_, v| v[:columns] }
   end
-
-  def self.queries_to_array(queries_string)
-    if numeric?(queries_string)
-      [queries_string.to_s]
-    else
-      queries_string.split
+  
+  private_class_method def self.format_multi_char_queries(arr)
+    result = []
+    arr.each do |elem| 
+      if numeric?(elem)
+        result << elem
+      else
+        result << format_string_query(elem)
+      end
     end
+    
+    return result
   end
-
-  # private_class_method def self.format_for_regex(queries_array)
-  #   # subqueries = []
-
-  #   # queries_array.each do |query|
-  #   #   subqueries << (numeric?(query) ? query : string_to_fuzzy_regex(query))
-  #   # end
-
-  #   subqueries
-  # end
-
-  # private_class_method def self.string_to_fuzzy_regex(str)
-  #   regex = ''
-  #   letters = str.chars
-
-  #   letters.each do |letter|
-  #     regex << (letter == letters.first ? letter.to_s : "%#{letter}")
-  #   end
-
-  #   # FIXME need to have variants (%thing%) (thing%) and (%thing)
-  #   "%#{regex}%"
-  # end
-
+  
+  private_class_method def self.format_string_query(query)
+    return query if(query.length < 2)
+    
+    formatted_query = '.*'
+    
+    query.split.each do |ch| 
+      formatted_query += (ch + ".*")
+    end
+    
+    formatted_query += '.*'
+    
+    return formatted_query
+  end
+  
   private_class_method def self.get_matches(subqueries)
     match_data = {}
 
     subqueries.each do |query|
-      # FIXME Not culling matches that do not match ALL supplied queries
-      # get_card_subset(query, match_data)
       result = get_card_subset(query, match_data)
 
       match_data = result == nil ? match_data : result
