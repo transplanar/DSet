@@ -13,8 +13,9 @@ class Card < ActiveRecord::Base
     return [] if queries_string.blank?
 
     queries_array = queries_to_array(queries_string)
-    subqueries = format_for_regex(queries_array)
-    matches = get_matches(subqueries)
+    # subqueries = format_for_regex(queries_array)
+    # matches = get_matches(subqueries)
+    matches = get_matches(queries_array)
 
     matches.group_by { |_, v| v[:columns] }
   end
@@ -27,27 +28,27 @@ class Card < ActiveRecord::Base
     end
   end
 
-  private_class_method def self.format_for_regex(queries_array)
-    subqueries = []
+  # private_class_method def self.format_for_regex(queries_array)
+  #   # subqueries = []
 
-    queries_array.each do |query|
-      subqueries << (numeric?(query) ? query : string_to_fuzzy_regex(query))
-    end
+  #   # queries_array.each do |query|
+  #   #   subqueries << (numeric?(query) ? query : string_to_fuzzy_regex(query))
+  #   # end
 
-    subqueries
-  end
+  #   subqueries
+  # end
 
-  private_class_method def self.string_to_fuzzy_regex(str)
-    regex = ''
-    letters = str.chars
+  # private_class_method def self.string_to_fuzzy_regex(str)
+  #   regex = ''
+  #   letters = str.chars
 
-    letters.each do |letter|
-      regex << (letter == letters.first ? letter.to_s : "%#{letter}")
-    end
+  #   letters.each do |letter|
+  #     regex << (letter == letters.first ? letter.to_s : "%#{letter}")
+  #   end
 
-    # FIXME need to have variants (%thing%) (thing%) and (%thing)
-    "%#{regex}%"
-  end
+  #   # FIXME need to have variants (%thing%) (thing%) and (%thing)
+  #   "%#{regex}%"
+  # end
 
   private_class_method def self.get_matches(subqueries)
     match_data = {}
@@ -86,31 +87,24 @@ class Card < ActiveRecord::Base
         merge_match_data(match_data, new_match_data, card, 'Cost', query)
       end
     else
-        # p "Checking columns #{matched_columns}"
-        # if !matched_columns.include?('Name')
-          # p "No previous name matches detected."
-          matched_cards = card_set.where('name ILIKE ?', query).distinct
+        matched_cards = card_set.where('name ~* :pat', pat: query).distinct
 
-          matched_cards.each do |card|
-            merge_match_data(match_data, new_match_data, card, 'Name', card[:name])
-          end
+        matched_cards.each do |card|
+          merge_match_data(match_data, new_match_data, card, 'Name', card[:name])
+        end
 
-          match_data = (new_match_data.any? ? new_match_data : match_data)
-        #   p "Match data is #{match_data}"
-        # end
-
+        match_data = (new_match_data.any? ? new_match_data : match_data)
+        
         keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
                                 .where(!(CardKeyword.arel_table[:category].in matched_columns))
                                 .distinct
 
-        keyword_matches = keyword_set.where('name ILIKE ?', query).distinct
-
+        keyword_matches = keyword_set.where('name ~* :pat', pat: query).distinct
+        
         keyword_matches.each do |kw|
             merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
         end
     end
-
-    # new_match_data = (new_match_data == match_data ? {} : new_match_data)
 
     return new_match_data
   end
