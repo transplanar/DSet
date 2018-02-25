@@ -4,54 +4,77 @@ require 'rails_helper'
 RSpec.describe Card, type: :model do
   include SlotsHelper
 
-  before :each do
-    load Rails.root + "db/seeds.rb"
+  before :all do
+    if Card.all.length < 1
+      load Rails.root + "db/seeds.rb"
+    end
+  end
+  
+  describe 'database load' do
+    it 'should preload all cards from database' do
+      expect(Card.all.length).to eq(25)
+    end
   end
 
   describe 'card search' do
     context 'single query' do
       describe 'against a character' do
-        before :each do
+        before :all do
           @results = Card.search('c', Slot.first)
           @cards = cards_from_result(@results)
           @names = names_from_result(@results)
+          @columns = columns_from_result(@results).sort
         end
         
         it "should include 'Cellar' as a result" do
           expect(@names).to include('Cellar')
         end
+        
+        it 'should find 24 matches (base game)' do
+          expect(@cards.length).to be(24)
+        end
+        
+        it 'should match along 4 categories' do
+          expect(@columns).to eq(%w(Archetype Card\ Type Subtype Strategy).sort)
+        end
       end
       
       describe 'against a string' do
-        pending('WIP')
+        before :all do
+          @results = Card.search('cel', Slot.first)
+          @cards = cards_from_result(@results)
+          @names = names_from_result(@results)
+          @columns = columns_from_result(@results).sort
+        end
+        
+        
+        it "should include 'Cellar' and 'Chancellor' in results" do
+          expect(@names).to eq(%w(Chancellor Cellar).sort)
+        end
+        
+        it 'should match along the \'Name\' category' do
+          expect(@columns).to eq(%w(Name).sort)
+        end
       end
       
       describe 'against a number' do
-        pending('WIP')
+        before :all do
+          @results = Card.search(3, Slot.first)
+          @cards = cards_from_result(@results)
+          @names = names_from_result(@results)
+          @columns = columns_from_result(@results).sort
+        end
+        
+        
+        it "should include 'Cellar' and 'Chancellor' in results" do
+          expect(@names).to eq(%w(Chancellor Village Woodcutter Workshop).sort)
+        end
+        
+        it 'should match along the \'Name\' category' do
+          expect(@columns).to eq(%w(Cost).sort)
+        end
       end
     end
-
-    # context 'string search' do
-    #   it "'Cellar' should appear in a name search" do
-    #     expect(@cards).to include(@test_card)
-    #   end
-
-    #   it "cellar should NOT appear in a cost search" do
-    #     if @results['cost'].nil?
-    #       @results['cost'] = {}
-    #     end
-        
-    #     expect(@results['cost']).not_to include(@test_card)
-    #     expect(@results['cost']).to be_empty
-    #   end
-
-    #   it 'cellar should NOT appear in an irrelevant search' do
-    #     @results = Card.search('x', Slot.first)
-    #     @cards = cards_from_result(@results)
-
-    #     expect(@cards).not_to include(@test_card)
-    #   end
-    # end
   end
   
   describe 'chained queries' do
@@ -63,14 +86,21 @@ RSpec.describe Card, type: :model do
       end
     end
     
-    describe 'numeric/string queries' do
-      before :each do
+    describe 'numeric/character queries' do
+      before :all do
         @results = Card.search('v 3', Slot.first)
         @cards = cards_from_result(@results)
+        @names = names_from_result(@results).sort
+        @columns = columns_from_result(@results).sort
+        @expected_names = (%w(Chancellor Village Woodcutter)).sort
       end
   
-      it 'finds three unique matching cards' do
-        expect(@cards.count).to eq(3)
+      it "should include 'Cellar' and 'Chancellor' in results" do
+          expect(@names).to eq(@expected_names)
+      end
+      
+      it 'should match along the \'Name\' category' do
+        expect(@columns).to eq(%w(Name Cost).sort)
       end
       
       it 'key element length should match number of supplied queries' do
@@ -85,43 +115,15 @@ RSpec.describe Card, type: :model do
     end
     
     describe 'string/string queries' do
-      it 'produces consistent results' do
-        @all_results = []
-        10.times do
-          @all_results << Card.search('v v', Slot.first)
-        end
-        
-        expect(@all_results).to all(eq @all_results.first)
-      end
-      
       describe 'duplicate queries' do
-        before :each do
-          @results = Card.search('v v', Slot.first)
-          @cards = cards_from_result(@results)
-          @columns = @results.keys.flatten.uniq.sort
+        before :all do
+          @results1 = Card.search('v', Slot.first)
+          @results2 = Card.search('v v', Slot.first)
         end
     
       # FIXME sometimes fails for some mysterious reason
-        it 'finds results in four categories' do
-          pending("Inconsistent result. Refactor?")
-          # @expected_columns = []
-          # @expected_columns = (%w(Name Terminality Archetype Strategy)).sort
-          # @expected_columns = (%w(Name Terminality Archetype Card\ Type)).sort
-          # @expected_columns = ['Name', 'Terminality', 'Archetype', 'Card Type'].sort
-          @expected_columns = ['Name', 'Terminality', 'Archetype', 'Strategy'].sort
-          
-          expect(@columns.length).to eq(4)
-          expect(@columns).to eq(@expected_columns)
-        end
-    
-        it 'only displays results with a hit against all supplied queries' do
-          pending("Refactor required")
-          @lengths = []
-          @results.keys.each do |set|
-            @lengths << set.to_a.length
-          end
-          
-          expect(@lengths).to all(be 2)
+        it 'should ignore duplicate queries' do
+          expect(@results1).to eq(@results2)
         end
       end
       

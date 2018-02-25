@@ -9,10 +9,11 @@ class Card < ActiveRecord::Base
   has_many :card_keywords
 
   # TODO: fix to assign to slot
+  
   def self.search(queries_string, slot)
     return [] if queries_string.blank?
 
-    query_array = queries_string.to_s.split
+    query_array = queries_string.to_s.split.uniq
     formatted_queries = format_multi_char_queries(query_array)
     matches = get_matches(formatted_queries)
 
@@ -103,15 +104,11 @@ class Card < ActiveRecord::Base
     return new_match_data
   end
 
-  private_class_method def self.query_to_regex(query)
-    '/' + query.gsub(/[\[\]]/, '') + '/i'
-  end
-
     # FIXME move to helper?
-  private_class_method def self.relevant_columns
-    matched_categories = %w[id image_url created_at updated_at slot_id]
-    Card.attribute_names - matched_categories
-  end
+  # private_class_method def self.relevant_columns
+  #   matched_categories = %w[id image_url created_at updated_at slot_id]
+  #   Card.attribute_names - matched_categories
+  # end
 
 # FIXME move to helper?
   private_class_method def self.numeric?(str)
