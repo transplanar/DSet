@@ -66,7 +66,14 @@ RSpec.describe Card, type: :model do
           end
         end
         describe 'string' do
+          it 'should include expected cards' do
+            @query += ' cr'
+            @results = Card.search(@query, Slot.first)
+            @names = names_from_result(@results)
+            @expected_names = %w[Chancellor Woodcutter]
 
+            expect(@names.sort).to eq(@expected_names.sort)
+          end
         end
       end
 
@@ -80,7 +87,47 @@ RSpec.describe Card, type: :model do
       end
 
       describe 'a string and string' do
+        it 'should include expected cards' do
+          @query = 'trsh mne'
+          @results = Card.search(@query, Slot.first)
+          @names = names_from_result(@results)
+          @expected_names = %w[Moneylender Mine]
 
+          expect(@names.sort).to eq(@expected_names.sort)
+        end
+      end
+
+      describe 'when supplied x queries' do
+        describe 'should match in x columns' do
+          it 'when supplied unique queries' do
+            @query = 'trsh mne'
+            @num_queries = @query.split(' ').size
+            @results = Card.search(@query, Slot.first)
+            @lengths = @results.keys.map(&:length)
+
+            expect(@lengths).to all(be >= @num_queries)
+          end
+
+          it 'when supplied identical queries' do
+            @query = 'v v v'
+            @num_queries = @query.split(' ').size
+            @results = Card.search(@query, Slot.first)
+            @lengths = @results.keys.map(&:length)
+
+            expect(@lengths).to all(be >= @num_queries)
+          end
+        end
+      end
+
+      describe 'three or more chained queries' do
+        it 'should include expected cards' do
+          @query = 'trsh mne 5'
+          @results = Card.search(@query, Slot.first)
+          @names = names_from_result(@results)
+          @expected_names = %w[Mine]
+
+          expect(@names.sort).to eq(@expected_names.sort)
+        end
       end
     end
   end
