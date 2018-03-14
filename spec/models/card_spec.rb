@@ -8,12 +8,88 @@ RSpec.describe Card, type: :model do
     load Rails.root + "db/seeds.rb"
   end
 
+  context 'card search' do
+    describe 'single query searches using a' do
+      describe 'character' do
+        it 'should include expected cards' do
+          @results = Card.search('p', Slot.first)
+          @names = names_from_result(@results)
+
+          @expected_names = %w[Chapel Workshop Spy Gardens Market Village]
+
+          expect(@names.sort).to eq(@expected_names.sort)
+        end
+      end
+      describe 'number' do
+        it 'should include expected cards' do
+          @results = Card.search(3, Slot.first)
+          @names = names_from_result(@results)
+
+          @expected_names = %w[Village Woodcutter Workshop Chancellor]
+          expect(@names.sort).to eq(@expected_names.sort)
+        end
+      end
+      describe 'string' do
+        it "should match with the 'Village' card" do
+          @results = Card.search('vlg', Slot.first)
+          @names = names_from_result(@results)
+
+          @expected_names = %w[Village]
+
+          expect(@names).to eq(@expected_names)
+        end
+      end
+    end
+
+    describe 'chained queries using' do
+      describe 'a number and' do
+        before :each do
+          @query = '3'
+        end
+
+        describe 'character' do
+          it 'should include expected cards' do
+            @query += ' v'
+            @results = Card.search(@query, Slot.first)
+            @names = names_from_result(@results)
+            @expected_names = %w[Village Chancellor Woodcutter]
+
+            expect(@names.sort).to eq(@expected_names.sort)
+          end
+        end
+        describe 'number' do
+          it 'should produce zero results' do
+            @query += ' 4'
+            @results = Card.search(@query, Slot.first)
+
+            expect(@results).to be_empty
+          end
+        end
+        describe 'string' do
+
+        end
+      end
+
+      describe 'a character and' do
+        describe 'character' do
+
+        end
+        describe 'string' do
+
+        end
+      end
+
+      describe 'a string and string' do
+
+      end
+    end
+  end
+
   describe 'card search' do
     context 'single query' do
       describe 'against a character' do
         before :each do
           @results = Card.search('c', Slot.first)
-          @cards = cards_from_result(@results)
           @names = names_from_result(@results)
         end
 
@@ -25,7 +101,6 @@ RSpec.describe Card, type: :model do
       describe 'against a string' do
         before :each do
           @results = Card.search('vlg', Slot.first)
-          @cards = cards_from_result(@results)
           @names = names_from_result(@results)
         end
 
@@ -35,7 +110,15 @@ RSpec.describe Card, type: :model do
       end
 
       describe 'against a number' do
-        pending('WIP')
+        before :each do
+          @results = Card.search(3, Slot.first)
+          @names = names_from_result(@results)
+        end
+
+        it 'should include expected cards' do
+          expected_names = %w[Village Woodcutter Workshop Chancellor]
+          expect(@names.sort).to eq(expected_names.sort)
+        end
       end
     end
 
@@ -218,15 +301,14 @@ RSpec.describe Card, type: :model do
   #   end
   # end
 
-  describe 'non-consecutive matching' do
-    before :each do
-      @results = Card.search('vlg', Slot.first)
-    end
-
-    it 'should display \'village\' as first result' do
-      pending("Incomplete")
-      result_values = values_from_results
-      expect(result_values.first.name.downcase).to eq('village')
-    end
-  end
+  # describe 'non-consecutive matching' do
+  #   before :each do
+  #     @results = Card.search('vlg', Slot.first)
+  #   end
+  #
+  #   it 'should display \'village\' as first result' do
+  #     result_values = values_from_results
+  #     expect(result_values.first.name.downcase).to eq('village')
+  #   end
+  # end
 end
