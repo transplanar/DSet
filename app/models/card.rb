@@ -18,34 +18,33 @@ class Card < ActiveRecord::Base
 
     matches.group_by { |_, v| v[:columns] }
   end
-  
+
   private_class_method def self.format_multi_char_queries(arr)
     result = []
-    arr.each do |elem| 
+
+    arr.each do |elem|
       if numeric?(elem)
         result << elem
       else
         result << format_string_query(elem)
       end
     end
-    
+
     return result
   end
-  
+
   private_class_method def self.format_string_query(query)
-    return query if(query.length < 2)
-    
+    return query if (query.length < 2)
+
     formatted_query = '.*'
-    
-    query.split.each do |ch| 
+
+    query.split('').each do |ch|
       formatted_query += (ch + ".*")
     end
-    
-    formatted_query += '.*'
-    
+
     return formatted_query
   end
-  
+
   private_class_method def self.get_matches(subqueries)
     match_data = {}
 
@@ -81,6 +80,7 @@ class Card < ActiveRecord::Base
         merge_match_data(match_data, new_match_data, card, 'Cost', query)
       end
     else
+      if matched_columns.exclude? 'Name'
         matched_cards = card_set.where('name ~* :pat', pat: query).distinct
 
         matched_cards.each do |card|
@@ -88,16 +88,21 @@ class Card < ActiveRecord::Base
         end
 
         match_data = (new_match_data.any? ? new_match_data : match_data)
-        
-        keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
-                                .where(!(CardKeyword.arel_table[:category].in matched_columns))
-                                .distinct
+      end
 
-        keyword_matches = keyword_set.where('name ~* :pat', pat: query).distinct
-        
-        keyword_matches.each do |kw|
-            merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
-        end
+      prev_matched_ids = card_set.pluck(:id)
+      card_id_table = CardKeyword.arel_table[:card_id]
+      card_category_table = CardKeyword.arel_table[:category]
+
+      keyword_set = CardKeyword.where(card_id_table.in(prev_matched_ids))
+                               .where(!card_category_table.in(matched_columns))
+                               .distinct
+
+      keyword_matches = keyword_set.where('name ~* :pat', pat: query).distinct
+
+      keyword_matches.each do |kw|
+        merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
+      end
     end
 
     return new_match_data
@@ -122,25 +127,20 @@ class Card < ActiveRecord::Base
   private_class_method def self.merge_match_data(match_data, new_match_data, card, column, query)
     new_match_data[card.name] = {}
     new_match_data[card.name][:card] = card
-    new_match_data[card.name][:columns] = merge_result_hash(match_data, card.name, :columns, column)
+    new_match_data[card.name][:columns] = merge_result_hash(match_data, card.name,:columns, column)
     new_match_data[card.name][:terms] = merge_result_hash(match_data, card.name, :terms, query)
 
-    return new_match_data
+    new_match_data
   end
 
-  # FIXME move to helper?
+  # FIXME: move to helper?
   private_class_method def self.merge_result_hash(hsh, key, sub_key, new_elem)
-    if hsh[key].nil?
-      return [new_elem]
-    else
-      if hsh[key][sub_key].nil?
-        return [new_elem]
-      else
-        # return hsh[key][sub_key] << new_elem if !hsh[key][sub_key].include?(new_elem)
-        return (hsh[key][sub_key].include?(new_elem) ? hsh[key][sub_key] : hsh[key][sub_key].push(new_elem))
-      end
-    end
+    return [new_elem] if hsh[key].nil?
 
-    return nil
+    return [new_elem] if hsh[key][sub_key].nil?
+
+    exists_in_hsh = hsh[key][sub_key].include?(new_elem)
+
+    exists_in_hsh ? hsh[key][sub_key] : hsh[key][sub_key].push(new_elem)
   end
 end
