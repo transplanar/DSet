@@ -72,20 +72,21 @@ class Card < ActiveRecord::Base
     else
       card_set = Card.where(name: match_data.keys)
       matched_columns = match_data.map{ |_, v| v[:columns] }.flatten.uniq
-      matched_terms = match_data.map{ |_, v| v[:terms] }.flatten.uniq
+      # TODO: Handling of duplicate queries
+      # matched_terms = match_data.map{ |_, v| v[:terms] }.flatten.uniq
     end
 
     if(numeric?(query))
       matched_cards = card_set.where(cost: query)
 
       matched_cards.each do |card|
-        merge_match_data(match_data, new_match_data, card, 'Cost', query)
+        new_match_data = merge_match_data(match_data, new_match_data, card, 'Cost', query)
       end
     else
         matched_cards = card_set.where('name ~* :pat', pat: query).distinct
 
         matched_cards.each do |card|
-          merge_match_data(match_data, new_match_data, card, 'Name', card[:name])
+          new_match_data = merge_match_data(match_data, new_match_data, card, 'Name', card[:name])
         end
 
         match_data = (new_match_data.any? ? new_match_data : match_data)
@@ -93,11 +94,15 @@ class Card < ActiveRecord::Base
         keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
                                 .where(!(CardKeyword.arel_table[:category].in matched_columns))
                                 .distinct
+                                
+        p "*****************************"
+        p "Keyword set length is #{keyword_set.size}"
+        # keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) ).distinct
 
         keyword_matches = keyword_set.where('name ~* :pat', pat: query).distinct
         
         keyword_matches.each do |kw|
-            merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
+            new_match_data = merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
         end
     end
 
@@ -117,7 +122,7 @@ class Card < ActiveRecord::Base
 
 # FIXME move to helper?
   private_class_method def self.merge_match_data(match_data, new_match_data, card, column, query)
-    new_match_data[card.name] = {}
+    new_match_data[card.name] = new_match_data[card.name]!=nil ? new_match_data[card.name] : {}
     new_match_data[card.name][:card] = card
     new_match_data[card.name][:columns] = merge_result_hash(match_data, card.name, :columns, column)
     new_match_data[card.name][:terms] = merge_result_hash(match_data, card.name, :terms, query)
@@ -133,7 +138,6 @@ class Card < ActiveRecord::Base
       if hsh[key][sub_key].nil?
         return [new_elem]
       else
-        # return hsh[key][sub_key] << new_elem if !hsh[key][sub_key].include?(new_elem)
         return (hsh[key][sub_key].include?(new_elem) ? hsh[key][sub_key] : hsh[key][sub_key].push(new_elem))
       end
     end
