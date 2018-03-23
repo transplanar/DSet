@@ -12,10 +12,13 @@ class Card < ActiveRecord::Base
   
   def self.search(queries_string, slot)
     return [] if queries_string.blank?
-
-    query_array = queries_string.to_s.split.uniq
+    
+    query_array = queries_string.to_s.split
     formatted_queries = format_multi_char_queries(query_array)
     matches = get_matches(formatted_queries)
+    # FIXME: Better way to cull matches that don't have hit with all queries?
+    matches = matches.select{|_,v| v[:terms].length >= query_array.length}
+    
 
     matches.group_by { |_, v| v[:columns] }
   end
@@ -38,11 +41,9 @@ class Card < ActiveRecord::Base
     
     formatted_query = '.*'
     
-    query.split.each do |ch| 
+    query.split('').each do |ch| 
       formatted_query += (ch + ".*")
     end
-    
-    formatted_query += '.*'
     
     return formatted_query
   end
@@ -58,62 +59,47 @@ class Card < ActiveRecord::Base
 
     match_data
   end
-
-  # Match data is a hash of query, card, column
-
+  
+  # TODO: Split this into separate methods
   private_class_method def self.get_card_subset(query, match_data)
-  # TODO needs new_match_data, cull matches that do not match ALL queries
-  # only aggregate fields that need to carry over (columns)
     new_match_data = {}
 
     if(match_data.empty?)
       card_set = Card.all
-      matched_columns = []
     else
       card_set = Card.where(name: match_data.keys)
-      matched_columns = match_data.map{ |_, v| v[:columns] }.flatten.uniq
-      # TODO: Handling of duplicate queries
-      # matched_terms = match_data.map{ |_, v| v[:terms] }.flatten.uniq
     end
 
-    if(numeric?(query))
+    if numeric?(query)
       matched_cards = card_set.where(cost: query)
 
       matched_cards.each do |card|
-        new_match_data = merge_match_data(match_data, new_match_data, card, 'Cost', query)
+        merge_match_data(match_data, new_match_data, card, 'Cost', query)
       end
     else
         matched_cards = card_set.where('name ~* :pat', pat: query).distinct
 
         matched_cards.each do |card|
-          new_match_data = merge_match_data(match_data, new_match_data, card, 'Name', card[:name])
+          merge_match_data(match_data, new_match_data, card, 'Name', card[:name])
         end
-
-        match_data = (new_match_data.any? ? new_match_data : match_data)
         
-        keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) )
-                                .where(!(CardKeyword.arel_table[:category].in matched_columns))
-                                .distinct
-                                
-        p "*****************************"
-        p "Keyword set length is #{keyword_set.size}"
-        # keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) ).distinct
+        if new_match_data.any?
+          match_data = new_match_data
+        end
+        
+        match_data = (new_match_data.any? ? new_match_data : match_data)
 
+        keyword_set = CardKeyword.where(CardKeyword.arel_table[:card_id].in card_set.pluck(:id) ).distinct
+        
         keyword_matches = keyword_set.where('name ~* :pat', pat: query).distinct
         
         keyword_matches.each do |kw|
-            new_match_data = merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
+            merge_match_data(match_data, new_match_data, kw.card, kw.category, kw.name)
         end
     end
-
+    
     return new_match_data
   end
-
-    # FIXME move to helper?
-  # private_class_method def self.relevant_columns
-  #   matched_categories = %w[id image_url created_at updated_at slot_id]
-  #   Card.attribute_names - matched_categories
-  # end
 
 # FIXME move to helper?
   private_class_method def self.numeric?(str)
@@ -126,8 +112,6 @@ class Card < ActiveRecord::Base
     new_match_data[card.name][:card] = card
     new_match_data[card.name][:columns] = merge_result_hash(match_data, card.name, :columns, column)
     new_match_data[card.name][:terms] = merge_result_hash(match_data, card.name, :terms, query)
-
-    return new_match_data
   end
 
   # FIXME move to helper?
