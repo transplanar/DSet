@@ -17,7 +17,7 @@ Each subquery is evaluated as a "fuzzy" query, enabling matching of non-consecut
 * Multi-Category Search
 Each query is evaluated across multiple possible categories, with results displayed to the user by the terms and categories on which they are matched.
 *Example: See below*
-![Multi-Cat Example](https://imgur.com/WomyNrE "Multi-Category Result Display Example")
+![Multi-Cat Example](https://imgur.com/WomyNrE)
 
 * Livesearch
 Searches are instantaneous and update as the user types in their queries.
