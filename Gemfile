@@ -1,13 +1,14 @@
 source 'https://rubygems.org'
-ruby "2.3.0"
+# ruby "2.3.0"
+ruby '2.4.1'
+gem 'json'
 
-gem 'rails', '4.2.5'
+# gem 'rails', '4.2.5'
+gem 'rails', '4.2.10'
 
 group :production do
   gem 'rails_12factor'
 end
-
-gem 'pg'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.0'
@@ -34,3 +35,5 @@ gem 'awesome_print'
 gem 'rsense'
 
 gem 'rubocop'
+
+gem 'pg', '~> 0.21'

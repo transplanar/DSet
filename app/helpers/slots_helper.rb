@@ -4,9 +4,25 @@ module SlotsHelper
 
     @slot.cards = [card]
 
-    @slot.update_attribute(:queries, "")
+    @slot.update_attribute(:queries, '')
     @slot.update_attribute(:image_url, card.image_url)
 
     @slot.save
+  end
+
+  def cards_from_result(hsh)
+    hsh.map { |_, v| v.map { |_, v2| v2[:card] } }.flatten
+  end
+
+  def names_from_result(hsh)
+    cards_from_result(hsh).map(&:name)
+  end
+  
+  def columns_from_result_raw(hsh)
+    hsh.map { |_, v| v.map { |_, v2| v2[:columns] } }.flatten
+  end
+
+  def columns_from_result(hsh)
+    columns_from_result_raw(hsh).uniq
   end
 end

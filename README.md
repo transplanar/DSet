@@ -1,50 +1,26 @@
 [View Live Version Here](https://dset-app.herokuapp.com/)
 
-## DSet: A Dominion Card Set Generator
+## DSet: A Dominion Card Database
 
-This app simulates a [Dominion](https://boardgamegeek.com/boardgame/36218/dominion) randomizer deck to produce a set of 10 cards to play a game of Dominion. It provides additional features defining what cards to include/exclude, search functionality, and the ability to set global rules for what expansions should be allowed and/or to enforce a spread of card costs.
+DSet is a prototype card database system for the board game [Dominion](https://boardgamegeek.com/boardgame/3. It combines the features of a fuzzy search, chainable search, and Multi-Category search into a single system. The core work of the project has concentrated on the development of the app's search functionality, with the ultimate goal of functioning as a card lookup and customizable randomizer for Dominion enthusiasts.
 
-author: Glen Cooney
+**Work in Progress**
 
-Capstone for [Bloc's Full Stack Web Development Apprenticeship](https://www.bloc.io/web-development-bootcamp)
+##Feature Overview
+* Chainable Search
+Each string delimited by a space is treated as a filter to refine searches down to only results that match all supplied queries.
+*Example: The query "v 3" will search for cards containing fields containing the letter v, and then refine that result set further to only those that also
+have a cost of 3.*
+* Fuzzy Search
+Each subquery is evaluated as a "fuzzy" query, enabling matching of non-consecutive characters for faster lookup.
+*Example: The query "vlg" will match with the card name "Village"*
+* Multi-Category Search
+Each query is evaluated across multiple possible categories, with results displayed to the user by the terms and categories on which they are matched.
+*Example: See below*
+![Multi-Cat Example](https://imgur.com/WomyNrE "Multi-Category Result Display Example")
 
-### Features:
 * Livesearch
-* Multi-category search (in the style of Ubuntu's Unity search)
-* Chainable search queries
-* Fuzzy search (find by minimum number of characters)
-
-### What is a Randomizer?
-Dominion is a deckbuilding game where players acquire cards over the course of play in order to combo their effects together and ultimately claim cards that will earn
-them victory points. In each game, players have 10 stacks of 10 cards each they may buy from, which are randomly determined during setup (with a few cards that are included in every game). These 10 cards ("Kingdom Cards") are randomly chosen using the "Randomizer Deck," which contains a single copy of each of the Kingdom cards included in the game (25 total in the original retail set).
-
-This app simulates the Randomizer deck, while giving the user more control over the types of cards that will be selected.
-
-### Functionality Overview
-Users can click on any of the ten card slots and feed them filtering criteria through its search bar. This will shrink the pool of acceptable cards for that slot, from
-which a single card will be randomly chosen for that slot.
-
-These criteria may include the name of a card, some attribute of the card (such as its cost, type, etc), or by other grouping categories defined by the community of
-the [Dominion Strategy Wiki](http://wiki.dominionstrategy.com). The app performs a live search as you type, displaying potential autocomplete results for specific
-filters as well as a list of cards organized by the category under which the term was matched (modeled after [Ubuntu's Unity search system](http://linuxconfig.net/wp-content/uploads/2012/06/oneric_unity_dash.jpg))
-
-#### Query chaining
-Users may chain multiple queries together by separating them with a space. For example, an input of "v 3" will filter cards down to only those containing the letter v (Village, Terminal Silver) or number 3 (Cost).
-
-#### Direct Selection
-Users may click any card in the slots page to directly select that card, assigning that singular card to that slot. This will discard all other search criteria. As of this writing (2.23.16), this can only be cleared by using "Clear Filters" from the slots index view.
-
-#### Card Generation
-When desired filters and cards have been selected, simply go back to the card index and click the "Generate Cards" button to generate a random set of 10 Dominion cards.
-
-### Future Development
-This is an ongoing project. Future features include:
-* Conditional filters
-* Multi-slot filtering rules
-* User profiles and decklist saving
-* Links to card strategies
-* Links to the "story" behind the creation of each card (by Donald X himself)
-* Cards from all 9 Dominion expansions (including additional components)
+Searches are instantaneous and update as the user types in their queries.
 
 ### LEGAL
 This an unofficial card search and randomizer app for the tabletop game Dominion (c) 2008 by Donald X. Vaccarino

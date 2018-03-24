@@ -256,57 +256,57 @@ card = Card.create!(name: "Cellar",
             image_url: base_url + "1/1c/Cellar.jpg/200px-Cellar.jpg",
             cost: 2)
 
-assign_keywords(%w(Action Sifter Base Non-Terminal), card)
+assign_keywords(%w(Base Action Sifter Non-Terminal), card)
 
 card = Card.create!(name: "Chapel",
             image_url: base_url + "2/29/Chapel.jpg/200px-Chapel.jpg",
             cost: 2)
 
-assign_keywords(%w(Action Trasher Base Trashing Terminal), card)
+assign_keywords(%w(Base Action Trasher Trashing Terminal), card)
 
 card = Card.create!(name: "Moat",
             image_url: base_url + "f/fe/Moat.jpg/200px-Moat.jpg",
             cost: 2)
 
-assign_keywords(%w(Action Reaction Blocker Base Terminal), card)
+assign_keywords(%w(Base Action Reaction Blocker Terminal), card)
 
 # 3 Cost Cards
 card = Card.create!(name: "Chancellor",
             image_url: base_url + "b/b7/Chancellor.jpg/200px-Chancellor.jpg",
             cost: 3)
 
-assign_keywords(%w(Action Deck\ Discarder Base Virtual\ Coin Terminal), card)
+assign_keywords(%w(Base Action Deck\ Discarder Virtual\ Coin Terminal), card)
 
 card = Card.create!(name: "Village",
             image_url: base_url + "5/5a/Village.jpg/200px-Village.jpg",
             cost: 3)
 
-assign_keywords(%w(Action Splitter Village Base Non-Terminal Engine), card)
+assign_keywords(%w(Base Action Splitter Village Non-Terminal Engine), card)
 
 card = Card.create!(name: "Woodcutter",
             image_url: base_url + "d/d6/Woodcutter.jpg/200px-Woodcutter.jpg",
             cost: 3)
 
-assign_keywords(%w(Action Base +Buy Virtual\ Coin Engine Terminal), card)
+assign_keywords(%w(Base Action +Buy Virtual\ Coin Engine Terminal), card)
 
 card = Card.create!(name: "Workshop",
             image_url: base_url + "5/50/Workshop.jpg/200px-Workshop.jpg",
             cost: 3)
 
-assign_keywords(%w(Action Base Gainer Terminal), card)
+assign_keywords(%w(Base Action Gainer Terminal), card)
 
 # Cost 4 Cards
 card = Card.create!(name: "Bureaucrat",
             image_url: base_url + "4/4d/Bureaucrat.jpg/200px-Bureaucrat.jpg",
             cost: 4)
 
-assign_keywords(%w(Action Base Attack Gainer Terminal), card)
+assign_keywords(%w(Base Action Attack Gainer Terminal), card)
 
 card = Card.create!(name: "Feast",
             image_url: base_url + "9/9c/Feast.jpg/200px-Feast.jpg",
             cost: 4)
 
-assign_keywords(%w(Action Base One-Shot Terminal), card)
+assign_keywords(%w(Base Action One-Shot Terminal), card)
 
 card = Card.create!(name: "Gardens",
             image_url: base_url + "8/8c/Gardens.jpg/200px-Gardens.jpg",
@@ -403,7 +403,7 @@ card = Card.create!(name: "Adventurer",
             image_url: base_url + "7/71/Adventurer.jpg/200px-Adventurer.jpg",
             cost: 6)
 
-assign_keywords(%w(Base Digger Engine Draw Terminal), card)
+assign_keywords(%w(Base Action Digger Engine Draw Terminal), card)
 
 10.times do
   Slot.create!(image_url: "http://vignette2.wikia.nocookie.net/dominioncg/images/6/65/Randomizer.jpg/revision/latest?cb=20100224111917")
