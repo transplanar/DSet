@@ -6,7 +6,7 @@ DSet is a prototype card database system for the board game [Dominion](https://b
 
 **Work in Progress**
 
-##Feature Overview
+## Feature Overview
 * Chainable Search
 Each string delimited by a space is treated as a filter to refine searches down to only results that match all supplied queries.
 *Example: The query "v 3" will search for cards containing fields containing the letter v, and then refine that result set further to only those that also
