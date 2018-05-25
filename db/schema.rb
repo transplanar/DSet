@@ -16,17 +16,6 @@ ActiveRecord::Schema.define(version: 20171008221200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "card_keywords", force: :cascade do |t|
-    t.string   "name"
-    t.string   "category"
-    t.string   "description"
-    t.integer  "card_id"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-  end
-
-  add_index "card_keywords", ["card_id"], name: "index_card_keywords_on_card_id", using: :btree
-
   create_table "cards", force: :cascade do |t|
     t.string   "name"
     t.string   "image_url"
@@ -43,6 +32,17 @@ ActiveRecord::Schema.define(version: 20171008221200) do
   add_index "cards_slots", ["card_id", "slot_id"], name: "index_cards_slots_on_card_id_and_slot_id", using: :btree
   add_index "cards_slots", ["slot_id", "card_id"], name: "index_cards_slots_on_slot_id_and_card_id", using: :btree
 
+  create_table "descriptors", force: :cascade do |t|
+    t.string   "name"
+    t.string   "category"
+    t.string   "description"
+    t.integer  "card_id"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+  end
+
+  add_index "descriptors", ["card_id"], name: "index_descriptors_on_card_id", using: :btree
+
   create_table "slots", force: :cascade do |t|
     t.string   "queries"
     t.string   "image_url"
@@ -52,5 +52,5 @@ ActiveRecord::Schema.define(version: 20171008221200) do
     t.datetime "updated_at",        null: false
   end
 
-  add_foreign_key "card_keywords", "cards"
+  add_foreign_key "descriptors", "cards"
 end

@@ -1,6 +1,6 @@
-class CreateCardKeywords < ActiveRecord::Migration
+class CreateDescriptors < ActiveRecord::Migration
   def change
-    create_table :card_keywords do |t|
+    create_table :descriptors do |t|
       t.string :name
       t.string :category
       t.string :description
