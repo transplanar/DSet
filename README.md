@@ -4,8 +4,6 @@
 
 DSet is a prototype card database system for the board game [Dominion](https://boardgamegeek.com/boardgame/3). It combines the features of a fuzzy search, chainable search, and Multi-Category search into a single system. The core work of the project has concentrated on the development of the app's search functionality, with the ultimate goal of functioning as a card lookup and customizable randomizer for Dominion enthusiasts.
 
-**Work in Progress**
-
 ## Feature Overview
 ### Chainable Search
 
